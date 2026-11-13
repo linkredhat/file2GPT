@@ -6204,6 +6204,79 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 }
 
 
+
+
+/* ============================================================
+   Global panel readability: fix inherited ST text colors and
+   undersized inline copy across ALL statusbar menus.
+   ============================================================ */
+
+/* A panel owns its foreground color. Do not inherit the host theme's
+   white text into a light statusbar card. */
+:root[data-sb-theme] .sb-panel-card {
+  color: var(--text) !important;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+:root[data-sb-theme] .sb-panel-card .sb-panel-card-title,
+:root[data-sb-theme] .sb-panel-card [class*="title"],
+:root[data-sb-theme] .sb-panel-card h1,
+:root[data-sb-theme] .sb-panel-card h2,
+:root[data-sb-theme] .sb-panel-card h3,
+:root[data-sb-theme] .sb-panel-card h4,
+:root[data-sb-theme] .sb-panel-card h5,
+:root[data-sb-theme] .sb-panel-card h6 {
+  color: var(--text) !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+/* Keep labels and descriptions theme-aware, including unclassed spans
+   and divs that previously inherited SillyTavern's foreground color. */
+:root[data-sb-theme] .sb-panel-card p,
+:root[data-sb-theme] .sb-panel-card li,
+:root[data-sb-theme] .sb-panel-card .info-value {
+  color: var(--text-sub) !important;
+  line-height: 1.75;
+}
+
+/* Tiny inline copy (10–11px) is difficult to read at normal desktop
+   scaling. Raise it consistently while leaving badges/buttons compact. */
+:root[data-sb-theme] .sb-panel-card [style*="font-size:10px"]:not(.text-badge):not(button),
+:root[data-sb-theme] .sb-panel-card [style*="font-size: 10px"]:not(.text-badge):not(button),
+:root[data-sb-theme] .sb-panel-card [style*="font-size:11px"]:not(.text-badge):not(button),
+:root[data-sb-theme] .sb-panel-card [style*="font-size: 11px"]:not(.text-badge):not(button) {
+  font-size: 12px !important;
+  line-height: 1.7 !important;
+}
+
+/* Reference prompts are reading/editing content, not code: use a
+   comfortable size and the same font as the surrounding interface. */
+:root[data-sb-theme] .sb-panel-card textarea,
+:root[data-sb-theme] .sb-panel-card input,
+:root[data-sb-theme] .sb-panel-card select {
+  color: var(--text) !important;
+  font-size: 13px !important;
+  line-height: 1.75 !important;
+  font-family: inherit !important;
+}
+
+/* Character-name link: use the intended accent appearance at rest;
+   hover shifts to the normal foreground instead of flashing white. */
+:root[data-sb-theme] .main-char-name,
+:root[data-sb-theme] .char-name {
+  color: var(--accent-deep) !important;
+  text-shadow: none !important;
+  transition: color .18s ease !important;
+}
+
+:root[data-sb-theme] .main-char-name:hover,
+:root[data-sb-theme] .char-name:hover {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
 /* Active navigation labels should remain readable on pale accent fills. */
 :root[data-sb-theme] .tab.active {
   color: var(--accent-deep) !important;
