@@ -662,6 +662,8 @@
    */
   function renderMainCharacterPanelHtml(c) {
     if (!c) return '';
+    // 主面板只渲染当前在场角色；衣着/身体字段的 emoji 仅对在场角色启用。
+    const isP = Boolean(c.isPresent);
     const favorNum = Math.min(100, Math.max(0, parseInt(c.favor || c.affection) || 0));
     const trainNum = parseInt(c.trainingValue, 10) || 0;
     const maxTrain = 1000;
