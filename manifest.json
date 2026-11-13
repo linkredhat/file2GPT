@@ -1,0 +1,12 @@
+{
+  "display_name": "通用状态栏",
+  "loading_order": 200,
+  "requires": [],
+  "optional": [],
+  "js": "universal-statusbar/statusbar.js",
+  "css": "universal-statusbar/style.css",
+  "author": "Antigravity",
+  "version": "1.1.0",
+  "homePage": "https://github.com/linkredhat/file2GPT",
+  "auto_update": true
+}
