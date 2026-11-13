@@ -6136,12 +6136,12 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 
 /* Character heading: accent at rest, normal text color on hover. */
 :root[data-sb-theme] :is(.main-char-name,.char-name) {
-  color:var(--accent-deep) !important;
+  color:var(--text) !important;
   text-shadow:none !important;
   transition:color .18s ease !important;
 }
 :root[data-sb-theme] :is(.main-char-name,.char-name):hover {
-  color:var(--text) !important;
+  color:var(--accent-deep) !important;
   text-shadow:none !important;
 }
 
@@ -6196,6 +6196,34 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 }
 :root[data-sb-theme] :is(.char-diary-content,.diary-body-content) :is(em,i) {
   font-style:normal !important;
+}
+:root[data-sb-theme] :is(.char-diary-content,.diary-body-content) .handwritten {
+  font-family:inherit !important;
+  font-style:normal !important;
+  letter-spacing:0 !important;
+  color:var(--text-sub) !important;
+  text-shadow:none !important;
+  transform:none !important;
+}
+:root[data-sb-theme] :is(.char-diary-content,.diary-body-content) .messy {
+  display:inline !important;
+  font-style:italic !important;
+  letter-spacing:0 !important;
+  color:var(--accent-deep) !important;
+  text-shadow:none !important;
+  transform:none !important;
+}
+:root[data-sb-theme] :is(.char-diary-content,.diary-body-content) .emphasis {
+  color:var(--accent-deep) !important;
+  font-weight:700 !important;
+  letter-spacing:0 !important;
+  text-shadow:none !important;
+}
+:root[data-sb-theme] :is(.char-diary-content,.diary-body-content) .highlight {
+  color:var(--text) !important;
+  background:var(--accent-bg) !important;
+  padding:.05em .22em !important;
+  border-radius:3px !important;
 }
 :root[data-sb-theme] .diary-body-content .handwritten {
   font-family:var(--font-serif,"KaiTi",serif) !important;
