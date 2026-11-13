@@ -797,33 +797,33 @@
 
           <!-- A. 衣着详情列表：每个部位独立占据一行，严格不合并 -->
           <div class="char-clothes-list" id="sb-clothes-list" style="display:${activeCharDetailTab === 'clothes' ? 'block' : 'none'};">
-            ${c.hair && c.hair !== '无' ? `<div class="char-clothes-item"><span class="cl">发型</span><span class="cv">${escapeHtml(c.hair)}</span></div>` : ''}
+            ${c.hair && c.hair !== '无' ? `<div class="char-clothes-item"><span class="cl">${isP ? '💇 ' : ''}发型</span><span class="cv">${escapeHtml(c.hair)}</span></div>` : ''}
             ${c.outfit ? `
               <div class="char-clothes-item char-outfit-summary">
-                <span class="cl">当前穿搭</span>
+                <span class="cl">${isP ? '👗 ' : ''}当前穿搭</span>
                 <span class="cv">${escapeHtml(c.outfit)}</span>
               </div>
             ` : ''}
-            <div class="char-clothes-item"><span class="cl">上装</span><span class="cv">${escapeHtml(c.top || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">下装</span><span class="cv">${escapeHtml(c.bottom || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">内衣</span><span class="cv">${escapeHtml(c.bra || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">内裤</span><span class="cv">${escapeHtml(c.panties || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">鞋袜</span><span class="cv">${escapeHtml(c.shoesSocks || c.socks || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">饰品</span><span class="cv">${escapeHtml(c.accessories || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">走光状态</span><span class="cv">${escapeHtml(c.exposure || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">${isP ? '🧥 ' : ''}上装</span><span class="cv">${escapeHtml(c.top || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">${isP ? '👖 ' : ''}下装</span><span class="cv">${escapeHtml(c.bottom || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">${isP ? '👙 ' : ''}内衣</span><span class="cv">${escapeHtml(c.bra || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">${isP ? '🩲 ' : ''}内裤</span><span class="cv">${escapeHtml(c.panties || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">${isP ? '🧦 ' : ''}鞋袜</span><span class="cv">${escapeHtml(c.shoesSocks || c.socks || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">${isP ? '💍 ' : ''}饰品</span><span class="cv">${escapeHtml(c.accessories || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">${isP ? '🙈 ' : ''}走光状态</span><span class="cv">${escapeHtml(c.exposure || '-')}</span></div>
           </div>
 
           <!-- B. 身体状态列表：每一个生理与隐私状态独立一行 -->
           <div class="char-body-list" id="sb-body-list" style="display:${activeCharDetailTab === 'body' ? 'block' : 'none'};">
-            <div class="char-body-item"><span class="bl">即时反应</span><span class="bv">${escapeHtml(c.arousal || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">身体痕迹</span><span class="bv">${escapeHtml(c.bodyMarks || '-')}</span></div>
-            ${(c.measurements && c.measurements !== '-') ? `<div class="char-body-item"><span class="bl">三围罩杯</span><span class="bv">${escapeHtml(c.measurements || '-')}</span></div>` : ''}
-            <div class="char-body-item"><span class="bl">${(c.gender === '男' || c.measurements === '-') ? '男性生理基线' : '隐私基线'}</span><span class="bv">${escapeHtml(c.bodyNsfwBaseline || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">性爱防线</span><span class="bv">${escapeHtml(c.eroticMindset || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">特殊癖好</span><span class="bv">${escapeHtml(c.fetishes || '-')}</span></div>
+            <div class="char-body-item"><span class="bl">${isP ? '⚡ ' : ''}即时反应</span><span class="bv">${escapeHtml(c.arousal || '-')}</span></div>
+            <div class="char-body-item"><span class="bl">${isP ? '🩹 ' : ''}身体痕迹</span><span class="bv">${escapeHtml(c.bodyMarks || '-')}</span></div>
+            ${(c.measurements && c.measurements !== '-') ? `<div class="char-body-item"><span class="bl">${isP ? '📏 ' : ''}三围罩杯</span><span class="bv">${escapeHtml(c.measurements || '-')}</span></div>` : ''}
+            <div class="char-body-item"><span class="bl">${(c.gender === '男' || c.measurements === '-') ? (isP ? '🧬 男性生理基线' : '男性生理基线') : (isP ? '🔒 隐私基线' : '隐私基线')}</span><span class="bv">${escapeHtml(c.bodyNsfwBaseline || '-')}</span></div>
+            <div class="char-body-item"><span class="bl">${isP ? '🛡️ ' : ''}性爱防线</span><span class="bv">${escapeHtml(c.eroticMindset || '-')}</span></div>
+            <div class="char-body-item"><span class="bl">${isP ? '💠 ' : ''}特殊癖好</span><span class="bv">${escapeHtml(c.fetishes || '-')}</span></div>
             ${(c.gender !== '男' && c.periodCycle !== '-') ? `
-            <div class="char-body-item"><span class="bl">生理周期</span><span class="bv">${escapeHtml(c.periodCycle || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">避孕状态</span><span class="bv">${escapeHtml(c.pregnancyStatus || '-')}</span></div>` : ''}
+            <div class="char-body-item"><span class="bl">${isP ? '🌙 ' : ''}生理周期</span><span class="bv">${escapeHtml(c.periodCycle || '-')}</span></div>
+            <div class="char-body-item"><span class="bl">${isP ? '🛡️ ' : ''}避孕状态</span><span class="bv">${escapeHtml(c.pregnancyStatus || '-')}</span></div>` : ''}
           </div>
 
           <!-- C. 心声手帐列表 (收纳私密日记流) -->
@@ -2659,7 +2659,7 @@
           <!-- 板块 1: 体格体态与身心状态 -->
           <div class="sb-panel-card">
             <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">体格体态与身心状态</span>
+              <span class="sb-panel-card-title">🧍 体格体态与身心状态</span>
               ${pro.exposure ? `<span class="text-badge text-badge-accent">${escapeHtml(pro.exposure)}</span>` : ''}
             </div>
             <div class="info-list">
@@ -2729,7 +2729,7 @@
           <!-- 板块 2: 居所不动产与生活环境 -->
           <div class="sb-panel-card">
             <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">居所与生活环境</span>
+              <span class="sb-panel-card-title">🏠 居所与生活环境</span>
               ${pro.houseType ? `<span class="text-badge">${escapeHtml(pro.houseType)}</span>` : ''}
             </div>
             <div class="info-list">
@@ -2786,7 +2786,7 @@
           <!-- 男性生理特征卡片 -->
           <div class="sb-panel-card" style="border-left:3px solid #3b82f6;">
             <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">男性生理特征</span>
+              <span class="sb-panel-card-title">🧬 男性生理特征</span>
               <span class="text-badge">${escapeHtml(pro.dickExposed && pro.dickExposed !== '-' ? pro.dickExposed : '未外露')}</span>
             </div>
             <div class="info-list">
@@ -2928,7 +2928,7 @@
           <!-- 板块 3: 当前穿搭与随身装束 -->
           <div class="sb-panel-card">
             <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">当前穿搭与随身装束</span>
+              <span class="sb-panel-card-title">👗 当前穿搭与随身装束</span>
             </div>
             <div class="info-list">
               <div class="info-row">
@@ -2991,7 +2991,7 @@
           <!-- 板块 4: 随身资产与通讯工具 -->
           <div class="sb-panel-card">
             <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">随身资产与通讯工具</span>
+              <span class="sb-panel-card-title">💰 随身资产与通讯工具</span>
               <span class="text-badge text-badge-accent">资金: ¥${(pro.totalCash || 0).toLocaleString()}</span>
             </div>
             <div class="info-list">
