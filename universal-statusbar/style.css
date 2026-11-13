@@ -144,8 +144,6 @@
   position: relative;
   overflow: visible;
   transition: box-shadow 0.4s ease, border-color 0.3s ease;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
 
 .book.nsfw-border {
@@ -888,8 +886,6 @@
   height: 100vh;
   height: 100dvh;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   z-index: 10000;
   display: flex;
   align-items: center;
@@ -1359,8 +1355,6 @@
   font-size: 12px;
   color: var(--accent);
   font-weight: 600;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .gear-handle:hover {
@@ -1794,7 +1788,6 @@
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
   color: #fff;
   font-size: 10px;
   text-align: center;
@@ -1863,7 +1856,6 @@
   gap: 6px;
   opacity: 0;
   transition: opacity 0.2s ease;
-  backdrop-filter: blur(2px);
 }
 
 .avatar-gallery-card:hover .avatar-card-overlay {
@@ -2702,8 +2694,6 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
   inset: 0 !important;
   z-index: 10020 !important;
   background: rgba(10, 8, 14, 0.78) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
   display: none;
   align-items: center !important;
   justify-content: center !important;
@@ -3143,7 +3133,6 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
   inset: 0 !important;
   z-index: 10030 !important;
   background: rgba(0, 0, 0, 0.8) !important;
-  backdrop-filter: blur(8px) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -3985,8 +3974,6 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   z-index: 100000;
   display: none;
   align-items: center;
@@ -5368,8 +5355,6 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
   height: 100vh;
   height: 100dvh;
   background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   z-index: 12000;
   display: flex;
   align-items: center;
@@ -6897,8 +6882,6 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
     linear-gradient(145deg, rgba(255,255,255,.17), rgba(255,255,255,.035) 38%, transparent 72%),
     radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--accent) 17%, transparent), transparent 58%),
     color-mix(in srgb, var(--card) 84%, transparent) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(155%) !important;
-  backdrop-filter: blur(18px) saturate(155%) !important;
   box-shadow:
     0 26px 64px rgba(0,0,0,.26),
     0 7px 20px rgba(0,0,0,.12),
@@ -6972,3 +6955,7 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
   border-color: color-mix(in srgb, var(--divider) 58%, white 42%) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.16) !important;
 }
+
+
+/* Performance pass: glass appearance is simulated by static layered gradients,
+   translucent surfaces, highlights and borders. No live backdrop sampling. */
