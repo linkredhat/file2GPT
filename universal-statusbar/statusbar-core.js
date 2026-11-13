@@ -232,8 +232,6 @@
   function mapFullCharacterRow(r, i) {
     const rawP = r['是否在场'];
     const isPresent = String(rawP ?? '').trim() === '1';
-    const outfitParts = [r['上装'], r['下装']].filter(Boolean);
-    const outfit = outfitParts.join(' / ');
 
     return {
       _sourceTable: '角色信息表',
@@ -278,7 +276,6 @@
       shoesSocks: r['鞋袜'] || '',
       accessories: r['配饰'] || '',
       sexToys: r['情趣道具'] || '',
-      outfit: outfit,
       underwear: [r['内衣'], r['内裤']].filter(Boolean).join(' / '),
 
       // 财产与住所
