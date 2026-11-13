@@ -6637,3 +6637,224 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
     flex-basis: 100px;
   }
 }
+
+
+/* ============================================================
+   Unified soft-glass visual language
+   Visual-only refresh for every palette and both style modes.
+   Keeps existing layout, dimensions, spacing, typography and behaviour.
+   ============================================================ */
+
+:root,
+:root[data-sb-theme] {
+  --sb-radius-sm: 9px;
+  --sb-radius-md: 15px;
+  --sb-radius-lg: 22px;
+  --sb-glass-edge: color-mix(in srgb, var(--divider) 72%, white 28%);
+  --sb-glass-tint: color-mix(in srgb, var(--accent) 8%, var(--card));
+  --sb-glass-highlight: rgba(255, 255, 255, .22);
+}
+
+/* Main status bar: soft layered surface, retaining each theme's own palette. */
+#universal-statusbar-wrapper :is(.sb-bar-container, .book) {
+  background:
+    radial-gradient(ellipse at 12% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 48%),
+    linear-gradient(145deg, color-mix(in srgb, var(--card-light) 92%, white 8%), var(--card) 76%);
+  border-color: var(--sb-glass-edge);
+  border-radius: 22px;
+  box-shadow:
+    var(--sb-shadow),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 rgba(0,0,0,.08);
+}
+
+#universal-statusbar-wrapper .book-head {
+  background:
+    radial-gradient(ellipse at 90% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 52%),
+    linear-gradient(135deg, color-mix(in srgb, var(--head-from) 94%, white 6%), var(--head-to));
+  border-bottom-color: color-mix(in srgb, var(--divider) 75%, white 25%);
+}
+
+#universal-statusbar-wrapper .book-head-main {
+  background: linear-gradient(115deg, color-mix(in srgb, var(--lust-bg) 72%, transparent), transparent 75%);
+  border-bottom-color: var(--divider-light);
+}
+
+#universal-statusbar-wrapper :is(.tabs-wrap, .char-clothes-list, .char-body-list, .char-diary-list) {
+  border-color: var(--sb-glass-edge);
+  border-radius: var(--sb-radius-md);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card-light) 62%, var(--bg-alt)), var(--bg-alt));
+}
+
+#universal-statusbar-wrapper :is(.tab, .char-switch-btn, .main-char-badge, .char-mood-inline) {
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--divider) 78%, white 22%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+#universal-statusbar-wrapper :is(.tab, .char-switch-btn):not(.active):not(.active-switch) {
+  background: linear-gradient(150deg, color-mix(in srgb, var(--card-light) 88%, white 12%), var(--card));
+}
+
+#universal-statusbar-wrapper :is(.char-arousal-box, .char-inner-thought) {
+  border: 1px solid color-mix(in srgb, var(--divider) 72%, white 28%);
+  border-left: 3px solid var(--accent);
+  border-radius: 13px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-bg-faint) 82%, var(--card-light)), color-mix(in srgb, var(--card) 94%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+#universal-statusbar-wrapper :is(.char-clothes-item, .char-body-item, .char-diary-item) {
+  border-bottom-color: var(--divider-light);
+}
+
+#universal-statusbar-wrapper :is(.char-clothes-item, .char-body-item):nth-child(even) {
+  background: color-mix(in srgb, var(--card-light) 72%, transparent);
+}
+
+/* Modal shells and confirmation dialogs. */
+#universal-statusbar-modal :is(.sb-modal-panel, .settings-popup),
+.sb-dialog-panel {
+  background:
+    radial-gradient(ellipse at 94% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 46%),
+    linear-gradient(145deg, color-mix(in srgb, var(--card-light) 82%, white 18%), var(--card) 74%);
+  border-color: var(--sb-glass-edge);
+  border-radius: 22px;
+  box-shadow:
+    0 22px 56px rgba(0,0,0,.22),
+    0 5px 18px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.25),
+    inset 0 -1px 0 rgba(0,0,0,.07);
+}
+
+#universal-statusbar-modal :is(.sb-modal-head, .settings-popup-head),
+.sb-dialog-head {
+  background:
+    radial-gradient(ellipse at 92% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 54%),
+    linear-gradient(135deg, color-mix(in srgb, var(--head-from) 94%, white 6%), var(--head-to));
+  border-bottom-color: color-mix(in srgb, var(--divider) 72%, white 28%);
+}
+
+#universal-statusbar-modal :is(.sb-modal-tabs, .settings-tabs) {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--card-light) 88%, white 12%), var(--card-deep));
+  border-bottom-color: var(--divider-light);
+}
+
+/* Cards and expandable sections: rounded, layered, softly illuminated. */
+#universal-statusbar-modal :is(.sb-panel-card, .settings-section, .sb-theme-section),
+#universal-statusbar-modal .sb-modal-panel[data-view="offscreen"] .sb-panel-card {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--card-light) 92%, white 8%), var(--card-light));
+  border-color: color-mix(in srgb, var(--divider) 76%, white 24%) !important;
+  border-radius: 17px !important;
+  box-shadow:
+    0 7px 20px rgba(0,0,0,.075),
+    inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+
+:root[data-sb-style] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card {
+  border-radius: 17px !important;
+  box-shadow:
+    0 7px 20px rgba(0,0,0,.075),
+    inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+
+#universal-statusbar-modal :is(.sb-panel-card-head, .settings-section-summary) {
+  border-bottom-color: var(--divider-light);
+}
+
+#universal-statusbar-modal .settings-section[open] {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent-bg-faint) 64%, var(--card-light)), var(--card-light)) !important;
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--divider)) !important;
+}
+
+/* Form fields: softly inset into the glass surface. */
+#universal-statusbar-modal :is(.sb-input-field, .settings-input, .settings-text-input, .sb-param-row-input),
+#universal-statusbar-modal .settings-popup :is(input, select, textarea),
+.sb-dialog-panel :is(input, select, textarea) {
+  border-radius: 12px !important;
+  border-color: color-mix(in srgb, var(--divider) 72%, white 28%) !important;
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.045),
+    inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+#universal-statusbar-modal :is(.sb-input-field, .settings-input, .settings-text-input, .sb-param-row-input):focus,
+#universal-statusbar-modal .settings-popup :is(input, select, textarea):focus,
+.sb-dialog-panel :is(input, select, textarea):focus {
+  box-shadow:
+    0 0 0 2px var(--accent-glow),
+    inset 0 1px 0 rgba(255,255,255,.2) !important;
+}
+
+/* Controls: unify their curvature and give surfaces a tactile finish. */
+#universal-statusbar-modal :is(
+  .btn-line, .btn-line-icon, .btn-mini-action, .sb-edit-char-btn,
+  .char-chip, .sb-modal-char-chip, .memo-toggle-btn, .task-toggle-btn,
+  .inv-qty-btn, .inv-del-btn, .btn-head-pill, .investigate-btn,
+  .settings-btn, .avatar-action-btn, .sb-copy-char-name-btn
+),
+#universal-statusbar-modal button:not(.settings-tab):not(.sb-tab-item):not(.sb-modal-close-btn):not(.settings-popup-close),
+.sb-dialog-panel :is(button, .sb-dialog-close) {
+  border-radius: 11px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 2px 6px rgba(0,0,0,.055) !important;
+}
+
+#universal-statusbar-modal :is(.sb-modal-close-btn, .settings-popup-close, .sb-dialog-close) {
+  border-radius: 50% !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+#universal-statusbar-modal :is(.sb-save-btn, .sb-btn-primary, .btn-primary, .iv-btn-primary, .sb-dialog-btn-confirm) {
+  border-radius: 12px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    0 4px 10px color-mix(in srgb, var(--accent) 16%, transparent) !important;
+}
+
+#universal-statusbar-modal :is(.sb-tab-item, .settings-tab) {
+  border-radius: 12px 12px 0 0;
+}
+
+#universal-statusbar-modal :is(.sb-tab-item.active, .settings-tab.active)::after {
+  border-radius: 999px;
+  box-shadow: 0 0 9px var(--accent-glow);
+}
+
+/* Softer badges, section markers and content-row surfaces. */
+#universal-statusbar-modal :is(.text-badge, .sb-theme-option-check, .sb-style-mode-indicator) {
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+#universal-statusbar-modal .sb-modal-panel[data-family="data"] .info-row {
+  border-radius: 9px;
+}
+
+#universal-statusbar-modal .sb-modal-panel[data-family="data"] .info-row:nth-child(even) {
+  background: color-mix(in srgb, var(--card-light) 68%, transparent);
+}
+
+#universal-statusbar-modal :is(.sb-theme-option, .sb-theme-note) {
+  border-radius: 13px !important;
+}
+
+#universal-statusbar-modal .sb-theme-preview {
+  border-radius: 10px;
+}
+
+#universal-statusbar-modal .sb-theme-preview::before {
+  border-radius: 7px;
+}
+
+#universal-statusbar-modal .sb-theme-preview :is(i, b) {
+  border-radius: 999px;
+}
+
+/* Keep the palette-specific accent colours; only soften their presentation. */
+:root[data-sb-theme] {
+  --sb-glass-edge: color-mix(in srgb, var(--divider) 72%, white 28%);
+}
