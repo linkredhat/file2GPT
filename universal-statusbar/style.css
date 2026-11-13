@@ -6485,3 +6485,86 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
     grid-template-columns:1fr !important;
   }
 }
+
+
+/* Theme finish: legible data-dialog headings + optional ornate layer */
+#universal-statusbar-modal .sb-modal-panel[data-family="data"] > .sb-modal-head,
+#universal-statusbar-modal .sb-modal-panel[data-family="data"] .section-title,
+#universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card-title {
+  color:var(--text) !important;
+}
+#universal-statusbar-modal .sb-modal-panel[data-family="data"] .section-title {
+  font-size:15px !important; line-height:1.45 !important; font-weight:750 !important; letter-spacing:.02em !important;
+}
+#universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card-title { font-weight:700 !important; }
+
+.sb-style-mode-toggle {
+  display:inline-flex; align-items:center; gap:8px; padding:7px 11px;
+  border:1px solid var(--divider); border-radius:999px; background:var(--card-light);
+  color:var(--text-sub); font:inherit; font-size:12px; font-weight:700; cursor:pointer;
+  transition:background .2s ease,border-color .2s ease,box-shadow .2s ease,color .2s ease;
+}
+.sb-style-mode-toggle:hover { border-color:var(--accent); color:var(--text); background:var(--accent-bg); }
+.sb-style-mode-indicator { width:9px; height:9px; border-radius:50%; background:var(--text-muted); box-shadow:0 0 0 3px color-mix(in srgb,var(--text-muted) 16%,transparent); }
+.sb-style-mode-toggle.is-ornate { color:var(--accent-deep); border-color:var(--accent-soft); background:var(--accent-bg); }
+.sb-style-mode-toggle.is-ornate .sb-style-mode-indicator { background:var(--accent); box-shadow:0 0 0 3px var(--accent-glow),0 0 12px var(--accent-glow); }
+.sb-theme-section-heading { align-items:center; }
+
+/* Ornate mode enriches each existing palette without replacing it. */
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] > .sb-modal-head {
+  position:relative; border-bottom:1px solid var(--accent-soft) !important;
+  background:radial-gradient(ellipse at 92% 0%,var(--accent-bg) 0%,transparent 48%),linear-gradient(135deg,var(--head-from),var(--head-to)) !important;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] > .sb-modal-head::after {
+  content:""; position:absolute; left:18px; right:18px; bottom:0; height:2px; border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--accent-soft),transparent); opacity:.8;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .section-title {
+  display:inline-flex; align-items:center; gap:9px; padding:7px 12px 7px 10px;
+  border:1px solid var(--accent-soft); border-left:3px solid var(--accent);
+  border-radius:7px 12px 12px 7px; background:linear-gradient(100deg,var(--accent-bg),transparent 88%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 2px 8px var(--accent-glow);
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card {
+  position:relative; overflow:hidden; border-color:var(--accent-soft) !important;
+  box-shadow:0 5px 16px rgba(20,25,35,.075),inset 0 1px 0 rgba(255,255,255,.24) !important;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card::before {
+  content:""; position:absolute; inset:0 0 auto 0; height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-soft),transparent 90%); opacity:.85; pointer-events:none;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card:hover {
+  transform:translateY(-2px); border-color:var(--accent) !important;
+  box-shadow:0 9px 22px rgba(20,25,35,.11),0 0 0 1px var(--accent-glow) !important;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card-head {
+  padding-bottom:9px; border-bottom:1px solid var(--accent-soft) !important;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .text-badge {
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 1px 3px rgba(20,25,35,.06);
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .info-row { border-radius:5px; transition:background .15s ease; }
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .info-row:hover { background:var(--accent-bg) !important; }
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] :is(.btn-line,.btn-line-icon) { border-radius:7px; transition:transform .16s ease,box-shadow .16s ease,background .16s ease; }
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] :is(.btn-line,.btn-line-icon):hover {
+  transform:translateY(-1px); box-shadow:0 3px 9px var(--accent-glow);
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .settings-popup,
+:root[data-sb-style="ornate"] #universal-statusbar-modal .sb-modal-panel[data-view="offscreen"] {
+  box-shadow:0 18px 48px rgba(15,20,28,.18),0 2px 8px var(--accent-glow) !important;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .settings-popup .settings-section {
+  border-color:var(--accent-soft) !important;
+  box-shadow:0 4px 13px rgba(20,25,35,.07),inset 0 1px 0 rgba(255,255,255,.2) !important;
+}
+:root[data-sb-style="ornate"] #universal-statusbar-modal .settings-popup .settings-section-summary { position:relative; }
+:root[data-sb-style="ornate"] #universal-statusbar-modal .settings-popup .settings-section-summary::before {
+  content:""; position:absolute; left:0; top:9px; bottom:9px; width:3px; border-radius:3px;
+  background:var(--accent); opacity:.7;
+}
+:root[data-sb-style="plain"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card {
+  transform:none !important; box-shadow:none !important;
+}
+:root[data-sb-style="plain"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card::before,
+:root[data-sb-style="plain"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] > .sb-modal-head::after { display:none !important; }
