@@ -821,22 +821,6 @@
   word-break: break-word;
 }
 
-/* 穿搭总览重点行 */
-.char-outfit-summary {
-  background: var(--lust-bg-faint) !important;
-  border-bottom: 1px solid var(--divider) !important;
-}
-
-.char-outfit-summary .cl {
-  color: var(--accent-deep) !important;
-  font-weight: 700 !important;
-}
-
-.char-outfit-summary .cv {
-  color: var(--text) !important;
-  font-weight: 500;
-}
-
 /* 私密手帐日记列表 (心声手帐) */
 .char-diary-item {
   padding: 10px 14px;
@@ -6128,31 +6112,6 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 :root[data-sb-theme] :is(.main-char-name,.char-name):hover {
   color:var(--accent-deep) !important;
   text-shadow:none !important;
-}
-
-/* Outfit summary is a normal clothing row, not a special banner. */
-:root[data-sb-theme] .char-clothes-list > .char-clothes-item.char-outfit-summary {
-  background:transparent !important;
-  border-bottom:1px solid var(--divider-light) !important;
-}
-:root[data-sb-theme] .char-clothes-list > .char-clothes-item.char-outfit-summary:nth-child(even) {
-  background:var(--card) !important;
-}
-:root[data-sb-theme] .char-clothes-list > .char-clothes-item.char-outfit-summary:hover {
-  background:var(--accent-bg-faint) !important;
-}
-:root[data-sb-theme] .char-clothes-item.char-outfit-summary :is(.cl,.cv) {
-  font-size:inherit !important;
-  line-height:inherit !important;
-  letter-spacing:0 !important;
-}
-:root[data-sb-theme] .char-clothes-item.char-outfit-summary .cl {
-  color:var(--accent) !important;
-  font-weight:600 !important;
-}
-:root[data-sb-theme] .char-clothes-item.char-outfit-summary .cv {
-  color:var(--text-sub) !important;
-  font-weight:400 !important;
 }
 
 /* Character detail diary and diary stream share one typography system. */
