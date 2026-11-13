@@ -6089,3 +6089,116 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
   .sb-theme-grid { grid-template-columns:1fr; }
   .sb-theme-section { padding:11px; }
 }
+
+/* ============================================================
+   Readability pass: theme-aware headings and diary typography
+   Visual-only overrides; preserve data and rendering behavior.
+   ============================================================ */
+
+/* Titles and character names must follow the active palette.
+   Prevent fixed white text from disappearing on light themes. */
+#universal-statusbar-wrapper .main-char-name,
+#universal-statusbar-wrapper .char-name,
+#universal-statusbar-wrapper .sb-panel-card-title,
+#universal-statusbar-wrapper .sb-modal-title,
+#universal-statusbar-wrapper .sb-dialog-title,
+#universal-statusbar-wrapper .sb-theme-section-title,
+#universal-statusbar-wrapper .iv-card-title,
+#universal-statusbar-wrapper .iv-sec-title,
+#universal-statusbar-wrapper .iv-hero-name,
+#universal-statusbar-wrapper .itv-title,
+#universal-statusbar-wrapper .itv-mag-title,
+#universal-statusbar-wrapper .itv-note-title {
+  color: var(--text) !important;
+  text-shadow: none !important;
+}
+
+#universal-statusbar-wrapper .main-char-name:hover,
+#universal-statusbar-wrapper .char-name:hover {
+  color: var(--accent-deep) !important;
+  text-shadow: 0 0 6px var(--accent-glow) !important;
+}
+
+/* Diary stream: larger, calmer, more legible Chinese text. */
+#universal-statusbar-wrapper .char-diary-content,
+#universal-statusbar-wrapper .diary-body-content {
+  color: var(--text-sub, var(--text)) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.95 !important;
+  letter-spacing: 0.12px !important;
+  text-align: left !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+#universal-statusbar-wrapper .char-diary-content {
+  padding: 3px 0 3px 11px !important;
+  border-left: 2px solid var(--accent-soft, var(--accent)) !important;
+}
+
+#universal-statusbar-wrapper .diary-body-content p {
+  margin: 0 0 0.7em !important;
+  line-height: inherit !important;
+}
+
+#universal-statusbar-wrapper .diary-body-content p:last-child {
+  margin-bottom: 0 !important;
+}
+
+#universal-statusbar-wrapper .diary-body-content br {
+  display: block;
+  content: "";
+  margin-bottom: 0.22em;
+}
+
+/* Keep rich-text semantics, but remove effects that blur or crowd CJK glyphs. */
+#universal-statusbar-wrapper .diary-body-content .handwritten {
+  font-family: var(--font-serif, "KaiTi", serif) !important;
+  font-style: normal !important;
+  font-size: inherit !important;
+  letter-spacing: 0.1px !important;
+  line-height: inherit !important;
+  color: var(--text-sub) !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+#universal-statusbar-wrapper .diary-body-content .messy {
+  display: inline !important;
+  font-style: italic !important;
+  letter-spacing: 0.1px !important;
+  line-height: inherit !important;
+  color: var(--accent-deep) !important;
+  text-shadow: none !important;
+  transform: none !important;
+}
+
+#universal-statusbar-wrapper .diary-body-content .emphasis {
+  color: var(--accent-deep) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+
+#universal-statusbar-wrapper .diary-body-content .highlight {
+  color: var(--text) !important;
+  background: var(--accent-bg, rgba(120, 140, 120, 0.16)) !important;
+  padding: 0.05em 0.22em !important;
+  border-radius: 3px !important;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+#universal-statusbar-wrapper .diary-body-content .strikethrough {
+  color: var(--text-muted) !important;
+  opacity: 0.85 !important;
+}
+
+#universal-statusbar-wrapper .diary-body-content .underline {
+  color: var(--text) !important;
+  text-decoration-color: var(--accent) !important;
+}
