@@ -6568,3 +6568,72 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 }
 :root[data-sb-style="plain"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] .sb-panel-card::before,
 :root[data-sb-style="plain"] #universal-statusbar-modal .sb-modal-panel[data-family="data"] > .sb-modal-head::after { display:none !important; }
+
+
+/* Protagonist data rows: reserve a clear label column for emoji + text. */
+.sb-protagonist-tab .info-row {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  column-gap: 14px;
+  align-items: start;
+}
+.sb-protagonist-tab .info-label {
+  width: auto;
+  min-width: 0;
+  flex-shrink: 1;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.sb-protagonist-tab .info-value {
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+.sb-protagonist-tab .info-value > span {
+  min-width: 0;
+  flex: 1 1 150px;
+  overflow-wrap: anywhere;
+}
+.sb-protagonist-tab .info-value > div {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.char-clothes-item,
+.char-body-item {
+  column-gap: 14px;
+}
+.char-clothes-item .cl,
+.char-body-item .bl {
+  width: 108px;
+  min-width: 108px;
+  flex: 0 0 108px;
+  margin-right: 2px;
+  letter-spacing: 0;
+  line-height: 1.55;
+}
+.char-clothes-item .cv,
+.char-body-item .bv {
+  min-width: 0;
+  line-height: 1.65;
+}
+@media (max-width: 520px) {
+  .sb-protagonist-tab .info-row {
+    grid-template-columns: 108px minmax(0, 1fr);
+    column-gap: 10px;
+  }
+  .char-clothes-item,
+  .char-body-item {
+    padding-left: 10px;
+    padding-right: 10px;
+    column-gap: 10px;
+  }
+  .char-clothes-item .cl,
+  .char-body-item .bl {
+    width: 100px;
+    min-width: 100px;
+    flex-basis: 100px;
+  }
+}
