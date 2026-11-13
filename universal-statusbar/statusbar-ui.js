@@ -1634,6 +1634,7 @@
 
       // 就地增量更新：如果外壳已存在且同属数据家族，更新标题与 body 内容，绝不销毁 panel 容器
       if (existingPanel && existingFamily === 'data') {
+        existingPanel.setAttribute('data-view', currentModalTab);
         const titleEl = modalEl.querySelector('.sb-modal-title');
         if (titleEl) titleEl.textContent = title;
 
@@ -1651,7 +1652,7 @@
       }
 
       modalEl.innerHTML = `
-        <div class="sb-modal-panel" data-family="data">
+        <div class="sb-modal-panel" data-family="data" data-view="${escapeHtml(currentModalTab)}">
           <div class="sb-modal-head">
             <span class="sb-modal-title">${escapeHtml(title)}</span>
             <button class="sb-modal-close-btn" id="sb-modal-close" title="关闭 (ESC)">&times;</button>
@@ -2569,9 +2570,12 @@
     const memos = snapshot?.memos || [];
     const proName = String(pro.name || '').trim();
 
-    // 纯生理差异有效性判定（基于非「-」且非空）
-    const hasDick = Boolean(pro.hasDick);
-    const hasPussy = Boolean(pro.hasPussy || pro.hasPeriod || pro.hasPregnancy);
+    // 先按主角性别排除不适用的生理卡片；性别未填写/非二元时仍尊重数据库显式标记。
+    const protagonistGender = String(pro.gender || '').trim().toLowerCase();
+    const isMaleProtagonist = /^男/.test(protagonistGender) || /^(male|man)$/.test(protagonistGender);
+    const isFemaleProtagonist = /^女/.test(protagonistGender) || /^(female|woman)$/.test(protagonistGender);
+    const hasDick = !isFemaleProtagonist && Boolean(pro.hasDick);
+    const hasPussy = !isMaleProtagonist && Boolean(pro.hasPussy || pro.hasPeriod || pro.hasPregnancy);
     const hasAnus = Boolean(pro.anusWidth || pro.anusDepth || pro.anusDev);
 
     // 脱下衣物汇总
