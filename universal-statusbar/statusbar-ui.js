@@ -9,6 +9,27 @@
   const store = () => window.STATUSBAR_STORE;
   const db = () => window.STATUSBAR_DB_BRIDGE;
 
+  // 前端主题：只控制颜色与视觉层级，不触碰数据库字段、业务逻辑或布局结构。
+  const APPEARANCE_THEMES = [
+    { id: 'sage', label: '鼠尾草绿', description: '低饱和灰绿，推荐长时间阅读' },
+    { id: 'warm-paper', label: '护眼暖纸', description: '米黄色纸感，温暖柔和' },
+    { id: 'mist-blue', label: '雾霾蓝', description: '浅蓝灰层次，清爽安静' },
+    { id: 'lavender', label: '柔雾紫', description: '灰紫与暖白，柔和但有区分' },
+    { id: 'rose-tea', label: '豆沙粉', description: '低饱和粉棕，温柔不刺眼' },
+    { id: 'redbird-dark', label: 'RedBird 深色', description: '参考红鸟苹果风深色层次' },
+    { id: 'redbird-light', label: 'RedBird 浅色', description: '参考红鸟米白书页风格' },
+    { id: 'titanium', label: '钛空银·原版', description: '保留原来的冷黑银白外观' }
+  ];
+
+  function applyAppearanceTheme(settings = store()?.getSettings?.() || {}) {
+    const requested = settings.appearanceTheme;
+    const themeId = APPEARANCE_THEMES.some(theme => theme.id === requested) ? requested : 'sage';
+    const root = document.documentElement;
+    if (root && root.getAttribute('data-sb-theme') !== themeId) {
+      root.setAttribute('data-sb-theme', themeId);
+    }
+  }
+
   let wrapperEl = null;
   let gearEl = null;
   try { document.getElementById('universal-statusbar-gear')?.remove(); } catch (e) { }
@@ -1529,6 +1550,7 @@
     if (!modalEl) return;
     const snapshot = core()?.getFullSnapshot() || {};
     const settings = store()?.getSettings() || {};
+    applyAppearanceTheme(settings);
 
     const isSettingsFamily = ['settings', 'features', 'draw', 'api'].includes(currentModalTab);
     const targetFamily = isSettingsFamily ? 'settings' : 'data';
@@ -1773,6 +1795,9 @@
       case 'settings':
       case 'features': {
         const curGuidanceEnabled = settings.guidanceEnabled !== false;
+        const selectedAppearanceTheme = APPEARANCE_THEMES.some(theme => theme.id === settings.appearanceTheme)
+          ? settings.appearanceTheme
+          : 'sage';
         const curGuidancePerspective = settings.guidancePerspective || 'first';
         const curGuidanceMaxChars = settings.guidanceMaxChars != null ? settings.guidanceMaxChars : 500;
 
@@ -1784,7 +1809,32 @@
         const curDeutPrompt = settings.deuteragonistPrompt || store()?.DEFAULT_SETTINGS?.deuteragonistPrompt || '';
 
         return `
-          <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="sb-feature-settings-stack">
+            <section class="sb-theme-section" aria-label="界面主题">
+              <div class="sb-theme-section-heading">
+                <div>
+                  <div class="sb-theme-section-title">界面主题</div>
+                  <div class="sb-theme-section-description">选择更适合长时间阅读的配色。切换立即生效，并自动保存。</div>
+                </div>
+                <span class="sb-theme-current-label">当前主题</span>
+              </div>
+              <div class="sb-theme-grid" role="group" aria-label="选择状态栏主题">
+                ${APPEARANCE_THEMES.map(theme => `
+                  <button type="button" class="sb-theme-option ${theme.id === selectedAppearanceTheme ? 'active' : ''}"
+                    data-sb-theme-option="${theme.id}" aria-pressed="${theme.id === selectedAppearanceTheme ? 'true' : 'false'}">
+                    <span class="sb-theme-preview" data-swatch="${theme.id}" aria-hidden="true"><i></i><b></b></span>
+                    <span class="sb-theme-option-copy">
+                      <strong>${theme.label}</strong>
+                      <small>${theme.description}</small>
+                    </span>
+                    <span class="sb-theme-option-check" aria-hidden="true">✓</span>
+                  </button>
+                `).join('')}
+              </div>
+              <div class="sb-theme-note">主题只改变前端颜色与视觉层级，不会修改数据库、提示词、状态栏数据或功能开关。</div>
+            </section>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
             <!-- 1. 剧情行动指导 -->
             <details class="settings-section" id="section-guidance" ${isSectionOpen('section-guidance', false) ? 'open' : ''}>
               <summary class="settings-section-summary">
@@ -1917,6 +1967,7 @@
                 </div>
               </div>
             </details>
+            </div>
           </div>
         `;
       }
@@ -3875,6 +3926,22 @@
    * 绑定 Tab 内部事件 (添加/删除/编辑)
    */
   function bindTabBodyEvents(tabKey, snapshot, settings) {
+    if (tabKey === 'features' || tabKey === 'settings') {
+      modalEl.querySelectorAll('[data-sb-theme-option]').forEach(button => {
+        button.addEventListener('click', () => {
+          const themeId = button.getAttribute('data-sb-theme-option');
+          if (!APPEARANCE_THEMES.some(theme => theme.id === themeId)) return;
+          store()?.saveSettings?.({ appearanceTheme: themeId });
+          applyAppearanceTheme({ appearanceTheme: themeId });
+          modalEl.querySelectorAll('[data-sb-theme-option]').forEach(option => {
+            const active = option.getAttribute('data-sb-theme-option') === themeId;
+            option.classList.toggle('active', active);
+            option.setAttribute('aria-pressed', active ? 'true' : 'false');
+          });
+        });
+      });
+    }
+
     if (tabKey === 'diary') {
       // 角色切换选择
       modalEl.querySelectorAll('.sb-modal-diary-char-chip').forEach(btn => {
@@ -5171,6 +5238,7 @@
 
   function performRender() {
     const settings = store()?.getSettings() || {};
+    applyAppearanceTheme(settings);
     const snapshot = core()?.getFullSnapshot() || {};
 
     ensureWrapperMounted(settings);
