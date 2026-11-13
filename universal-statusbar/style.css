@@ -6338,3 +6338,182 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 :root[data-sb-theme] .sb-dialog-btn-confirm.danger {
   color:#fff !important;
 }
+
+/* ============================================================
+   Modal surface hierarchy
+   Explicitly theme the modal canvas and every child surface.
+   Prevent host popup styles from leaving white panels behind.
+   ============================================================ */
+
+:root[data-sb-theme] {
+  --sb-modal-surface: var(--bg-alt);
+  --sb-panel-surface: var(--card);
+  --sb-card-surface: var(--card-light);
+  --sb-field-surface: var(--card-deep);
+}
+
+/* Sage */
+:root[data-sb-theme="sage"] {
+  --sb-modal-surface:#e1e9df;
+  --sb-panel-surface:#eaf0e8;
+  --sb-card-surface:#f1f5ee;
+  --sb-field-surface:#e5ece2;
+}
+/* Warm paper */
+:root[data-sb-theme="warm-paper"] {
+  --sb-modal-surface:#e9dfcc;
+  --sb-panel-surface:#f3ead8;
+  --sb-card-surface:#f8f0df;
+  --sb-field-surface:#eee3ce;
+}
+/* Mist blue */
+:root[data-sb-theme="mist-blue"] {
+  --sb-modal-surface:#dce6ef;
+  --sb-panel-surface:#e8eff5;
+  --sb-card-surface:#f0f5f9;
+  --sb-field-surface:#e1eaf2;
+}
+/* Lavender */
+:root[data-sb-theme="lavender"] {
+  --sb-modal-surface:#e2deeb;
+  --sb-panel-surface:#eeebf4;
+  --sb-card-surface:#f5f2f9;
+  --sb-field-surface:#e8e3f0;
+}
+/* Rose tea */
+:root[data-sb-theme="rose-tea"] {
+  --sb-modal-surface:#e7dce0;
+  --sb-panel-surface:#f3e9eb;
+  --sb-card-surface:#f8f0f2;
+  --sb-field-surface:#ede2e5;
+}
+/* RedBird dark */
+:root[data-sb-theme="redbird-dark"] {
+  --sb-modal-surface:#17171a;
+  --sb-panel-surface:#1e1e21;
+  --sb-card-surface:#29292e;
+  --sb-field-surface:#222226;
+}
+/* RedBird light */
+:root[data-sb-theme="redbird-light"] {
+  --sb-modal-surface:#e8e8e4;
+  --sb-panel-surface:#f1f1ed;
+  --sb-card-surface:#f8f8f5;
+  --sb-field-surface:#e9e9e5;
+}
+/* Titanium */
+:root[data-sb-theme="titanium"] {
+  --sb-modal-surface:#090a0d;
+  --sb-panel-surface:#101114;
+  --sb-card-surface:#16181d;
+  --sb-field-surface:#0c0d10;
+}
+
+/* Main popup shell and scrolling canvas — high specificity defeats host
+   popup classes such as .ub-popup--l. */
+#universal-statusbar-modal .sb-modal-panel,
+#universal-statusbar-modal .settings-popup {
+  background:var(--sb-panel-surface) !important;
+  color:var(--text) !important;
+  border-color:var(--divider) !important;
+}
+#universal-statusbar-modal .sb-modal-body {
+  background:var(--sb-modal-surface) !important;
+  color:var(--text) !important;
+}
+#universal-statusbar-modal .sb-modal-head,
+#universal-statusbar-modal .settings-popup-head {
+  background:linear-gradient(180deg,var(--head-from),var(--head-to)) !important;
+  color:var(--text) !important;
+}
+#universal-statusbar-modal .sb-modal-tabs,
+#universal-statusbar-modal .settings-tabs {
+  background:var(--sb-panel-surface) !important;
+  border-color:var(--divider) !important;
+}
+
+/* Offscreen pool and all data cards: layered surfaces, not a white sheet. */
+#universal-statusbar-modal .sb-grid-2 {
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:12px !important;
+  align-items:stretch !important;
+}
+#universal-statusbar-modal .sb-panel-card {
+  background:var(--sb-card-surface) !important;
+  color:var(--text) !important;
+  border:1px solid var(--divider) !important;
+  border-radius:10px !important;
+  box-shadow:0 2px 8px rgba(25,35,30,.055) !important;
+}
+#universal-statusbar-modal .sb-panel-card-head {
+  border-bottom-color:var(--divider-light) !important;
+}
+#universal-statusbar-modal .sb-panel-card .info-row:nth-child(even) {
+  background:var(--sb-field-surface) !important;
+}
+#universal-statusbar-modal .sb-panel-card .info-row {
+  color:var(--text-sub) !important;
+  border-bottom-color:var(--divider-light) !important;
+}
+#universal-statusbar-modal .section-title {
+  color:var(--text) !important;
+  font-size:14px !important;
+  font-weight:650 !important;
+}
+
+/* Settings sections have distinct collapsed, expanded and inner surfaces. */
+#universal-statusbar-modal .settings-section {
+  background:var(--sb-card-surface) !important;
+  color:var(--text) !important;
+  border:1px solid var(--divider) !important;
+  border-radius:9px !important;
+  box-shadow:0 2px 7px rgba(25,35,30,.045) !important;
+}
+#universal-statusbar-modal .settings-section[open] {
+  background:var(--sb-panel-surface) !important;
+  border-color:var(--accent-soft) !important;
+  box-shadow:0 3px 10px rgba(25,35,30,.055) !important;
+}
+#universal-statusbar-modal .settings-section-summary {
+  color:var(--text) !important;
+  background:transparent !important;
+}
+#universal-statusbar-modal .settings-section[open] > .settings-section-summary {
+  background:var(--accent-bg-faint) !important;
+}
+#universal-statusbar-modal .feature-body {
+  background:var(--sb-modal-surface) !important;
+  color:var(--text) !important;
+  border-top-color:var(--divider) !important;
+  border-radius:0 0 8px 8px !important;
+  padding:12px !important;
+}
+#universal-statusbar-modal .sb-theme-section {
+  background:var(--sb-panel-surface) !important;
+  color:var(--text) !important;
+  border-color:var(--divider) !important;
+}
+
+/* Form controls sit one level below their section surface. */
+#universal-statusbar-modal :is(.sb-input-field,.settings-input,.settings-text-input,.sb-param-row-input) {
+  background:var(--sb-field-surface) !important;
+  color:var(--text) !important;
+  border-color:var(--divider) !important;
+  box-shadow:none !important;
+}
+#universal-statusbar-modal :is(.sb-input-field,.settings-input,.settings-text-input,.sb-param-row-input):focus {
+  background:var(--sb-card-surface) !important;
+  border-color:var(--accent) !important;
+  box-shadow:0 0 0 2px var(--accent-glow) !important;
+}
+#universal-statusbar-modal .sb-form-item + .sb-form-item {
+  border-top:1px solid var(--divider-light) !important;
+}
+
+/* Keep the two-column layout usable on narrow viewports. */
+@media (max-width:640px) {
+  #universal-statusbar-modal .sb-grid-2 {
+    grid-template-columns:1fr !important;
+  }
+}
