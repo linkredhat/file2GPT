@@ -24,9 +24,13 @@
   function applyAppearanceTheme(settings = store()?.getSettings?.() || {}) {
     const requested = settings.appearanceTheme;
     const themeId = APPEARANCE_THEMES.some(theme => theme.id === requested) ? requested : 'sage';
+    const styleMode = settings.uiStyleMode === 'plain' ? 'plain' : 'ornate';
     const root = document.documentElement;
     if (root && root.getAttribute('data-sb-theme') !== themeId) {
       root.setAttribute('data-sb-theme', themeId);
+    }
+    if (root && root.getAttribute('data-sb-style') !== styleMode) {
+      root.setAttribute('data-sb-style', styleMode);
     }
   }
 
@@ -1817,7 +1821,11 @@
                   <div class="sb-theme-section-title">界面主题</div>
                   <div class="sb-theme-section-description">选择更适合长时间阅读的配色。切换立即生效，并自动保存。</div>
                 </div>
-                <span class="sb-theme-current-label">当前主题</span>
+                <button type="button" class="sb-style-mode-toggle ${settings.uiStyleMode !== 'plain' ? 'is-ornate' : ''}" id="sb-style-mode-toggle"
+                  aria-pressed="${settings.uiStyleMode !== 'plain' ? 'true' : 'false'}">
+                  <span class="sb-style-mode-indicator"></span>
+                  <span class="sb-style-mode-label">${settings.uiStyleMode !== 'plain' ? '华丽样式' : '朴素样式'}</span>
+                </button>
               </div>
               <div class="sb-theme-grid" role="group" aria-label="选择状态栏主题">
                 ${APPEARANCE_THEMES.map(theme => `
@@ -3931,6 +3939,16 @@
    */
   function bindTabBodyEvents(tabKey, snapshot, settings) {
     if (tabKey === 'features' || tabKey === 'settings') {
+      const styleModeToggle = document.getElementById('sb-style-mode-toggle');
+      styleModeToggle?.addEventListener('click', () => {
+        const nextMode = (store()?.getSettings?.() || {}).uiStyleMode === 'plain' ? 'ornate' : 'plain';
+        store()?.saveSettings?.({ uiStyleMode: nextMode });
+        applyAppearanceTheme({ ...(store()?.getSettings?.() || {}), uiStyleMode: nextMode });
+        styleModeToggle.classList.toggle('is-ornate', nextMode === 'ornate');
+        styleModeToggle.setAttribute('aria-pressed', nextMode === 'ornate' ? 'true' : 'false');
+        const label = styleModeToggle.querySelector('.sb-style-mode-label');
+        if (label) label.textContent = nextMode === 'ornate' ? '华丽样式' : '朴素样式';
+      });
       modalEl.querySelectorAll('[data-sb-theme-option]').forEach(button => {
         button.addEventListener('click', () => {
           const themeId = button.getAttribute('data-sb-theme-option');
