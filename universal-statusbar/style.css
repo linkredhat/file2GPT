@@ -6280,3 +6280,119 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 :root[data-sb-theme] .tab.active {
   color: var(--accent-deep) !important;
 }
+
+/* ============================================================
+   Visual consistency pass
+   - Outfit summary uses the same row rhythm as adjacent clothing rows.
+   - Character diary typography matches the main UI text system.
+   - Interactive button states use theme-specific high-contrast ink.
+   ============================================================ */
+
+/* 1) "当前穿搭" is informative, not a separate banner: keep it in-row. */
+:root[data-sb-theme] .char-clothes-list > .char-clothes-item.char-outfit-summary {
+  background: transparent !important;
+  border-bottom: 1px solid var(--divider-light) !important;
+}
+:root[data-sb-theme] .char-clothes-list > .char-clothes-item.char-outfit-summary:nth-child(even) {
+  background: var(--card) !important;
+}
+:root[data-sb-theme] .char-clothes-list > .char-clothes-item.char-outfit-summary:hover {
+  background: var(--accent-bg-faint) !important;
+}
+:root[data-sb-theme] .char-clothes-item.char-outfit-summary .cl,
+:root[data-sb-theme] .char-clothes-item.char-outfit-summary .cv {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+}
+:root[data-sb-theme] .char-clothes-item.char-outfit-summary .cl {
+  color: var(--accent) !important;
+}
+:root[data-sb-theme] .char-clothes-item.char-outfit-summary .cv {
+  color: var(--text-sub) !important;
+  font-weight: 400 !important;
+}
+
+/* 2) Character detail diary must read like the rest of the interface,
+      not like a separate handwritten/italic typeface. */
+:root[data-sb-theme] .char-diary-content,
+:root[data-sb-theme] .diary-body-content {
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 1.85 !important;
+  letter-spacing: 0 !important;
+  color: var(--text-sub) !important;
+  text-align: left !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+:root[data-sb-theme] .char-diary-content {
+  padding: 8px 12px !important;
+  border-left: 3px solid var(--accent-soft, var(--accent)) !important;
+  border-radius: 0 5px 5px 0;
+  background: var(--card-light) !important;
+}
+:root[data-sb-theme] .char-diary-content :is(span, em, i, b, strong) {
+  font-family: inherit !important;
+  line-height: inherit !important;
+}
+:root[data-sb-theme] .char-diary-content :is(em, i) {
+  font-style: normal !important;
+}
+
+/* 3) Deep, theme-aware foreground for selected/hovered actions.
+      Bright white labels on pale accent fills are explicitly avoided. */
+:root[data-sb-theme="sage"] { --sb-action-ink: #203126; }
+:root[data-sb-theme="warm-paper"] { --sb-action-ink: #302416; }
+:root[data-sb-theme="mist-blue"] { --sb-action-ink: #1b2b39; }
+:root[data-sb-theme="lavender"] { --sb-action-ink: #282239; }
+:root[data-sb-theme="rose-tea"] { --sb-action-ink: #321e25; }
+:root[data-sb-theme="redbird-light"] { --sb-action-ink: #10243a; }
+:root[data-sb-theme="redbird-dark"] { --sb-action-ink: #081522; }
+:root[data-sb-theme="titanium"] { --sb-action-ink: #15171c; }
+
+/* Compact buttons and tab selectors */
+:root[data-sb-theme] .btn-mini-action:hover,
+:root[data-sb-theme] .btn-mini-action:active,
+:root[data-sb-theme] .sb-edit-char-btn:hover,
+:root[data-sb-theme] .sb-edit-char-btn:active,
+:root[data-sb-theme] .char-switch-btn.active-switch,
+:root[data-sb-theme] .char-switch-btn:active,
+:root[data-sb-theme] .tab.active,
+:root[data-sb-theme] .sb-tab-item.active,
+:root[data-sb-theme] .settings-tab.active,
+:root[data-sb-theme] .sb-copy-char-name-btn {
+  color: var(--sb-action-ink, var(--accent-deep)) !important;
+  text-shadow: none !important;
+}
+
+/* Filled primary actions: dark ink keeps text legible on light accent colors.
+   Preserve each button's existing background, shape and interaction. */
+:root[data-sb-theme] .sb-save-btn,
+:root[data-sb-theme] .sb-btn-primary,
+:root[data-sb-theme] .btn-primary {
+  color: var(--sb-action-ink, var(--accent-deep)) !important;
+  text-shadow: none !important;
+}
+:root[data-sb-theme] .sb-save-btn:hover,
+:root[data-sb-theme] .sb-btn-primary:hover,
+:root[data-sb-theme] .btn-primary:hover,
+:root[data-sb-theme] .sb-save-btn:active,
+:root[data-sb-theme] .sb-btn-primary:active,
+:root[data-sb-theme] .btn-primary:active {
+  color: var(--sb-action-ink, var(--accent-deep)) !important;
+  filter: brightness(1.04);
+}
+
+/* Do not let generic host button hover rules repaint statusbar controls white. */
+:root[data-sb-theme] #universal-statusbar-wrapper button:hover,
+:root[data-sb-theme] #universal-statusbar-wrapper button:active,
+:root[data-sb-theme] .sb-modal-overlay button:hover,
+:root[data-sb-theme] .sb-modal-overlay button:active,
+:root[data-sb-theme] .sb-dialog-overlay button:hover,
+:root[data-sb-theme] .sb-dialog-overlay button:active {
+  text-shadow: none;
+}
