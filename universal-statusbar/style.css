@@ -6858,3 +6858,117 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 :root[data-sb-theme] {
   --sb-glass-edge: color-mix(in srgb, var(--divider) 72%, white 28%);
 }
+
+
+/* ============================================================
+   Glassmorphism v2 — stronger visual treatment, all themes
+   Visual-only: no layout, sizing, spacing, typography or JS changes.
+   ============================================================ */
+
+:root,
+:root[data-sb-theme] {
+  --sb-glass-radius-panel: 24px;
+  --sb-glass-radius-card: 19px;
+  --sb-glass-radius-control: 14px;
+  --sb-glass-sheen: color-mix(in srgb, white 22%, transparent);
+  --sb-glass-shadow: 0 18px 42px rgba(0,0,0,.16), 0 3px 10px rgba(0,0,0,.08);
+}
+
+/* Main bar: visible translucent depth, glossy upper edge and soft inner rim. */
+#universal-statusbar-wrapper :is(.sb-bar-container, .book) {
+  border-radius: 24px !important;
+  border: 1px solid color-mix(in srgb, var(--divider) 58%, white 42%) !important;
+  background:
+    linear-gradient(155deg, color-mix(in srgb, white 13%, var(--card-light)), color-mix(in srgb, var(--card) 90%, transparent) 58%),
+    var(--card) !important;
+  box-shadow:
+    0 16px 38px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -1px 0 rgba(0,0,0,.12),
+    0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent) !important;
+}
+
+/* Modal glass: make the surface itself read as translucent glass, not a flat card. */
+#universal-statusbar-modal :is(.sb-modal-panel, .settings-popup),
+.sb-dialog-panel {
+  border-radius: 25px !important;
+  border: 1px solid color-mix(in srgb, var(--divider) 52%, white 48%) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.17), rgba(255,255,255,.035) 38%, transparent 72%),
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--accent) 17%, transparent), transparent 58%),
+    color-mix(in srgb, var(--card) 84%, transparent) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(155%) !important;
+  backdrop-filter: blur(18px) saturate(155%) !important;
+  box-shadow:
+    0 26px 64px rgba(0,0,0,.26),
+    0 7px 20px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.34),
+    inset 1px 0 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.10) !important;
+}
+
+/* A glassy header cap gives the panel a distinct top-to-body transition. */
+#universal-statusbar-modal :is(.sb-modal-head, .settings-popup-head),
+.sb-dialog-head {
+  border-radius: 24px 24px 0 0 !important;
+  background:
+    linear-gradient(115deg, rgba(255,255,255,.20), rgba(255,255,255,.035) 60%),
+    radial-gradient(ellipse at 88% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 62%),
+    linear-gradient(135deg, color-mix(in srgb, var(--head-from) 86%, white 14%), var(--head-to)) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--divider) 48%, white 52%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28) !important;
+}
+
+/* Nested cards: layered glass panes rather than flat rectangular blocks. */
+#universal-statusbar-modal :is(.sb-panel-card, .settings-section, .sb-theme-section),
+#universal-statusbar-modal .sb-modal-panel[data-view="offscreen"] .sb-panel-card {
+  border-radius: 20px !important;
+  border: 1px solid color-mix(in srgb, var(--divider) 55%, white 45%) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.025) 55%),
+    color-mix(in srgb, var(--card-light) 88%, transparent) !important;
+  box-shadow:
+    0 9px 24px rgba(0,0,0,.10),
+    inset 0 1px 0 rgba(255,255,255,.27),
+    inset 0 -1px 0 rgba(0,0,0,.06) !important;
+}
+
+#universal-statusbar-modal .settings-section[open] {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.025) 58%),
+    color-mix(in srgb, var(--accent-bg) 42%, var(--card-light)) !important;
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--divider)) !important;
+}
+
+/* Buttons and fields: rounded glass controls with a clear specular rim. */
+#universal-statusbar-modal :is(
+  button, .btn-line, .btn-line-icon, .btn-mini-action, .sb-edit-char-btn,
+  .char-chip, .sb-modal-char-chip, .memo-toggle-btn, .task-toggle-btn,
+  .inv-qty-btn, .inv-del-btn, .settings-btn, .avatar-action-btn,
+  .sb-copy-char-name-btn, .sb-input-field, .settings-input,
+  .settings-text-input, .sb-param-row-input, input, select, textarea
+),
+.sb-dialog-panel :is(button, input, select, textarea) {
+  border-radius: 14px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.23),
+    0 3px 9px rgba(0,0,0,.075) !important;
+}
+
+#universal-statusbar-modal :is(.sb-modal-close-btn, .settings-popup-close, .sb-dialog-close) {
+  border-radius: 50% !important;
+  border: 1px solid color-mix(in srgb, var(--divider) 55%, white 45%) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.20), rgba(255,255,255,.045)) !important;
+}
+
+#universal-statusbar-modal :is(.sb-tab-item, .settings-tab, .tab, .char-switch-btn) {
+  border-radius: 999px !important;
+}
+
+/* Content surfaces also inherit the softer glass language. */
+#universal-statusbar-wrapper :is(.tabs-wrap, .char-clothes-list, .char-body-list, .char-diary-list),
+#universal-statusbar-modal :is(.sb-modal-tabs, .settings-tabs) {
+  border-radius: 17px !important;
+  border-color: color-mix(in srgb, var(--divider) 58%, white 42%) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16) !important;
+}
