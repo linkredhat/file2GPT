@@ -2678,7 +2678,8 @@
                   <span>${escapeHtml(pro.weight || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="体重" data-val="${escapeHtml(pro.weight || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">🧍 身材体态</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.figure || '-')}</span>
@@ -2698,7 +2699,8 @@
                   <span>${escapeHtml(pro.wetStatus || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="湿透情况" data-val="${escapeHtml(pro.wetStatus || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">😊 情绪</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.mood || "-")}</span>
@@ -2711,7 +2713,8 @@
                   <span>${escapeHtml(pro.arousal || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="兴奋度" data-val="${escapeHtml(pro.arousal || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">🧠 意识状态</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.consciousness || '-')}</span>
@@ -2814,7 +2817,8 @@
                   <span>${escapeHtml(pro.dickDiameter || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="肉棒直径" data-val="${escapeHtml(pro.dickDiameter || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">⚡ 勃起状态</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span class="info-value-accent">${escapeHtml(pro.dickStatus || '-')}</span>
@@ -2849,7 +2853,8 @@
                   <span>${escapeHtml(pro.anusDev || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴开发度" data-val="${escapeHtml(pro.anusDev || "")}">修改</button>
                 </div>
-              </div>              ` : ''}
+              </div>
+              ` : ''}
             </div>
           </div>
           ` : ''}
@@ -2875,7 +2880,8 @@
                   <span>${escapeHtml(pro.pussyDepth || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="小穴深度" data-val="${escapeHtml(pro.pussyDepth || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">处女膜</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span class="info-value-accent">${escapeHtml(pro.pussyHymen || '-')}</span>
@@ -2895,7 +2901,8 @@
                   <span>${escapeHtml(pro.squirtCount || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="潮吹" data-val="${escapeHtml(pro.squirtCount || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">🌸 乳头</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.nipples || "-")}</span>
@@ -2908,7 +2915,8 @@
                   <span>${escapeHtml(pro.clitoris || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="阴蒂" data-val="${escapeHtml(pro.clitoris || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">爱液分泌</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.fluidAmount || '-')}</span>
@@ -2928,7 +2936,8 @@
                   <span>${escapeHtml(pro.periodPhase || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="当前生理期" data-val="${escapeHtml(pro.periodPhase || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">🤰 怀孕状态</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.pregnantStatus || "-")}</span>
@@ -2978,7 +2987,8 @@
                   <span>${escapeHtml(pro.anusDev || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴开发度" data-val="${escapeHtml(pro.anusDev || "")}">修改</button>
                 </div>
-              </div>              ` : ''}
+              </div>
+              ` : ''}
             </div>
           </div>
           ` : ''}
@@ -3020,7 +3030,8 @@
                   <span>${escapeHtml(pro.panties || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="内裤" data-val="${escapeHtml(pro.panties || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">🦵 腿部</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.legs || "-")}</span>
@@ -3033,7 +3044,8 @@
                   <span>${escapeHtml(pro.shoes || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="鞋子" data-val="${escapeHtml(pro.shoes || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              <div class="info-row">
                 <span class="info-label">💍 随心配饰</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.accessories || '-')}</span>
@@ -3091,13 +3103,16 @@
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="随身手机1" data-val="${escapeHtml(pro.phone1 || "")}">修改</button>
                 </div>
               </div>
+              ${pro.phone2 ? `
               <div class="info-row">
                 <span class="info-label">📱 随身手机2</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.phone2 || "-")}</span>
                   <button class="btn-mini-action sb-edit-pro-btn" data-field="随身手机2" data-val="${escapeHtml(pro.phone2 || "")}">修改</button>
                 </div>
-              </div>              <div class="info-row">
+              </div>
+              ` : ""}
+              <div class="info-row">
                 <span class="info-label">🚗 座驾载具</span>
                 <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
                   <span>${escapeHtml(pro.vehicle || '-')}</span>
