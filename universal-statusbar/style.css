@@ -6237,7 +6237,6 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 :root[data-sb-theme] .sb-panel-card p,
 :root[data-sb-theme] .sb-panel-card li,
 :root[data-sb-theme] .sb-panel-card .info-value {
-  color: var(--text-sub) !important;
   line-height: 1.75;
 }
 
