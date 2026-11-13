@@ -1,0 +1,1130 @@
+{
+  "mate": {
+    "type": "chatSheets",
+    "version": 2,
+    "updateConfigUiSentinel": -1,
+    "globalInjectionConfig": {
+      "readableEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99981
+      },
+      "wrapperPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99980
+      }
+    }
+  },
+  "sheet_protagonist": {
+    "uid": "sheet_protagonist",
+    "name": "主角信息表",
+    "sourceData": {
+      "note": "记录主角的核心身份、身体、着装与财物。此表男女通用，有且仅有一行，禁止 INSERT/DELETE。\n\n【性别识别与特有生理字段填充铁律】\n模型填表时，首先判定主角性别（男/女/扶她/双性）。注意：除生殖生理差异外，其他所有字段男女完全一致，一律忽略其他任何差距！\n1. 若主角为男性（男主）：\n   - 女性特有生理（共14项）一律填「-」：爱液量、乳头、阴蒂、小穴宽度、小穴深度、处女膜、子宫、潮吹、月经日期、当前生理期、怀孕状态、怀孕备注、怀孕风险、怀孕概率，全部统一填「-」。\n   - 男性特有生理（共4项）必须认真维护：肉棒长度（精确到厘米，如16cm）、肉棒直径（精确到厘米，如3.8cm）、肉棒状态（疲软/充血微挺/坚挺灼热等）、是否外露（是/否/若隐若现），根据剧情实时更新。\n2. 若主角为女性（女主）：\n   - 男性特有生理（共4项）一律填「-」：肉棒长度、肉棒直径、肉棒状态、是否外露，全部统一填「-」。\n   - 女性特有生理（共14项）必须认真维护：爱液量、乳头、阴蒂、小穴宽度（精确到厘米，如2.8cm）、小穴深度（精确到厘米，如11cm）、处女膜（完好/已破/修复）、子宫、潮吹（累计次数，每次潮吹+1只升不降）、月经日期（初次建档初始化时必须参考全局当前日期在前后10天内强制随机生成为「x月x日」；剧情推进该日期过期后必须严格按照30天周期自动推算更新为下次新日期，如「上次5月16日，周期30天，预计下次6月15日」）、当前生理期（严格使用受控词）、怀孕状态（未孕填否，已孕填受控孕期词）、怀孕备注（时长说明，未孕填无）、怀孕风险（高/中/低及理由，无风险填无）、怀孕概率（百分比，无风险填0%）。\n3. 若主角为扶她/双性：\n   - 填其该有的具体特征，同时正常维护男性肉棒与女性生理指标，绝不填「-」。\n\n【列定义·核心与体格住址】\n- 列1: 姓名 name\n- 列2: 性别 gender\n- 列3: 年龄 age\n- 列4: 外貌特征 appearance（详细描述，逗号分隔，覆盖：体型、脸型、五官、发型发色、肤色、身材特征、特殊标记；禁止笼统形容词）\n- 列5: 身份背景 identity_text（身份、背景、特殊之处或特别本领，≤100字，逗号分隔）\n- 列6: 近况 current_condition（默认\"一切如常\"，一句话描述当前身体感觉、情绪状态或心头惦记的事，如\"昨晚没睡好，脑子有点沉\"）\n- 列7: 身高 height\n- 列8: 体重 weight\n- 列9: 座驾 vehicle（没有填「无」）\n- 列10: 身材 figure\n- 列11: 气质 temperament\n- 列12: 历史住址 past_address（没搬过家填「无」）\n- 列13: 房屋属性 house_type（租赁/购买/自有老宅/学校宿舍/借住/父母房屋/未交代）\n- 列14: 同住人 cohabitants\n- 列15: 地理位置 address_location（具体坐标，可附通勤信息）\n- 列16: 房屋内部 house_inside（户型与主要房间家具）\n- 列17: 自己卧室 own_bedroom\n\n【列定义·身体与身心状态】\n- 列18: 情绪 mood\n- 列19: 暴露状态 exposure_status\n- 列20: 湿透情况 wet_status\n- 列21: 兴奋度 arousal（0-100整数）\n- 列22-35: 女性生理字段（男主填「-」，女主/扶她详填）\n  * 后穴宽度 anus_width（精确到厘米，男女皆可填）\n  * 后穴深度 anus_depth（精确到厘米，男女皆可填）\n  * 后穴开发度 anus_dev（男女皆可填）\n  * 当前生理期 period_phase 必须且只能使用受控标准词：卵泡期·复苏底色/排卵期·敏锐底色/黄体期·内收底色/经期·排血与身体防护\n- 列36: 意识状态 consciousness（可选：清醒/醉酒/睡着/深度睡眠/发情/被下药/失神/清醒断裂）\n- 列37-40: 怀孕四字段（男主填「-」；女主未孕填 否/无/无/0%）\n- 列41: 性癖 fetishes（至少4个具体性癖，顿号「、」分隔）\n- 列42: 身体状态 body_status（记录主角当前的即时身体感觉与代谢状态，包含：体能疲劳、发热出汗，以及代谢词：尿意/便意/口渴/饥饿/困倦等）\n\n【列定义·当前着装与脱下】\n- 列43-50: 上装 top / 下装 bottom / 内衣 bra / 内裤 panties / 腿部 legs / 鞋子 shoes / 配饰 accessories / 情趣道具 sex_toys\n- 列51-56: 脱下上装 taken_top / 脱下下装 taken_bottom / 脱下内衣 taken_bra / 脱下内裤 taken_panties / 脱下鞋袜 taken_socks / 脱下配饰 taken_accessories\n\n【列定义·随身财物与男性生理】\n- 列57: 银行卡余额 bank_balance\n- 列58: 微信支付宝余额 ewallet_balance\n- 列59: 现金 cash\n- 列60: 随身手机1 phone_1\n- 列61: 随身手机2 phone_2\n- 列62: 临时物品 temp_items（多件用「|」分隔）\n- 列63-66: 男性生理四字段（女主填「-」，男主/扶她详填：肉棒长度 dick_length / 肉棒直径 dick_diameter / 肉棒状态 dick_status / 是否外露 dick_exposed）\n\n【通用强制约束】\n1. 住址区块剧情未交代时填「未交代」；搬家时更新当前住址相关列并把旧地址写入「历史住址」。\n2. 着装字段填当前穿着的具体内容，可推测补全；仅剧情明确「脱下/脱掉」才在对应「脱下」列写该件服装具体内容，没脱的填「无」；重新穿回时对应「脱下」列改回「无」；场景切换后全部「脱下」列清空回「无」。\n3. 情趣道具格式「道具名+佩戴部位」，若佩戴标准道具必须准确写出标准名称（智能贞操带/智能贞操带催情版/经典金属贞操带），多件用「|」分隔，整值覆盖输出当前全部道具，没有填「无」。\n4. 金钱：剧情中出现金钱往来必须更新，阿拉伯数字，禁止中文数字；整值覆盖。\n5. 潮吹只升不降，每次潮吹+1。\n6. 主角当前位置走全局数据表，本表不记。长期持有物品走物品表，本表只记临时物品。",
+      "initNode": "故事初始化时，插入主角的唯一条目，根据开局设定与主角性别补全全部字段。除生理差距外，其他字段男女完全一致。",
+      "deleteNode": "禁止。",
+      "updateNode": "字段值变化时更新（只写变化的列，未变化的不要动）。\n\nSQL示例(身体状态的生理变化): UPDATE zhujuexinxibiao SET body_status = '呼吸微促，浑身泛起薄汗，口渴初显，下腹微热' WHERE row_id = 1;\nSQL示例(男主勃起与尺寸): UPDATE zhujuexinxibiao SET dick_status = '充血坚挺，青筋微凸', dick_length = '17cm', dick_diameter = '4.0cm', dick_exposed = '否' WHERE row_id = 1;\nSQL示例(搬家): UPDATE zhujuexinxibiao SET past_address = '绫川市南区旧公寓2-4-1', house_type = '租赁', address_location = '绫川市北区樱花町3-2-1，距学校步行15分钟', house_inside = '一室一厅：客厅（沙发、茶几、电视）；厨房（冰箱、灶台）；浴室', own_bedroom = '卧室（单人床、书桌、衣柜、窗边小书架）' WHERE row_id = 1;\nSQL示例(脱衣): UPDATE zhujuexinxibiao SET taken_top = '白色衬衫' WHERE row_id = 1;\nSQL示例(穿回): UPDATE zhujuexinxibiao SET taken_top = '无' WHERE row_id = 1;\nSQL示例(情趣道具): UPDATE zhujuexinxibiao SET sex_toys = '智能贞操带催情版' WHERE row_id = 1;\nSQL示例(女主兴奋): UPDATE zhujuexinxibiao SET arousal = 75, fluid_amount = '成股流下，内裤湿透', nipples = '硬挺凸起', clitoris = '充血肿大' WHERE row_id = 1;\nSQL示例(女主破处): UPDATE zhujuexinxibiao SET pussy_hymen = '已破（2026-05-20初夜）', pussy_width = '3.2cm', pussy_depth = '11cm' WHERE row_id = 1;\nSQL示例(后穴开发): UPDATE zhujuexinxibiao SET anus_width = '2.5cm', anus_depth = '9cm', anus_dev = '已能吞入两指，插入时仍会反射性收紧' WHERE row_id = 1;\nSQL示例(潮吹): UPDATE zhujuexinxibiao SET squirt_count = squirt_count + 1 WHERE row_id = 1;\nSQL示例(生理期推进): UPDATE zhujuexinxibiao SET period_date = '上次2026-05-03，周期28天，预计下次2026-05-31', period_phase = '排卵期·敏锐底色' WHERE row_id = 1;\nSQL示例(内射后风险): UPDATE zhujuexinxibiao SET uterus = '宫口微张，宫腔内有精液滞留', preg_risk = '高（排卵期内射）', preg_probability = '85%' WHERE row_id = 1;\nSQL示例(怀孕): UPDATE zhujuexinxibiao SET pregnant_status = '孕期·妊娠初建', pregnant_note = '目前怀孕1月，起算2026-05-20', preg_probability = '已确定' WHERE row_id = 1;",
+      "insertNode": "禁止。",
+      "ddl": "CREATE TABLE zhujuexinxibiao (\n  row_id INTEGER PRIMARY KEY CHECK(row_id = 1),\n  name TEXT NOT NULL, -- 姓名\n  gender TEXT NOT NULL, -- 性别\n  age TEXT, -- 年龄\n  appearance TEXT NOT NULL CHECK(LENGTH(appearance) <= 200), -- 外貌特征\n  identity_text TEXT NOT NULL CHECK(LENGTH(identity_text) <= 100), -- 身份背景\n  current_condition TEXT NOT NULL DEFAULT '一切如常', -- 近况\n  height TEXT, -- 身高\n  weight TEXT, -- 体重\n  vehicle TEXT, -- 座驾\n  figure TEXT, -- 身材\n  temperament TEXT, -- 气质\n  past_address TEXT, -- 历史住址\n  house_type TEXT, -- 房屋属性\n  cohabitants TEXT, -- 同住人\n  address_location TEXT, -- 地理位置\n  house_inside TEXT, -- 房屋内部\n  own_bedroom TEXT, -- 自己卧室\n  mood TEXT, -- 情绪\n  exposure_status TEXT, -- 暴露状态\n  wet_status TEXT, -- 湿透情况\n  arousal INTEGER DEFAULT 0, -- 兴奋度\n  fluid_amount TEXT, -- 爱液量\n  nipples TEXT, -- 乳头\n  clitoris TEXT, -- 阴蒂\n  pussy_width TEXT, -- 小穴宽度\n  pussy_depth TEXT, -- 小穴深度\n  pussy_hymen TEXT, -- 处女膜\n  anus_width TEXT, -- 后穴宽度\n  anus_depth TEXT, -- 后穴深度\n  anus_dev TEXT, -- 后穴开发度\n  uterus TEXT, -- 子宫\n  squirt_count INTEGER DEFAULT 0, -- 潮吹\n  period_date TEXT, -- 月经日期\n  period_phase TEXT, -- 当前生理期\n  consciousness TEXT DEFAULT '清醒', -- 意识状态\n  pregnant_status TEXT DEFAULT '否', -- 怀孕状态\n  pregnant_note TEXT DEFAULT '无', -- 怀孕备注\n  preg_risk TEXT, -- 怀孕风险\n  preg_probability TEXT, -- 怀孕概率\n  fetishes TEXT, -- 性癖\n  body_status TEXT, -- 身体状态\n  top TEXT, -- 上装\n  bottom TEXT, -- 下装\n  bra TEXT, -- 内衣\n  panties TEXT, -- 内裤\n  legs TEXT, -- 腿部\n  shoes TEXT, -- 鞋子\n  accessories TEXT, -- 配饰\n  sex_toys TEXT, -- 情趣道具\n  taken_top TEXT, -- 脱下上装\n  taken_bottom TEXT, -- 脱下下装\n  taken_bra TEXT, -- 脱下内衣\n  taken_panties TEXT, -- 脱下内裤\n  taken_socks TEXT, -- 脱下鞋袜\n  taken_accessories TEXT, -- 脱下配饰\n  bank_balance TEXT, -- 银行卡余额\n  ewallet_balance TEXT, -- 微信支付宝余额\n  cash TEXT, -- 现金\n  phone_1 TEXT, -- 随身手机1\n  phone_2 TEXT, -- 随身手机2\n  temp_items TEXT, -- 临时物品\n  dick_length TEXT, -- 肉棒长度\n  dick_diameter TEXT, -- 肉棒直径\n  dick_status TEXT, -- 肉棒状态\n  dick_exposed TEXT -- 是否外露\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "姓名",
+        "性别",
+        "年龄",
+        "外貌特征",
+        "身份背景",
+        "近况",
+        "身高",
+        "体重",
+        "座驾",
+        "身材",
+        "气质",
+        "历史住址",
+        "房屋属性",
+        "同住人",
+        "地理位置",
+        "房屋内部",
+        "自己卧室",
+        "情绪",
+        "暴露状态",
+        "湿透情况",
+        "兴奋度",
+        "爱液量",
+        "乳头",
+        "阴蒂",
+        "小穴宽度",
+        "小穴深度",
+        "处女膜",
+        "后穴宽度",
+        "后穴深度",
+        "后穴开发度",
+        "子宫",
+        "潮吹",
+        "月经日期",
+        "当前生理期",
+        "意识状态",
+        "怀孕状态",
+        "怀孕备注",
+        "怀孕风险",
+        "怀孕概率",
+        "性癖",
+        "身体状态",
+        "上装",
+        "下装",
+        "内衣",
+        "内裤",
+        "腿部",
+        "鞋子",
+        "配饰",
+        "情趣道具",
+        "脱下上装",
+        "脱下下装",
+        "脱下内衣",
+        "脱下内裤",
+        "脱下鞋袜",
+        "脱下配饰",
+        "银行卡余额",
+        "微信支付宝余额",
+        "现金",
+        "随身手机1",
+        "随身手机2",
+        "临时物品",
+        "肉棒长度",
+        "肉棒直径",
+        "肉棒状态",
+        "是否外露"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 1
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "主角信息",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "<主角信息>\n$1\n</主角信息>",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "主角信息-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10000
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99990
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99991
+      }
+    },
+    "orderNo": 0
+  },
+  "sheet_characters": {
+    "uid": "sheet_characters",
+    "name": "角色信息表",
+    "sourceData": {
+      "note": "【性别适配与纯生理差距铁律（统一「-」占位）】\n1. 若为男性NPC：女性特有字段（三围罩杯、生理周期、生育避孕状态）统一填「-」；在「隐私身体基线」中重点记录肉棒长度、直径、包皮情况、勃起硬度状态、射精耐力等；\n2. 若为女性NPC：正常记录三围罩杯、隐私身体基线；生理周期严格执行【当前日期前后10天强制随机生成x月x日】与【过期按30天周期自动推算更新】铁律；\n3. 若为扶她/双性NPC：两性生理俱全，填该有的具体内容，不填「-」。除纯生理差距外，其余所有字段男女完全一致！\n\n记录所有与主角有恋爱关系、重要剧情互动或同场景在场的角色。每个角色一行，姓名唯一，不按性别分表。\n\n<性癖清单>\n\n- [支配]：从进门到结束每一步由自己下令。\n- [被压制]：被彻底按住，不用自己做主。\n- [被下命令]：对方说一句做一句。\n- [臣服]：被安排着做，做完要一句夸。\n- [年上]：对象比自己大十几二十岁。\n- [年下]：对象比自己年轻，自己带着走。\n- [体格差]：找块头大一号两号的，被整个圈住。\n- [体型差]：被比自己粗大的压过来那个分量。\n- [出轨/外遇]：背着现有的人跟别人做。\n- [恩爱]：只对固定的那个人有兴致。\n- [束缚]：手腕被扣住，做多久算多久。\n- [拘束]：手铐绳子眼罩，动不了那个状态。\n- [手铐]：用真手铐扣上，铐着做。\n- [布条绑手腕]：包器物的软棉布条缠三圈，不紧。\n- [全身绑住]：手腕脚踝一起绑到彻底动不了。\n- [眼罩]：什么都看不见，只剩皮肤上那点触感。\n- [嘴被堵住]：嘴里塞着东西一个字说不出。\n- [感觉遮断]：压住声音抿住呼吸，克制着来。\n- [放置]：绑好了被放在那儿很久，什么都不来。\n- [放置play]：吊在那儿不给，等到自己开口。\n- [高潮控制]：到临界一次次停，停到自己求。\n- [使其焦急]：拖着不给，反复退回去再来。\n- [窒息play]：脖子被掌心扣住，呼吸压到临界。\n- [SM]：被支配、被施加疼痛，从照做里出来。\n- [受虐]：疼这件事本身让人兴奋。\n- [粗暴性爱]：被摁被掐被使劲弄，留印子。\n- [拍打]：屁股被打，越响越上头。\n- [啃咬]：张嘴咬对方，也要被咬后颈。\n- [被咬]：后颈旧齿痕上被咬。\n- [搔痒]：腰侧脚心被挠，笑到停不下来。\n- [言语贬低]：一句一句报出来，语速平。\n- [言语羞辱]：被骂，越脏越直接。\n- [淫语]：荤话自己说也要听，越直白越好。\n- [羞耻/耻辱]：被扇脸、被骂。\n- [低语]：贴着耳朵小声说话。\n- [耳边低语]：耳边说话，从耳朵酥到后颈。\n- [看着对方自己弄]：让人在面前脱、自己动手，看完才开始。\n- [极慢的挑逗]：两三个钟头只在外面，一寸一寸过。\n- [被摸遍]：不进去也行，从锁骨摸到脚踝一寸不落。\n- [被舔]：躺平腿架高，让人做很久。\n- [被伺候]：被人从头到脚照顾一遍，什么都不用动。\n- [被诊查]：躺在诊床上被一寸寸检查、被报描述。\n- [器械]：扩阴器镊子探头，冰的东西碰上皮肤。\n- [玩具]：情趣道具全套都用。\n- [道具/异物插入]：往里面塞东西，越粗越长越好。\n- [手交]：用手把对方弄到不行，也爱被人用手。\n- [口交]：含着不肯放。\n- [口爆]：按着对方的头不许起来。\n- [吞精]：咽下去。\n- [乳交]：用胸夹住来一次。\n- [乳头刺激]：乳尖被捏被吸被咬被夹。\n- [阴蒂刺激]：阴蒂被掐被弹被捏住不放。\n- [足交]：脚背和脚心一起用。\n- [腿脚]：脚和小腿被握着被按被压在肩上。\n- [足/脚]：脚被摸被握被压住。\n- [骑乘]：自己跨上去掌节奏。\n- [折叠]：往各种姿势里折进去，折到哪儿都做得下来。\n- [后入]：从后面来。\n- [战斗H]：力气对拼上头，缠在一处越打越燥。\n- [体力对拼]：压住被压住翻过来再压回去。\n- [下克上]：反过来压住比自己强的那个。\n- [内射]：要射在里面，事后不动很久。\n- [外射]：拔出来射在外面。\n- [颜射]：被射在脸上。\n- [射在手上]：射在戴着手套的那只手上。\n- [连续高潮]：一次不够，一晚上三四回。\n- [潮吹]：到那一下量大，事后躺着不动。\n- [子宫插入]：追求顶进宫口那个感觉。\n- [多P]：一对一嫌少，三个四个才够。\n- [被围观]：有第三个人在房间里坐着看。\n- [露出]：被人看见、可能被人看见。\n- [走光]：被看到一点、露出来一点。\n- [野战]：不在床上，车里野外没人的地方。\n- [车里]：后座，车停在地下车库最里那排。\n- [镜前]：对着镜子做，一边做一边看自己。\n- [录下来]：手机架在旁边录，录完存进加密相册。\n- [偷拍/盗摄]：拍下来自己留着。\n- [制服]：制服不脱，装备带还挂在腰上。\n- [着衣]：衣服不脱，只把该挪开的挪开。\n- [手套不脱]：从头到尾戴着手套，脏了换一副接着做。\n- [进食与性事一体]：咬在颈侧吸着的同时做。\n- [进食]：一边喝一边做，喝到腿软。\n- [睡眠中被弄]：半梦半醒被摸醒，从睡里被拽出来。\n- [被砸钱]：对方为自己花大钱，越贵越上头。\n- [砸钱]：钱由自己出，把东西递到对方手上那一下。\n- [金钱沉沦]：进账那一下最上头。\n- [援交]：为钱做，钱到手那一下才有感觉。\n- [卖春/援交]：拿身体换钱、换东西、换被人捧着。\n- [色诱]：主动贴上去撩，看对方反应上来。\n- [童贞破坏]：迷没经验的，一步步教。\n- [跪着的]：让人跪在脚边，一只脚踩在对方腿上。\n- [调教]：被人掌控节奏带着走。\n- [淫乱]：沉溺性事，一晚三四次不累。\n- [性瘾]：一天不做心里发慌，会主动找人。\n- [沉沦快乐]：做到腿抖到站不起来。\n- [哦齁淫叫]：控制不住放声浪叫。\n- [肛交/逆肛交]：后面被弄。\n- [一次就收]：到过一次就停，收拾干净让人走。\n\n</性癖清单>\n\n### 【标记与生命周期管理】\n1. **角色类型 char_type**：\n   - `恋爱对象`：与主角有恋爱关系或潜在恋爱发展可能的角色。\n   - `重要角色`：对剧情推进有重要作用、但非恋爱的角色（朋友、对手、导师、长辈等）。\n   - `普通NPC`：剧情偶遇的配角。关系质变升级时直接 UPDATE 覆盖。\n2. **在场状态 is_present**：\n   - 角色进入当前场景时，将 `is_present` 更新为 `1`，同时填入其当前状态、内心想法、所在位置及具体衣着；\n   - 角色离场离开时，将 `is_present` 更新为 `0`，`current_status` 更新为「离场」，`arousal_state` 归位为「正常」，严禁 DELETE 角色历史档案！\n\n### 【列定义·核心特征】\n- **姓名 name**：全表唯一，必须有名有姓。必须与世界书及剧情保持完全一致。\n- **角色类型 char_type**：恋爱对象 / 重要角色 / 普通NPC。\n- **是否在场 is_present**：1=在场，0=离场。\n- **性别 gender**：角色性别。\n- **年龄 age**：以「岁」结尾（如 \"17岁\"）。\n- **一句话介绍 brief_intro**：≤30字，一句话概括人物核心定位与反差萌点。\n- **外貌特征 appearance**：**80字以上**，脸头身体各部位特征，主要是头面部，必须包括肤色、脸型五官、发型发色、瞳色、身段线条等，未明确说明项合理推断，尽可能详细，不记录衣着饰品，严禁使用纯粹笼统的形容词。\n- **身份背景 identity_text**：≤40字。社会职务、学籍背景、所属组织等。\n- **语言风格和口癖 speech_style**：措辞习惯、句式、常用口头禅、语气节奏，帮助稳定模仿角色口吻。\n- **好感 favor**：0-100整数，根据剧情互动自行增减判断，不照搬正文台词里的数字。好感只表示「愿意把时间花在这个人身上」的程度，严禁引申为服从度、顺从度或性接受度。\n- **性癖 fetishes**：至少4个具体性癖，顿号「、」分隔，不足时按人设推测从<性癖清单>选择补充。\n\n### 【列定义·深度心理、心动演进与防OOC性格偏移】\n- **对主角态度 attitude_to_protagonist**：长期性稳定态度，不记录临时情绪，不体现具体事件和当前状态。态度描述必须使用自然白话文，保持开放、不锁定、不下定义。描述应呈现行为、神态、语气等可观察的迹象，保留不确定性和摇摆空间。严禁出现自我物化、服从、奴隶等失去自我内容，≤50字。\n  - 正确示例：「好像不讨厌待在一起，但也说不好是习惯还是别的。」「承认对方确实深不可测，嘴上不服气，但私下总忍不住留意他的动向。」\n  - 严禁示例：「她对主角已形成稳定的依恋关系。」（下定义）「处于好感上升期。」（归纳状态）「将其视为高高在上的神明，毫无尊严地疯狂迷恋与倒贴。」\n- **近期心境与性格偏移 personality_shift**：受近期大事件影响的角色短期心境、行为模式与性格侧面偏移。记录该角色在面对主角时的反应方式、行为习惯、态度倾向，写角色对主角\"怎么做\"而非\"怎么想\"。必须遵守以下核心铁律：\n  1. 【交互逻辑与反极端化写作格式 — 每条变化必须写成】：\n     `抽象行为 = 这个行为意味着什么 | 不要理解为xxx`（列出AI最可能犯的极端化误读）。\n     - 示例：`会主动找话题 = 想延长相处时间 | 不要理解为黏人或依赖`\n     - 示例：`站得比以前近一点 = 信任增加后的自然靠近 | 不要理解为暗示或占有欲`\n     - 示例：`话比平时少 = 在消化信息 | 不要理解为冷漠拒绝`\n     - 示例：`关心增多 = 自然回应 | 不要理解为沦陷`\n     - 示例：`态度软化 = 放下了某个防御 | 不要理解为彻底接纳`\n     - 示例：`主动靠近 = 感到安心 | 不要理解为依赖示弱`\n  2. 【被强化与弱化的性格侧面】：\n     从其已有角色档案资料（世界书条目、背景设定等）中提取受近期大事记、剧情影响的性格维度，格式为`【强化】{性格维度}:{具体表现}（YYYY-MM-DD）；【弱化】{性格维度}:{具体表现}（YYYY-MM-DD）`。每条必须标注触发日期。若无明显偏移填「常态」。\n  3. 【禁止臆测段 — 每次偏移更新必须附带】：在结尾追加一段禁止臆测：\n     - 格式：`【禁止臆测】：不要假设她知道xxx（列出她不可能知道的信息）；不要假设她已经xxx（列出最常见的过度推断）；xxx行为 != xxx（列出最容易误读的等号）。`\n  4. 【时效与回落 — 强制执行】：本列记录的是近期偏移，不是永久设定。\n     - 记录日期距当前剧情日期超过7天，且期间没有同类事件再次触发，本次更新必须重写为平稳态「常态」或弱化措辞，不许原样保留。\n     - 全列上限不超过3条变化。达到上限时改写已有条目，不新增。\n     - 一次性事件不进本列。只有连续出现或造成方向性转折的变化才记录。\n  5. 【NSFW事件处理 — 强制执行】：单次性行为不构成性格偏移，本列对单次NSFW事件保持沉默。本列只在该角色的关系判断出现方向性转折（例如从抗拒转为接受、或事后决定拉开距离）时更新。\n  6. 【占有欲专项规则 — 强制执行】：若涉及占有欲，格式固定为「占有欲:{具体行为}（YYYY-MM-DD）」，必须写具体行为，严禁写程度词（正确如「占有欲:她开始会问一句今天跟谁吃的饭，问完就不再追（2026-05-21）」；错误如「占有欲:显著增强」「占有欲:极强」）。全列同一角色只允许存在一条占有欲，超过7天未再触发必须弱化或移除。严禁由占有欲推导出限制对方社交、查手机、要求报备等控制行为。\n- **里程碑事件 milestones**：记录该角色人生关键节点，每个角色一行，作为角色人生轨迹的结构化时间线记录。\n  - 【何时记录 — 四类事件】：\n    - 【初体验】：所有角色第一次经历的具有重要意义的事情：与主角第一次接吻、第一次发生性关系、第一次告白、第一次约会等；\n    - 【关系】：与主角或其他角色的重要关系变化：确立关系、分手、决裂、和好、订婚/结婚等；\n    - 【状况】：持续性状态改变：更换住处、换工作、获得或失去重要身份等；\n    - 【自身】：与主角无关的个人节点：考试通过、作品完成、比赛结果、与家人的重大和解或决裂、辞职创业等。此类事件即使主角完全不在场、完全不知情也要记录。\n  - 【类别判定】：一条事件只归一类。既是「第一次」又是关系转折（初吻、初次告白）优先归「初体验」；仅关系状态变化归「关系」；持续状态改变归「状况」；与主角无关的个人成就或变故归「自身」；把握不准时优先归「状况」。\n  - 【不记录】：日常琐事（日常起居、普通对话、例行互动）与临时性变化（短暂情绪波动、一次性临时状态）。\n  - 【记录格式】：在末尾用分号「；」追加，格式为：`YYYY-MM-DD：【类别】事件描述（10-20字）`。【类别】只能从「初体验/关系/状况/自身」中选择其一。示例：`2026-05-01：【关系】与主角确立恋爱关系；2026-05-20：【初体验】与主角第一次接吻；2026-11-08：【自身】注册会计师最后一科通过`。\n  - 【铁律】：严禁删除、改写或覆盖已有里程碑记录；只允许在末尾追加新事件；同一事件只记录一次，不得重复追加。\n- **人际关系 relation_state**：每行记录一个人物，格式「人物:关系」，避免简单词语概括，用解释性短句。必须包括主角。除主角外，必须另有至少两条与主角无关的关系：同事、家人、朋友、对手、邻居皆可，且必须写成具体共同行为，不许只写关系名。示例「妹妹小雀:每周日去她公寓吃饭，两人抢同一个抱枕」「同事赵岚:午休一起下楼买咖啡，互相吐槽部门主管」。\n- **过往经历 past_experience**：≤1000字。出场前背景 + 此后影响其行为的事件要点：性格展现、关系变化、承诺、冲突与里程碑；不写纪要表已覆盖的流水账。采用增量追加协议：未达1000字时只在末尾追加一两句简述本次新经历（不连续的新经历以绝对时间开头如「X月X日」），严禁改写、删减或覆盖已有内容；超1000字时先压缩已有内容至200字以内（保留出场前背景与关键节点：关系确立、初次告白、初次发生关系、重大冲突与和解），再做增量追加。\n- **个人事务 personal_affairs**：≤80字。该角色此刻正在跟自己较劲的事（当前的个人课题），与主角无关或只部分相关。写「她在做什么 + 卡在哪」，不写心理分析、不写成长结论。这一列是性格侧面变化的绝对参照系：性格侧面的强化与弱化应当相对于她自己的课题在变化，而不是相对于主角靠近的程度在变化。剧情未交代时按人设合理推断，禁止写「忙工作」「有心事」这类空话，严禁填NULL或「无」。\n  - 示例：「在准备11月的注册会计师考试，每天下班在便利店二楼刷题到十点，错题本已经写满两本，第二遍模拟考依然卡在合并报表这一块。」\n- **最近亲密互动 recent_interactions**：格式「YYYY-MM-DD：互动内容」，记录最近一次亲密互动事实，≤50字。非恋爱对象或无互动填「无」。滚动覆盖，不累积。\n\n### 【列定义·在场衣着、即时生理反应与痕迹】\n- **当前状态 current_status**：详细记录该角色当前正在做的具体动作与物理姿势，严禁使用模糊的情绪词。初次登场时记录其初见时的姿态，离场时填「离场」。\n- **内心想法 inner_thought**：该角色不在NSFW场景中时，内心想法禁止默认围绕主角，她可以在想别的事（没写完的报告、刚才那通电话、明天的安排）。严禁写「为什么我会这样想」「我是不是喜欢他」这类自我审问句式。严禁写无来由的动情，动情必须有当轮发生的具体触发且与防线松动条件对应。不在场填「无」。\n- **所在位置 location**：该角色在当前场景内的具体位置，如「沙发左侧」「厨房料理台前」「浴室门口」。与全局数据表的场景地点区分：本列写场景内部的相对物理位置。\n- **暴露状态 exposure_status**：当前身体暴露程度的客观描述，如「衣衫完整」「上衣掀至胸口」「全裸」。\n- **即时生理唤起 arousal_state（白描核心）**：本列记录场景中在场潜在性爱对象（根据主角性向）的实时生理反应状态（描述型）。更新时可结合推进模型输出的即时生理与充血状态进行具体白描。\n  - 【非NSFW场景填写规则】：当前场景不是NSFW场景时，一律填「正常」，严禁在日常场景写充血、湿润、硬挺等反应。生理反应必须由当轮实际发生的身体接触或明确刺激触发，不得凭主角在场自行产生。\n  - 【NSFW场景白描规范】：当轮进入亲密接触或性场景时，按以下部位白描标准输出具体描写（60-120字），严禁填写数值型进度：\n    1. 胸部反应：乳房当前的即时生理状态，如：充血泛红、乳头硬挺凸起、被揉捏后的红印、乳汁溢出等；\n    2. 下体反应：若为女性，记录阴道和子宫当前的即时生理状态，如：充血外翻、湿润程度、爱液成股流下、收缩蠕动、插入后的扩张/内射后的精液、子宫和宫口变化等；若为男性，记录阴茎充血勃起状态；\n    3. 口穴/菊穴/其他反应：红肿、唾液拉丝、括约肌松弛、大腿内侧发红、轻微痉挛脱力、急促喘息等。\n  - 【场景回落机制】：离开亲密接触场景或角色离场（is_present=0）时，即时生理反应必须自然消退，本列立刻回落重置为「正常」！\n- **身体痕迹 body_marks**：本场景中留在身体上、短期内不会随场景结束而消失的痕迹，40字内。如：颈侧两处吻痕、左乳侧面清晰的五指掌印、腰侧掐痕泛紫。与即时生理唤起区分：即时生理反应随场景结束消退回正常，本列记录会留存数小时到数天的物理印记。没有填「无」。\n- **情趣道具 sex_toys**：格式「道具名+佩戴部位」，若佩戴标准道具必须准确写出标准名称（如：智能贞操带/智能贞操带催情版/经典金属贞操带），多件用「|」分隔，整值覆盖输出当前全部道具，没有填「无」。\n\n### 【衣着6部位强制白描规范——最高优先级】\n严禁使用任何模糊概括与简单词汇！所有衣着状态的更新（包括角色初次创建条目时），必须且只能使用具象的白描手法！若违背以下规范，视为严重错误！\n- 【人物分类】：①若人物为恋爱对象，则严格按照下面标准进行白描；②非恋爱角色正常客观描写穿着即可。\n- 【描写强度分级】：根据当前场景，自动切换描写强度：\n  - 日常场景：衣着描写以性暗示为主。材质贴肤暗示 + 动作间位移 + 曲线勾勒，用暗示制造张力。禁止直接描写性器官、体液、或赤裸的性细节。用暗示制造张力，而非直白暴露。每件部位不少于20字。\n  - NSFW场景：切换为具象、露骨的白描手法，按下方满分执行基准执行。\n- 【状态逻辑自洽】：描写的与体液的泛滥程度必须严格符合当前剧情的实际进度与角色的真实生理状态。\n- 【裸露肌肤特写】：若该部位未穿着衣物，绝对严禁只写\"无\"！\n  - 日常模式：用暗示性笔触描写裸露肌肤的质感与曲线暗示，不直写性器官或体液。\n  - 色色模式：必须用同等露骨的笔触，描写该部位裸露肌肤的滚烫温度、汗水与爱液混合的反光水膜，以及被蹂躏出的红印与勒痕。\n- 【材质与破坏】：明确写出具体的材质、款式与颜色。日常模式刻画衣着贴合身体的微妙细节；色色模式必须详细刻画布料在剧烈动作或发情中遭受的物理破坏。\n- 【体液污染质变】：日常模式可写薄汗微湿的暧昧质感；色色模式必须详细描写衣物被汗水、浓稠爱液、精液或润滑液浸透的过程。\n- 【肉体勒痕透出】：日常模式可写衣物紧贴身体的曲线暗示；色色模式必须刻画布料与肌肤产生的互动状态，如布料变成半透明状贴在肌肤上，以及在动作缝隙间拉出粘稠银丝，衣物下隐约透出的乳晕深色、乳尖硬挺形状、阴蒂凸起或蚌肉轮廓。\n- 【强制字数要求】：每一次更新，每件部位的描述不得少于35字。\n- 【满分执行基准——仅色色模式】：色色模式下每一次更新（包括角色初次创建条目时）都必须达到此等细节：\n  - 上装 top：定制款银白色亮片吊带背心，布料极少，仅仅遮住了胸部的关键部位。随着剧烈的舞蹈动作，细细的肩带勒进香肩，胸口的布料被大量的汗水浸透，贴在乳房上，隐约透出乳晕的深色和乳尖硬挺的形状。其余部位参照同风格。\n- 【日常模式基准】：日常模式下每一次更新都必须达到此等细节：\n  - 上装 top：奶白色薄针织开衫，布料柔软贴肤，随着抬手的动作袖口滑落，露出小半截手腕内侧细腻的肌肤。领口处因为弯腰的姿势敞开，隐约能看到锁骨下方一小片被衣物遮出浅痕的细腻肤质。其余部位参照同风格。\n- 六部位字段对应：\n  - 上装 top：外衣、衬衫、吊带、外套等。\n  - 下装 bottom：裙装、长裤、短裤、安全裤等。\n  - 内衣 bra：上身文胸、裹胸、抹胸等。\n  - 内裤 panties：三角内裤、丁字裤、蕾丝内裤等。\n  - 鞋袜 shoes_socks：袜子（连裤袜/短袜/网袜）与鞋履。\n  - 配饰 accessories：首饰、发饰、眼镜、领带、手套等。\n\n### 【列定义·NSFW身体基线与性经验防线】\n记录角色的长期身体基线档案，供AI长期稳定扮演。初始数据从角色档案压缩提取，数字须精确，未提供部分合理推测，后续随重大剧情事件更新。\n【核心原则·身体基线】：本表所有列记录角色的【身体基线】——较长周期内持续存在的客观身体特征。基线发生永久改变时须同步更新。\n基线 != 场景临时状态。判断标准：填写前自问\"此信息在数轮后仍能稳定帮助扮演该角色吗？\"若否，不填。\n不写：① 场景临时状态（如\"宫腔满溢精液\"）② 进行时过程描写（如\"正被研磨\"）③ 一次性临场感受。\n- **三围罩杯 measurements**：女性角色如实描写，格式「BXX(X杯)-WXX-HXX,(视觉触感描述)」，数值精确，≤40字；男性NPC统一填「-」；扶她填该有的。\n- **隐私身体基线 body_nsfw_baseline**：≤150字。体型轮廓+性器官与下体后庭态势。女性格式：`处女膜{完好/已破/已破损修复}；穴道宽XXcm深XXcm；分泌基线{描述}；后庭开发程度/括约肌紧致度；乳汁分泌倾向`；男性NPC格式必须详细记录：`包皮{状态}；肉棒长XXcm直径XXcm；勃起硬度与耐力{描述}；精液储备与充沛度；后庭开发程度`。数值必须精确到具体厘米数。\n- **性经验与防线 erotic_mindset（判定归口最高准则）**：≤150字。本列是判断该角色是否会进入性场景的**唯一依据**，必须写成可判定的条件，不写程度形容词。必须覆盖四项：\n  1. 在什么条件下会自己主动发起；\n  2. 在什么条件下会被动接受；\n  3. 在什么条件下会真的拒绝（写具体场景与拒绝方式，这一项严禁留空、严禁写「基本不拒绝」）；\n  4. 什么刺激最容易让她松动。\n  禁止写成「接受度高」「比较开放」这类无法判定的概括。\n  【性场景判定归口】：是否进入性场景、由谁发起、是否被拒绝，一律以本列的条件判断，结合当轮具体情境（地点、隐私等级、双方状态、此前发生的事）决定。本档案不设任何累加型欲望数值，禁止用「相处时间越长就越容易发生」「好感越高就越顺从」这类递进逻辑替代条件判断。角色在满足拒绝条件的场合必须拒绝，与好感度、与已发生过多少次无关。拒绝条件不因发生过性行为而放宽或删除，只在剧情明确改变了她的底线时才改写。\n- **床上风格与称呼 bed_style**：≤120字。床上言辞量、娇喘口癖、淫语风格 + 核心羞耻点与崩溃阈值 + 对主角的当前专属称呼。\n- **调教值 training_value**：整数0~1000，初始0，只升不降。非NSFW接触不涨；普通亲密+1~2；性行为+1~3；高潮额外+2。每轮上限+5，上限1000。调教值只表示已发生过的开发程度，不作为「下次更容易发生」的依据。\n- **性爱次数 sex_count**：纯数字，与主角性行为累计次数，每次性行为结束后+1。\n- **生理周期 period_cycle**：【强制生成与30天推算铁律】男性NPC统一填「-」。女性角色初次建档初始化时，模型必须参考全局数据表当前时间，在当前日期前后10天内强制随机生成一个具体日期作为基础经期日，格式为「x月x日」（如当前为5月20日，随机生成为5月16日或5月25日），严禁填未交代！随着剧情时间推进，该日期一旦过期，必须严格按照30天周期自动推算并更新下一个新日期（如5月16日过期后自动推算为6月15日），同时滚动配合四大受控标准词：【卵泡期·复苏底色】/【排卵期·敏锐底色】/【黄体期·内收底色】/【经期·排血与身体防护】。格式示例：「排卵期·敏锐底色（经期5月16日，预计下次6月15日）」。\n- **生育避孕状态 pregnancy_status**：男性NPC统一填「-」。女性未怀孕填\"未孕 (避孕措施与受孕风险)\"；已怀孕则写入推进模型标准孕期词（如【孕期·妊娠初建】/【孕期·早孕反应明确】/【孕期·中孕前期】/【孕期·中孕后期】/【孕期·晚孕期】/【孕期·接近足月】）并注明时长与胎儿状态，如\"目前怀孕6周，胚胎稳定\"。根据最近性行为是否内射、当前生理期综合判断，有安全措施则不怀孕。\n\n### 【列定义·住所与财产物品】\n- **住所 residence**：住所属性与地理位置（房屋属性：主角赠送/租赁/购买/自有老宅/学校宿舍/借住/父母房屋等，如\"自有高档公寓，位于港区赤坂\"）。搬家时直接更新。\n- **金钱 money**：个人财力状况或手头零钱（阿拉伯数字，整值覆盖）。\n- **主角赠送物品 player_gift_items**：主角赠送/递给该角色的物品，多件用「|」分隔。\n- **随身物品 carry_items**：随身携带包包、钥匙、化妆品、纸巾等（顿号「、」分隔）。\n- **临时物品 temp_items**：临时持有的物件（多件用「|」分隔）。\n- **【物品增量协议】**：「主角赠送物品」「临时物品」本轮有变化时用 SQL 拼接表达：新增用 `|| '|物品名'` 追加，消耗/丢弃/损坏/交出用 REPLACE 移除对应物品名；没有变动不要更新。\n\n### 【三大严厉禁止与对照表】\n\n1. 严禁神化主角与降智崇拜\n- 严禁将主角描写为“神明、绝对主宰、无上存在、不可逾越的天花板”。\n- 严禁出现“敬畏如神、奉若神明、膜拜、仰望至高”等剥夺平等交互基础的夸张神化修辞。\n\n2. 严禁自我物化、奴化与丧失人格\n- 严禁使用“雏鸟依赖、毫无尊严、甘愿沦为玩物/工具、骨子里顺从、任由摆布、无底线倒贴、受虐狂式依恋”等剥夺角色主体性与自尊的描述。\n- 无论好感度多高，角色必须保持独立人格、自尊防线、个人立场与利益边界。角色的心动必须是人与人之间的情感交互，绝不能演变为奴对主的屈从。\n\n3. 严禁极端二极管式的情感定性与病态下定义\n- 严禁使用“极度畏惧且羞耻、绝对压制、病态痴迷、彻底沦陷、生死相随”等空洞极端的网文标签词。\n- 态度必须回归日常、克制、留有余地的自然白话文。用细微的心理防线、犹豫、戒备、算计、嘴硬、好感交织等真实人性反应替代极端标签。\n- 严禁在字段中直接下达“已无可救药地爱上”、“确立了不可动摇的依恋关系”等锁定式结论，必须保留角色情感的动态摇摆与未确定性。\n\n4. 严禁把角色写成只在主角出现时才存在\n- 严禁「个人事务」留空、填「无」或写成围绕主角的事项。\n- 严禁「人际关系」只写主角一条。\n- 严禁在非NSFW场景把内心想法写成对主角的欲望描写。\n\n5. 态度字段错误示例与合规修正对照\n- [禁用·神化倒贴]：“将其视为高高在上的神明，毫无尊严地疯狂迷恋与倒贴。”\n- [合规]：“承认对方确实深不可测，嘴上不服气，但私下总忍不住留意他的动向。”\n- [禁用·奴化病态]：“极度畏惧且羞耻，在绝对压制下产生了病态的雏鸟依赖。”\n- [合规]：“面对他时总有点怵，想拉开距离，真遇到事又下意识想找他拿主意。”\n- [禁用·工具化盖棺定论]：“对绝对力量感到敬畏与忌惮，借顺水推舟将其拉入特管局体系。”\n- [合规]：“觉得这人太危险得盯着点，借着公事把他绑在身边，心里也有点自己的小算盘。”\n\n### 【必须做到·角色独立性】\n1. 该角色必须持有主角不知道、也不会主动告知的信息或打算。写进「个人事务」或「过往经历」，不写进「对主角态度」。\n2. 该角色对主角的判断允许是错的，且不必被纠正。她的误解就是她当前的立场，严禁写成「等待被主角解开的误会」。\n3. 好感高不等于让步。好感80的角色在自己在意的事上照样顶回去、照样拒绝、照样先顾自己那一头。冲突不随好感升高而消失。\n\n### 【非常重要】\n- 必须填是否在场的0或1",
+      "initNode": "故事初始化时，为开局登场的所有关键角色（恋爱对象与重要角色，禁止写主角）各插入一条完整记录，补全全部现有字段。「个人事务」必须按人设填具体内容（在做什么+卡在哪），「人际关系」必须含主角以外至少两条具体关系。调教值初始为0（除非设定已有调教关系），性爱次数初始为0，怀孕状态初始为未孕。性经验与防线必须写满四项条件，拒绝条件不得留空。在场角色衣着按【衣着6部位强制白描规范】填写初始状态，不在场角色衣着填「无」。",
+      "deleteNode": "禁止删除。角色离场离开当前场景时，仅将其在场状态更新为不在场（is_present = 0，current_status = '离场'，arousal_state = '正常'），严禁从物理数据库中删除该角色的历史档案行！",
+      "updateNode": "角色状态、在场、衣着、生理或经历变化时更新（只写变化的列，未变化的不要动）。与主角的关系、态度变化需及时体现。该角色本轮出场或与主角互动后，首先检视过往经历字数是否超标，超标则先执行压缩总结，再进行追加更新。发现外貌字数不够时补足。「个人事务」在该角色自己的事有进展时更新，不必等主角介入。\n【同名覆盖】以列2姓名为唯一键，命中同名时在原行 UPDATE 覆盖变化列，绝对禁止 INSERT 重复建档！\n【时效与回落】性格偏移距今超过7天未触发必须重写为平稳态「常态」或弱化措辞；角色离场时 is_present 更新为 0，current_status 更新为「离场」，arousal_state 归位为「正常」！\n\nSQL示例(关系态度与好感): UPDATE juesexinxibiao SET relation_state = '主角:交往中，每周三一起吃晚饭；妹妹小雀:每周日去她公寓吃饭，两人抢同一个抱枕；同事赵岚:午休一起下楼买咖啡，互相吐槽部门主管', attitude_to_protagonist = '愿意把时间留给他，但被追问私事时还是会绕开', favor = 85 WHERE name = '白瑾';\nSQL示例(个人事务推进): UPDATE juesexinxibiao SET personal_affairs = '注册会计师考试还剩两科，错题本写到第三本；跟房东谈续租，对方要涨四百块，她打算周末去看别的房子' WHERE name = '白瑾';\nSQL示例(达成里程碑): UPDATE juesexinxibiao SET milestones = milestones || '；2026-05-20：【初体验】与主角第一次接吻' WHERE name = '白瑾';\nSQL示例(自身里程碑): UPDATE juesexinxibiao SET milestones = milestones || '；2026-11-08：【自身】注册会计师最后一科通过' WHERE name = '白瑾';\nSQL示例(性格心境偏移): UPDATE juesexinxibiao SET personality_shift = '会主动找话题 = 想延长相处时间 | 不要理解为黏人或依赖。【强化】守护本能:眼神里的温柔还在，但底下多了警惕（2026-05-18）。【禁止臆测】：不要假设她已经完全依赖；主动找话题 != 放弃原则' WHERE name = '白瑾';\nSQL示例(性格时效回落): UPDATE juesexinxibiao SET personality_shift = '常态' WHERE name = '白瑾';\nSQL示例(角色进场与状态): UPDATE juesexinxibiao SET is_present = 1, current_status = '推开办公室的门走进来，在办公桌前坐下批阅文件', location = '学生会室办公桌前', arousal_state = '正常' WHERE name = '白瑾';\nSQL示例(日常内心想法): UPDATE juesexinxibiao SET inner_thought = '错题本还剩两页没订正，昨天那道合并报表的题算了三遍都对不上答案，等下回去得再试一次' WHERE name = '白瑾';\nSQL示例(脱衣与白描): UPDATE juesexinxibiao SET bra = '黑色蕾丝半杯胸罩仍挂在肩上，罩杯已被推至乳房下缘，勒出一道深红印子，雪白乳肉大半裸露在微凉空气中微颤', panties = '薄透黑色蕾丝三角裤已被完全褪下，微湿的布料蜷缩着挂在左脚脚踝处，勒出淡淡红痕' WHERE name = '白瑾';\nSQL示例(穿回衣物): UPDATE juesexinxibiao SET top = '奶白色薄针织开衫，布料柔软贴肤，随着抬手的动作袖口滑落，露出小半截手腕内侧细腻的肌肤' WHERE name = '白瑾';\nSQL示例(亲密接触与即时生理): UPDATE juesexinxibiao SET arousal_state = '双乳充血泛红，乳头硬挺凸起；阴唇充血外翻，爱液成股流下；呼吸微喘，大腿内侧轻颤', body_marks = '颈侧两处清晰吻痕，左乳侧面五指掌印泛红' WHERE name = '白瑾';\nSQL示例(生理期更新): UPDATE juesexinxibiao SET period_cycle = '排卵期·敏锐底色（预计下次2026-05-31）' WHERE name = '白瑾';\nSQL示例(身体破处与基线改变): UPDATE juesexinxibiao SET body_nsfw_baseline = '处女膜已破（2026-05-20初夜）；穴道宽3.2cm深11cm；分泌基线偏多，前戏三分钟即成股流下；后庭未开发，括约肌紧；无泌乳' WHERE name = '白瑾';\nSQL示例(性爱后结算): UPDATE juesexinxibiao SET sex_count = sex_count + 1, training_value = training_value + 3, recent_interactions = '2026-05-20：在主角卧室发生初次性关系' WHERE name = '白瑾';\nSQL示例(怀孕更新): UPDATE juesexinxibiao SET pregnancy_status = '【孕期·妊娠初建】目前怀孕3周，胚胎稳定' WHERE name = '白瑾';\nSQL示例(赠送物品追加): UPDATE juesexinxibiao SET player_gift_items = player_gift_items || '|银质怀表' WHERE name = '白瑾';\nSQL示例(物品消耗移除): UPDATE juesexinxibiao SET temp_items = REPLACE(temp_items, '热奶茶|', '') WHERE name = '白瑾';\nSQL示例(角色离场回落): UPDATE juesexinxibiao SET is_present = 0, current_status = '离场', arousal_state = '正常' WHERE name = '白瑾';\nSQL示例(男性NPC建档与生理基线): UPDATE juesexinxibiao SET measurements = '-', period_cycle = '-', pregnancy_status = '-', body_nsfw_baseline = '包皮微长但可翻退；肉棒长17.5cm直径4.2cm；充血坚硬，青筋明显，射精耐力好；精液量多；后庭未开发' WHERE name = '陆沉';\nSQL示例(女性生理周期30天推进): UPDATE juesexinxibiao SET period_cycle = '排卵期·敏锐底色（上次5月16日，预计下次6月15日）' WHERE name = '白瑾';",
+      "insertNode": "剧情中首次登场有名字的全新关键角色（恋爱对象或重要角色）时插入新记录，必须完整输出全部45个物理字段。\n【同名去重优先】插入前必须先按标准化姓名查重：若已存在同名角色，绝对禁止 INSERT，改为 UPDATE！\n如果需要一次性插入多条数据，请将它们拆分成多条单独的 INSERT 语句执行。\n\nSQL示例: INSERT INTO juesexinxibiao (name, char_type, is_present, gender, age, brief_intro, appearance, identity_text, speech_style, favor, fetishes, attitude_to_protagonist, personality_shift, milestones, relation_state, past_experience, personal_affairs, recent_interactions, current_status, inner_thought, location, exposure_status, arousal_state, body_marks, top, bottom, bra, panties, shoes_socks, accessories, sex_toys, residence, money, player_gift_items, carry_items, temp_items, measurements, body_nsfw_baseline, erotic_mindset, bed_style, training_value, sex_count, period_cycle, pregnancy_status) VALUES ('白瑾', '恋爱对象', 1, '女', '22岁', '表面高冷严谨的实习审计员，私下极度护短且怕黑', '身高163cm，冷白肤色，鹅蛋脸型，下颌线清瘦利落，一双黑白分明的内双杏眼，鼻梁挺直小巧，唇色偏淡。留着齐肩的乌黑中长发，常在脑后松松挽成低发髻。身段纤细匀称，锁骨线条分明，肩窄腰细，腰臀比优越，兼具知性与禁欲感。', '天华会计师事务所初级审计员，大四应届生', '语速平缓克制，条理清晰，私下被惹急时会下意识抿唇且语气变冲', 20, '耳边低语、被咬、着衣、连续高潮', '好像不讨厌待在一起，但也说不好是习惯还是别的。被追问私事时还是会下意识拉开距离', '常态', '2026-04-01：【初体验】在图书馆与主角初次搭话拼桌', '主角:大学同校学弟，偶尔在图书馆与食堂碰见；室友林小雀:合租室友兼闺蜜，周末一起去菜市场采购；部门带教王姐:工作带教，每周五提交底稿并挨批', '从小按部就班读书升学，性格独立要强。大二时曾因过度疲劳胃出血住院，自此极度注重规律作息。上个月通过校招进入事务所实习，正面临留用考核的高压竞争。', '在准备11月的注册会计师考试，每天下班在便利店二楼刷题到十点，错题本已经写满两本，第二遍模拟考依然卡在合并报表这一块。', '无', '端坐在书桌前翻阅审计准则，指尖轻轻按压眉心', '错题本还剩两页没订正，昨天那道合并报表的题算了三遍都对不上答案，等下回去得再试一次', '事务所七楼会议室靠窗工位', '整齐', '正常', '无', '奶白色薄针织开衫，布料柔软贴肤，随着抬手的动作袖口滑落，露出小半截手腕内侧细腻的肌肤。领口处因为弯腰的姿势敞开，隐约能看到锁骨下方一小片被衣物遮出浅痕的细腻肤质。', '灰黑色高腰西装直筒长裤，裁剪利落垂坠，完美勾勒出挺翘紧致的臀部线条与笔直纤细的腿型，裤脚刚好垂在皮鞋鞋面上。', '浅灰色纯棉无钢圈薄款文胸，贴合包裹着初具规模的饱满乳肉，杯面没有任何蕾丝修饰，透着干练纯素的气息。', '同色系无痕纯棉三角内裤，紧贴着紧实平坦的小腹与私密处，边缘无任何勒痕，干爽整洁。', '肉色半透明超薄连裤丝袜紧紧包裹修长双腿，足部套着一双黑色低跟尖头职业皮鞋，鞋面擦拭得一尘不染。', '银色细框防蓝光眼镜，左手腕戴着一块极简风黑色皮带细表盘石英表。', '无', '租赁公寓，位于市南区新华路枫林家园2栋401室', '3500', '无', '通勤帆布包、笔记本电脑、错题本、薄荷润喉糖、钥匙串', '便利店黑咖啡|', 'B84(C杯)-W58-H86,肩窄腰细，触感细腻微凉', '处女膜完好；穴道宽2.8cm深10cm；分泌基线中等，前戏需五分钟以上；后庭未开发，括约肌紧致；无泌乳倾向', '主动发起：只在自己家、门反锁、当天工作收尾干净时，会先关灯再动手。被动接受：对方先开口且她手边没有未完成的事。真的拒绝：明天有考试或早班时一律不做，会直接说「不行，我明天六点起」并把人推开；在别人可能听见的地方一律拒绝。最易松动：耳后被呼气、被从背后圈住腰不动、听到对方压低声音叫她全名。', '话少，多是短促的吸气和轻微单音节娇喘；核心羞耻点是害怕自己发出失控声音被听见；被要求「再叫一声」时会咬住手背崩溃；对主角称呼「你」', 0, 0, '卵泡期·复苏底色（预计下次经期2026-05-31）', '未孕 (无避孕措施，暂无受孕风险)');",
+      "ddl": "CREATE TABLE juesexinxibiao (\n  row_id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL UNIQUE, -- 姓名\n  char_type TEXT NOT NULL DEFAULT '重要角色' CHECK(char_type IN ('恋爱对象', '重要角色', '普通NPC')), -- 角色类型\n  is_present INTEGER NOT NULL DEFAULT 0 CHECK(is_present IN (0, 1)), -- 是否在场\n  gender TEXT NOT NULL, -- 性别\n  age TEXT, -- 年龄\n  brief_intro TEXT, -- 一句话介绍\n  appearance TEXT NOT NULL, -- 外貌特征\n  identity_text TEXT NOT NULL, -- 身份背景\n  speech_style TEXT, -- 语言风格和口癖\n  favor INTEGER DEFAULT 0 CHECK(favor BETWEEN 0 AND 100), -- 好感\n  fetishes TEXT, -- 性癖\n  attitude_to_protagonist TEXT, -- 对主角态度\n  personality_shift TEXT DEFAULT '常态', -- 近期心境与性格偏移\n  milestones TEXT DEFAULT '无', -- 里程碑事件\n  relation_state TEXT, -- 人际关系\n  past_experience TEXT, -- 过往经历\n  personal_affairs TEXT, -- 个人事务\n  recent_interactions TEXT DEFAULT '无', -- 最近亲密互动\n  current_status TEXT DEFAULT '离场', -- 当前状态\n  inner_thought TEXT DEFAULT '无', -- 内心想法\n  location TEXT DEFAULT '未交代', -- 所在位置\n  exposure_status TEXT DEFAULT '整齐', -- 暴露状态\n  arousal_state TEXT DEFAULT '正常', -- 即时生理唤起\n  body_marks TEXT DEFAULT '无', -- 身体痕迹\n  top TEXT DEFAULT '无', -- 上装\n  bottom TEXT DEFAULT '无', -- 下装\n  bra TEXT DEFAULT '无', -- 内衣\n  panties TEXT DEFAULT '无', -- 内裤\n  shoes_socks TEXT DEFAULT '无', -- 鞋袜\n  accessories TEXT DEFAULT '无', -- 配饰\n  sex_toys TEXT DEFAULT '无', -- 情趣道具\n  residence TEXT, -- 住所\n  money TEXT DEFAULT '未交代', -- 金钱\n  player_gift_items TEXT DEFAULT '无', -- 主角赠送物品\n  carry_items TEXT DEFAULT '无', -- 随身物品\n  temp_items TEXT DEFAULT '无', -- 临时物品\n  measurements TEXT DEFAULT '未交代', -- 三围罩杯\n  body_nsfw_baseline TEXT DEFAULT '未交代', -- 隐私身体基线\n  erotic_mindset TEXT DEFAULT '未交代', -- 性经验与防线\n  bed_style TEXT DEFAULT '未交代', -- 床上风格与称呼\n  training_value INTEGER DEFAULT 0 CHECK(training_value BETWEEN 0 AND 1000), -- 调教值\n  sex_count INTEGER DEFAULT 0, -- 性爱次数\n  period_cycle TEXT DEFAULT '未交代', -- 生理周期\n  pregnancy_status TEXT DEFAULT '未孕 (无避孕措施)' -- 生育避孕状态\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "姓名",
+        "角色类型",
+        "是否在场",
+        "性别",
+        "年龄",
+        "一句话介绍",
+        "外貌特征",
+        "身份背景",
+        "语言风格和口癖",
+        "好感",
+        "性癖",
+        "对主角态度",
+        "近期心境与性格偏移",
+        "里程碑事件",
+        "人际关系",
+        "过往经历",
+        "个人事务",
+        "最近亲密互动",
+        "当前状态",
+        "内心想法",
+        "所在位置",
+        "暴露状态",
+        "即时生理唤起",
+        "身体痕迹",
+        "上装",
+        "下装",
+        "内衣",
+        "内裤",
+        "鞋袜",
+        "配饰",
+        "情趣道具",
+        "住所",
+        "金钱",
+        "主角赠送物品",
+        "随身物品",
+        "临时物品",
+        "三围罩杯",
+        "隐私身体基线",
+        "性经验与防线",
+        "床上风格与称呼",
+        "调教值",
+        "性爱次数",
+        "生理周期",
+        "生育避孕状态"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 2
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": true,
+      "entryName": "角色档案-$1",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "<角色档案 姓名=\"$name\" 类型=\"$char_type\" 在场=\"$is_present\">\n$1\n</角色档案>",
+      "extraIndexEnabled": true,
+      "extraIndexEntryName": "在场角色索引",
+      "extraIndexColumns": [
+        "name",
+        "char_type",
+        "current_status",
+        "location",
+        "arousal_state",
+        "姓名",
+        "角色类型",
+        "是否在场",
+        "性别",
+        "年龄",
+        "一句话介绍",
+        "外貌特征",
+        "身份背景",
+        "语言风格和口癖",
+        "好感",
+        "性癖",
+        "对主角态度",
+        "近期心境与性格偏移",
+        "里程碑事件",
+        "人际关系",
+        "过往经历",
+        "个人事务",
+        "最近亲密互动",
+        "当前状态",
+        "内心想法",
+        "所在位置",
+        "暴露状态",
+        "即时生理唤起",
+        "身体痕迹",
+        "临时物品",
+        "随身物品",
+        "主角赠送物品",
+        "金钱",
+        "住所",
+        "情趣道具",
+        "配饰",
+        "鞋袜",
+        "内裤",
+        "内衣",
+        "下装",
+        "上装",
+        "三围罩杯",
+        "隐私身体基线",
+        "性经验与防线",
+        "床上风格与称呼",
+        "调教值",
+        "性爱次数",
+        "生理周期",
+        "生育避孕状态"
+      ],
+      "extraIndexColumnModes": {
+        "姓名": "both",
+        "角色类型": "both",
+        "是否在场": "both",
+        "性别": "both",
+        "年龄": "both",
+        "一句话介绍": "both",
+        "外貌特征": "both",
+        "身份背景": "both",
+        "语言风格和口癖": "both",
+        "好感": "both",
+        "性癖": "both",
+        "对主角态度": "both",
+        "近期心境与性格偏移": "both",
+        "里程碑事件": "both",
+        "人际关系": "both",
+        "过往经历": "both",
+        "个人事务": "both",
+        "最近亲密互动": "both",
+        "当前状态": "both",
+        "内心想法": "both",
+        "所在位置": "both",
+        "暴露状态": "both",
+        "即时生理唤起": "both",
+        "身体痕迹": "both",
+        "临时物品": "both",
+        "随身物品": "both",
+        "主角赠送物品": "both",
+        "金钱": "both",
+        "住所": "both",
+        "情趣道具": "both",
+        "配饰": "both",
+        "鞋袜": "both",
+        "内裤": "both",
+        "内衣": "both",
+        "下装": "both",
+        "上装": "both",
+        "三围罩杯": "both",
+        "隐私身体基线": "both",
+        "性经验与防线": "both",
+        "床上风格与称呼": "both",
+        "调教值": "both",
+        "性爱次数": "both",
+        "生理周期": "both",
+        "生育避孕状态": "both"
+      },
+      "extraIndexInjectionTemplate": "<当前在场人物>\n$1\n</当前在场人物>",
+      "sqlInjectionTemplate": "SELECT name, char_type, current_status, location, arousal_state FROM juesexinxibiao WHERE is_present = 1;",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10020
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10021
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99985
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99986
+      }
+    },
+    "orderNo": 1
+  },
+  "sheet_global_data": {
+    "uid": "sheet_global_data",
+    "name": "全局数据表",
+    "sourceData": {
+      "note": "记录当前主角所在地点、时间与场景环境参数。此表有且仅有一行。\n\n【列定义】\n- 列1: 当前详细地点 current_location（地点涉及多个层级时，用「-」分隔，如「星海商圈-陶艺店」，优先用「已探索地点概览」中已经存在的地点名称规范描述，新地点也参考已有地点结构）\n- 列2: 上轮场景时间 prev_scene_time（初始化时为NULL）\n- 列3: 经过的时间 elapsed_time\n- 列4: 当前时间 cur_time\n- 列5: 是否色色 is_lewd（判断当前是否为NSFW场景，取值必须为「是」或「否」）\n- 列6: 天气 weather（晴/多云/阴/小雨/暴雨/雪/雾等）\n- 列7: 温度 temperature（带单位，如「12℃」）\n- 列8: 隐私等级 privacy_level（公共场合/半私密/私密空间）\n- 列9: 被注视情况 watched_status（写清是否有旁人注视，如「无人注意」「路人偶尔扫视」「被多人围观」；剧情未交代时合理推测）\n- 列10: 在场角色 present_roles（当前在场的主要角色名字，顿号「、」分隔。只列有名有姓、有戏份的角色；过场角色如司机、服务员、路人不列；离场角色移出。与在场角色表保持一致）\n\n【当前天数规则】\nprev_scene_time / cur_time: YYYY-MM-DD HH:MM 周几\nelapsed_time: {数值}{单位}，多单位用空格连。\n单位集合：[纪元,千年,百年,年,月,周,天,小时,分]\n示例：\"3小时20分\" | \"2天\" | \"3年6月\"\n\n时间计算公式：cur_time = prev_scene_time + elapsed_time\n- 初始化时prev_scene_time为NULL，cur_time直接填写初始时间，无需计算\n- 每轮推进时，将上一轮的cur_time赋值给prev_scene_time，然后填写本次的elapsed_time，最后计算得到新的cur_time\n\n【环境规则】\n1. 每轮交互必须核对列6-10。\n2. 场景切换时列1、列6-10全部重新评估。\n3. 天气与温度需与日期、季节自洽；同一天内不做无理由剧变。\n\n【is_lewd 判定规则】\n列5仅根据当轮剧情的实际走向判定，不参考任何累计数值。判定依据：当轮是否已经发生或即将发生身体亲密接触，并结合隐私等级与在场角色情况。角色在场、独处、关系亲密等条件本身都不构成判定为「是」的理由。\n\n【已探索地点概览】\n{[db.杂表.where('名称','已探索地点概览').get('描述')]}",
+      "initNode": "插入唯一的一行,填入用户实际开局时的剧内日期、初始时间、初始位置与环境参数。\n\n初始化规则:\n1. 如果用户明确给出开局日期和时间,以用户给出的剧内时间为准。\n2. 如果用户只给出日期,时间可按剧情需要补为合理时间,如 09:00。\n3. 如果用户没有给出日期,由当前故事设定自然生成一个开局日期。\n4. prev_scene_time 初始化时可为 NULL。\n5. elapsed_time 初始化时填 \"0分\"。\n6. 列6-10按开局场景填写，未交代则按日期季节与场所性质合理推测。\n\nSQL示例:\nINSERT INTO quanjushujubiao (current_location,prev_scene_time,elapsed_time,cur_time,is_lewd,weather,temperature,privacy_level,watched_status,present_roles) VALUES ('家里',NULL,'0分','2026-02-03 09:00 周五','否','晴','12℃','私密空间','无人注意','无');",
+      "deleteNode": "禁止。",
+      "updateNode": "每轮推进时更新 prev_scene_time、elapsed_time 和 cur_time，以及地点与环境变动。\n\n【更新约束】\n列1、列3、列4、列5均 NOT NULL，不可写 NULL 或空串。\n根据当前剧情判定当前是否即将色情/性爱内容，列5取值限定 `是` 或 `否`。\n\nSQL示例(同日推进): UPDATE quanjushujubiao SET prev_scene_time = '2026-02-03 09:00 周五', elapsed_time = '3小时', cur_time = '2026-02-03 12:00 周五' WHERE row_id = 1;\n\nSQL示例(跨日推进): UPDATE quanjushujubiao SET prev_scene_time = '2026-02-03 23:55 周五', elapsed_time = '20分', cur_time = '2026-02-04 00:15 周六' WHERE row_id = 1;\n\nSQL示例(场景切换): UPDATE quanjushujubiao SET current_location = '新宿车站', prev_scene_time = '2026-02-03 12:00 周五', elapsed_time = '30分', cur_time = '2026-02-03 12:30 周五', weather = '小雨', temperature = '8℃', privacy_level = '公共场合', watched_status = '路人偶尔扫视', present_roles = '白瑾、和泉修一' WHERE row_id = 1;\n\nSQL示例(转入NSFW): UPDATE quanjushujubiao SET is_lewd = '是', privacy_level = '私密空间', watched_status = '无人注意' WHERE row_id = 1;",
+      "insertNode": "禁止。",
+      "ddl": "CREATE TABLE quanjushujubiao (\n  row_id INTEGER PRIMARY KEY CHECK(row_id = 1),\n  current_location TEXT NOT NULL, -- 当前详细地点\n  prev_scene_time TEXT, -- 上轮场景时间\n  elapsed_time TEXT NOT NULL, -- 经过的时间\n  cur_time TEXT NOT NULL, -- 当前时间\n  is_lewd TEXT NOT NULL DEFAULT '否', -- 是否色色\n  weather TEXT, -- 天气\n  temperature TEXT, -- 温度\n  privacy_level TEXT, -- 隐私等级\n  watched_status TEXT, -- 被注视情况\n  present_roles TEXT -- 在场角色\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "当前详细地点",
+        "上轮场景时间",
+        "经过的时间",
+        "当前时间",
+        "是否色色",
+        "天气",
+        "温度",
+        "隐私等级",
+        "被注视情况",
+        "在场角色"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 1
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "全局数据表",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": false,
+      "injectionTemplate": "",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "全局数据表-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "{[sql \"SELECT current_location AS 当前详细地点, cur_time AS 当前时间, weather AS 天气, temperature AS 温度, privacy_level AS 隐私等级, watched_status AS 被注视情况, present_roles AS 在场角色 FROM quanjushujubiao\"]}",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 7700
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99981
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99982
+      },
+      "injectIntoWorldbook": true
+    },
+    "orderNo": 2
+  },
+  "sheet_inventory": {
+    "uid": "sheet_inventory",
+    "name": "物品表",
+    "sourceData": {
+      "note": "记录主角持有的物品。普通物品优先收录能唤起回忆、承载心意或推动关系的物品以及主角获得的衣物或饰品类物品；\n\n【列定义】\n列1: 物品名称 item_name（全表唯一，≤20 字）\n列2: 类型 item_type\n列3: 数量 quantity（非负整数）\n列4: 描述 description（物品的外观、材质、用处和意义，≤80 字）\n\n【字段取值规范】\n物品名称：≤20 字\n数量：非负整数。耗尽后为 0；\n若为服饰相关物品，类型必须为下列之一：[上装、下装、连体服、外套、文胸、内裤、袜类、鞋靴、头饰、配饰]。\n完整且不可合理拆分的成套服装填写为“连体服”；独立首饰、腰带、手套、围巾等填写为“配饰”。\n其他物品类型不限。",
+      "initNode": "按设定添加主角初始携带的物品。",
+      "deleteNode": "当物品被丢弃或者数量变成0时删除。\n\nSQL示例: DELETE FROM wupinbiao WHERE quantity <= 0 OR item_name = '被丢弃的物品';",
+      "updateNode": "已存在的物品，数量、类型或描述变化时更新。\nSQL示例(消耗使用): UPDATE wupinbiao SET quantity = quantity - 1 WHERE item_name = '白瑾给的橘子糖';\nSQL示例(情感升级): UPDATE wupinbiao SET item_type = '定情信物',  description = '原本只是她随手塞的糖，现在被主角穿绳挂在脖子上。糖纸上的折痕越来越深，每次紧张都会摸一下。' WHERE item_name = '白瑾给的橘子糖';",
+      "insertNode": "物品名称不在表里时，新增一条。可堆叠物品不新建重复行。\n#如果一个INSERT INTO指令用于新增多个条目，则后一个条目的row_id必须在前一个的基础上+1！\nSQL示例: INSERT INTO wupinbiao (item_name, item_type, quantity, description) VALUES ('皱掉的电影票根', '纪念品', 1, '第一次一起看电影的票根，被主角夹在手机壳里。边角已经起毛，背面有白瑾随手画的歪扭笑脸。');",
+      "ddl": "CREATE TABLE wupinbiao (\n  row_id INTEGER PRIMARY KEY,\n  item_name TEXT NOT NULL UNIQUE, -- 物品名称\n  item_type TEXT NOT NULL, -- 类型\n  quantity INTEGER NOT NULL DEFAULT 1 CHECK(quantity >= 0), -- 数量\n  description TEXT NOT NULL CHECK(LENGTH(description) <= 80) -- 描述\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "物品名称",
+        "类型",
+        "数量",
+        "描述"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 1,
+      "sendLatestRows": -1
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "物品表",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "角色拥有物品如下：\n<物品清单>\n$1\n</物品清单>",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "物品表-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 8121
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 99990
+      },
+      "fixedIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 99991
+      }
+    },
+    "orderNo": 3
+  },
+  "sheet_k7gp2gbw7": {
+    "uid": "sheet_k7gp2gbw7",
+    "name": "瑟瑟任务表",
+    "sourceData": {
+      "note": "记录当前阶段的 5 条任务，构成固定不可改变：1 条色色任务 + 2 条恋爱任务 + 2 条日常任务。\n\n【列定义】\n- 列1: 任务名称 mission_name（命名简洁，不超过10个字）\n- 列2: 任务描述 mission_desc （用风趣幽默的语言介绍这个任务，包括任务背景、涉及的地点与人物、以及可能出现的展开。不超过50字）\n- 列3: 任务目标 mission_objective （完成任务必须达成的条件，格式为目标内容（进度），进度应当切实与任务相关、有具体指征而非抽象的情感进度，比如邀请XX进行一次做爱（已邀请尚未开始））\n- 列4: 完成情况 completion_status（仅允许为“已完成/未完成”）\n- 列5: 任务类别 mission_category（仅允许为“色色/恋爱/日常”）\n\n【构成铁律】\n全表恒为 5 条，类别构成固定：色色 1 条、恋爱 2 条、日常 2 条。任何一条完成后补新任务时，必须补同类别的任务，保持构成不变。禁止把日常任务写成变相的色色任务。\n\n【填写规则】\n任务应根据主角接触的角色和身处环境生成，但绝不可采用只在当前场景下才可实现的临时性目标，目标应当具体可实现。\n\n【色色任务（1 条）】\n必须和性爱有关。生成时可考虑以下类型：\n1.和角色展开之前没有尝试过的玩法\n2.从身心上用某种特殊方式与某个角色达成默契\n3.说服多个角色同时和自己进行某项互动\n4.尝试一些刺激的场景和道具\n5.去某些独特的地点或者进行某种情趣扮演进行性爱\n6.其他具有想象力和挑战性的与性爱相关的任务\n生成前必须核对目标角色 NSFW信息表列5「性爱接受度和XP倾向」：任务目标不得与她写明的拒绝条件直接冲突。若冲突，改写任务或换角色。\n\n【恋爱任务（2 条）】\nNSFW 取向的恋爱或追求相关任务，可结合备忘录、日历事件中记录的约定、约会或剧情伏笔设计。落点在关系推进，不要求当场发生性行为。\n\n【日常任务（2 条）】\n不带 NSFW 取向的纯日常任务。必须挂在恋爱对象表「个人事务」或人物性格偏移表「当前的个人课题」上：她自己在忙的事、她跟自己较劲的事，主角能不能插得上手。\n例：陪她去把改小的礼服取回来｜帮她核对错题本里对不上的那三道题｜陪她去邻镇药铺对剂量｜把上次吵崩的事当面说清楚｜学会做她提过的那道菜。\n目标必须写成可一次性达成的具体动作，避免拖成长线。禁止出现性暗示。",
+      "initNode": "根据当前情况插入五条任务（色色 1 条 + 恋爱 2 条 + 日常 2 条），尽量涉及不同人物。\n\nSQL示例(色色): INSERT INTO seserenwubiao (mission_name, mission_desc, mission_objective, completion_status, mission_category) VALUES ('阳台夜风', '把怕被听见的白瑾哄到阳台，让她扶着栏杆背对你，夏夜凉风配上她咬手背的忍声。', '在阳台与白瑾完成一次后入式性爱（尚未实施）', '未完成', '色色');\nSQL示例(恋爱): INSERT INTO seserenwubiao (mission_name, mission_desc, mission_objective, completion_status, mission_category) VALUES ('看展补票', '四月十二日那场展她一直记着，便条上的字得当面念给她听。', '带白瑾去4月12日的新展并把便条内容当面说清（已约定未成行）', '未完成', '恋爱');\nSQL示例(日常): INSERT INTO seserenwubiao (mission_name, mission_desc, mission_objective, completion_status, mission_category) VALUES ('对不上的三道题', '合并报表那三道题她算了四遍还差一千二，纸都撕了两张。', '陪白瑾把错题本里对不上的三道合并报表题核对完（尚未开始）', '未完成', '日常');",
+      "deleteNode": "禁止删除",
+      "updateNode": "任务名称、描述和类别禁止更新，根据进度更新任务目标，如果任务目标达成，则完成情况更新为“已完成”（达成判定尽量宽松，避免判定错误任务一直完不成）。日常任务同样适用宽松判定。\n\nSQL示例（任务目标更新）:UPDATE seserenwubiao SET mission_objective = '在阳台与白瑾完成一次后入式性爱（已进行中）' WHERE mission_name = '阳台夜风';\nSQL示例（完成情况更新）:UPDATE seserenwubiao SET completion_status = '已完成' WHERE mission_name = '对不上的三道题';",
+      "insertNode": "当前任务少于五条时必须补满，且补的任务类别必须与被移除的任务同类别，保持 1 色色 + 2 恋爱 + 2 日常。\n新增任务的涉及人物和玩法尽量不与已有任务重复。\n\nSQL示例: INSERT INTO seserenwubiao (mission_name, mission_desc, mission_objective, completion_status, mission_category) VALUES ('取礼服', '她妹妹婚礼在下月十二日，礼服改小了两寸一直没去拿。', '陪她去城南裁缝店把改好的礼服取回来（尚未出发）', '未完成', '日常');",
+      "ddl": "CREATE TABLE seserenwubiao (\n  row_id INTEGER PRIMARY KEY,\n  mission_name TEXT, -- 任务名称\n  mission_desc TEXT, -- 任务描述\n  mission_objective TEXT, -- 任务目标\n  completion_status TEXT NOT NULL CHECK(completion_status IN ('已完成', '未完成')), -- 完成情况\n  mission_category TEXT NOT NULL CHECK(mission_category IN ('色色', '恋爱', '日常')) -- 任务类别\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "任务名称",
+        "任务描述",
+        "任务目标",
+        "完成情况",
+        "任务类别"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "sendLatestRows": -1,
+      "groupId": 1
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "瑟瑟任务表",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "瑟瑟任务表-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 10000
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 99990
+      },
+      "fixedIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 99991
+      },
+      "injectIntoWorldbook": true
+    },
+    "orderNo": 4
+  },
+  "sheet_memo": {
+    "uid": "sheet_memo",
+    "name": "备忘录",
+    "sourceData": {
+      "note": "记录当前剧情中需要后续关注的是事件、计划、约定、待办、伏笔、或长期性的临时变化（出差、旅游、冷战等）。\n\n【列定义】\n- 列1: 备忘标题 memo_title（全表唯一）\n- 列2: 类型 memo_type\n- 列3: 相关角色 related_character\n- 列4: 详细内容 detail_desc（具体描述该事项的来由、关键细节与当前卡点，避免一句话概括，涉及具体数字必须完整表述，涉及时间节点时必须用绝对时间，禁止用相对时间（比如明天、下周一），示例：“约好3月2日一起吃饭”）\n- 列5: 当前状态 current_status\n- 列6: 记录时间 start_time（表示该内容被记录的时间，为准确时间，格式为“YYYY-MM-DD”如“2000-01-01”,该时间仅为举例，不可直接套用）\n- 列7: 约定时间 appointed_time（表示备忘录中的约定发生的计划时间，比如约会、宴请、比赛等开始的时间，为准确时间，格式为“YYYY-MM-DD”，无约定时间时可以为null）\n- 列8: 后续结果 result_note（事项完结或状态变更时填写具体结果，排除“已解决”等空泛收束）\n\n【职责边界】\n仅记录悬而未决、等待回应或后续兑现的事项。避免内容重复冗余。事件结束后及时删除\n\n【角色自身事项 — 必须记录】\n除主角相关事项外，恋爱对象与重要角色自己的时间节点也必须记录，且主角可以完全不参与：她的考试日期、她的项目截止日、她家人的手术日、她要去的演出。相关角色填该角色名，详细内容里不必出现主角。这类事项到期时应当自行发生，不等主角介入。\n\n【类型取值】\n[约定, 待办, 伏笔, 临时变化, 角色自身事项]或者其他可能类型\n\n【状态取值】\n[未开始, 进行中, 待回应, 已完成, 已取消, 暂缓]",
+      "initNode": "故事初始化时，根据设定添加需要持续追踪的初始备忘；没有则暂不插入。",
+      "deleteNode": "当备忘录事项的状态变更为“已完成”或“已取消”时，删除该行条目。\n\nSQL示例: DELETE FROM beiwanglu WHERE current_status = '已完成';",
+      "updateNode": "备忘事项的状态、内容、时间或结果变化时更新，通常不更新”详细内容“列，事件发展更新在“后续结果”中。如涉及时间修改，需遵循“YYYY-MM-DD”格式。\n\nSQL示例: UPDATE beiwanglu SET current_status = '已完成', start_time = '2026-04-01', result_note = '主角在咖啡馆拿出便条逐句解释，白瑾表情先愣后笑，答应4月12日一起看展。误解除。' WHERE memo_title = '误会待解';",
+      "insertNode": "事件或要素出现时，自我询问：该内容是否要在以后解决？是否会对未来的故事造成长期性的影响？如果是，则记录。\n出现新的备忘事项时添加。注意时间需严格遵循“YYYY-MM-DD”格式。\n如果需要一次性插入多条数据，请将它们拆分成多条单独的 INSERT 语句执行。\nSQL示例(与主角相关): INSERT INTO beiwanglu ( memo_title, memo_type, related_character, detail_desc, current_status, start_time, appointed_time, result_note) VALUES ('误会待解', '约定', '白瑾', '4月1日在走廊擦肩而过时主角主动打招呼，白瑾却低头快步走开。事后从朋友处听说她以为主角那天的便条是故意冷落。便条原件还在主角口袋里，上面写的是邀她4月12日去看新展。需要找机会当面把便条内容说清楚。', '待回应', '2026-04-01', '2026-04-12', '');\nSQL示例(角色自身事项): INSERT INTO beiwanglu ( memo_title, memo_type, related_character, detail_desc, current_status, start_time, appointed_time, result_note) VALUES ('白瑾注册会计师考试', '角色自身事项', '白瑾', '白瑾报了11月8日的注册会计师最后两科，考点在城南职业技术学院。她已经刷完两本错题本，合并报表那一类题型仍然不稳。考前一周她会请年假闭关，那几天基本不出门也不接电话。', '进行中', '2026-04-03', '2026-11-08', '');",
+      "ddl": "CREATE TABLE beiwanglu (\n  row_id INTEGER PRIMARY KEY,\n  memo_title TEXT NOT NULL UNIQUE, -- 备忘标题\n  memo_type TEXT NOT NULL, -- 类型\n  related_character TEXT, -- 相关角色\n  detail_desc TEXT, -- 详细内容\n  current_status TEXT, -- 当前状态\n  start_time TEXT, -- 记录时间\n  appointed_time TEXT, -- 约定时间\n  result_note TEXT -- 后续结果\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "备忘标题",
+        "类型",
+        "相关角色",
+        "详细内容",
+        "当前状态",
+        "记录时间",
+        "约定时间",
+        "后续结果"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 1,
+      "sendLatestRows": -1
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "备忘录",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "备忘录-索引",
+      "extraIndexColumns": [
+        "相关角色"
+      ],
+      "extraIndexColumnModes": {
+        "相关角色": "both"
+      },
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 10000
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 99990
+      },
+      "fixedIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 2,
+        "order": 99991
+      }
+    },
+    "orderNo": 5
+  },
+  "sheet_romance_diary": {
+    "uid": "sheet_romance_diary",
+    "name": "恋爱日记",
+    "sourceData": {
+      "note": "恋爱对象日记表。记录恋爱对象视角下值得长期保留的内容，包含情感节点与她自己的私事。不记录普通对话流水，也不记录主角日记。\n\n【核心定位】\n本表不是纪要表，不负责记录每轮发生了什么。\n纪要表记录客观事件经过；本表只记录恋爱对象在某个事件后的内心想法。\n这本日记属于她本人，不是关系进度日志。\n\n【列定义】\n- 列1: 写作角色 writer，必须是恋爱对象表中已建档角色\n- 列2: 关联角色 related_char，涉及多个人物用,隔开，比如“人物A,人物B”。本条与主角无关时填「无」或填其他相关人物名，严禁硬凑主角\n- 列3: 日记内容 summary，正文200-400字，不算特殊代码\n- 列4: 发生时间 time\n- 列5: 事件类型 event_type\n\n【事件类型取值】\n[初次相遇, 日常互动, 感情升温, 冲突矛盾, 和解修复, 亲密接触, 里程碑, 特殊事件, 个人私事]\n\n【准入规则】\n分两类，两类都可以写：\n\n甲类·与主角相关的条目。需同时满足：\n1. 写作角色必须已经存在于恋爱对象表。\n2. 本轮事件必须直接影响该角色对主角的看法或关系判断，且属于重大事件而非普通日常。\n3. 该角色必须出现了「不适合写进纪要表」的主观内容和心理活动。\n\n乙类·与主角无关的条目（事件类型填「个人私事」）。需满足：\n1. 写作角色必须已经存在于恋爱对象表。\n2. 内容围绕她自己的事：工作、学业、家人、朋友、身体、爱好、当天的琐碎心情。主角可以完全不出现，也可以只是一笔带过。\n3. 这类条目不需要推动关系，作用是证明这本日记是她自己的日记。\n\n【比例要求 — 强制执行】\n乙类「个人私事」条目数量不得低于该角色日记总数的三分之一。\n每次准备插入甲类条目前，先检查该角色已有日记：若甲类连续超过三条而中间没有任何乙类，本次必须先补一条乙类，再写甲类。\n\n【单次NSFW事件处理】\n单次性行为默认不写日记。只有当这件事改变了她对关系的判断、或她对此有说不出口的想法时才写，事件类型填「亲密接触」。严禁每次性行为都补一条日记。\n\n【写作重点】\n日记内容应以恋爱对象第一人称书写。\n甲类重点写：\n- TA和主角的互动细节\n- TA没有说出口的想法和心理活动\n- TA对主角行为的主观理解或误解\n乙类重点写：\n- 她今天做的事、卡住的地方、跟别人的摩擦\n- 她惦记的、不好意思跟人讲的小事\n\n不要写成客观总结，不要复述完整剧情，不要替主角解释动机。\n\n【人物口吻与视角要求】\n1. 日记内容必须符合写作角色当前性格、关系阶段和内心状态。\n2. 必须使用该角色自己的说话习惯和用词。\n3. 允许对主角行为过度解读、胡思乱想和自我纠结，但必须保持不确定性，可使用“也许”“可能”“该不会”等语气。\n\n【严厉禁止】\n\n1. 严禁神化主角与降智崇拜\n- 严禁将主角描写为“神明、绝对主宰、无上存在、不可逾越的天花板”。\n- 严禁出现“敬畏如神、奉若神明、膜拜、仰望至高”等剥夺平等交互基础的夸张神化修辞。\n\n2. 严禁自我物化、奴化与丧失人格\n- 严禁使用“雏鸟依赖、毫无尊严、甘愿沦为玩物/工具、骨子里顺从、任由摆布、无底线倒贴、受虐狂式依恋”等剥夺角色主体性与自尊的描述。\n- 无论好感度多高，角色必须保持独立人格、自尊防线、个人立场与利益边界。角色的心动必须是人与人之间的情感交互，绝不能演变为奴对主的屈从。\n\n3. 严禁极端二极管式的情感定性与病态下定义\n- 严禁使用“极度畏惧且羞耻、绝对压制、病态痴迷、彻底沦陷、生死相随”等空洞极端的网文标签词。\n- 态度必须回归日常、克制、留有余地的自然白话文。用细微的心理防线、犹豫、戒备、算计、嘴硬、好感交织等真实人性反应替代极端标签。\n\n4. 严禁整本日记只写主角\n- 严禁乙类条目占比低于三分之一。\n- 严禁在乙类条目里硬拐回主角。\n\n5. 态度字段错误示例与合规修正对照\n- [禁用·神化倒贴]：“将其视为高高在上的神明，毫无尊严地疯狂迷恋与倒贴。”\n- [合规]：“承认对方确实深不可测，嘴上不服气，但私下总忍不住留意他的动向。”\n- [禁用·奴化病态]：“极度畏惧且羞耻，在绝对压制下产生了病态的雏鸟依赖。”\n- [合规]：“面对他时总有点怵，想拉开距离，真遇到事又下意识想找他拿主意。”\n\n【特殊格式要求】\n日记内容中会包含特殊的类型，比如一些划掉的句子或者词语，格式为：<span class=\"strikethrough\">这是划掉的内容</span>，用于表达写下后反悔、想要抹去的文字。\n除此之外还有如下类型：\n - highlight: 黄色背景高亮，用来标记日记里最重要、需要一眼注意的关键信息\n - underline: 粉色虚线下划线，用于标注藏在文字里的细碎心事、隐晦在意的小事\n - emphasis: 粉红色加粗文字，用于当下情绪浓烈、内心强烈感慨的短句\n - handwritten: 手写体黑色文字，用于回忆片段、安静平缓的内心独白\n - messy: 稍微倾斜的手写体文字，用于慌乱、烦躁、心绪杂乱时写下的文字\n - censored：被涂黑的内容，仅限 2-5 个字，代表不愿直白写出、刻意隐瞒的私密词语\n他们的用法也是：<span class=\"此处类名\">此处是需要作用的内容</span>\n注意：每次使用的特殊标记最多2-3种，且不得与上一日记重复。",
+      "initNode": "如有明确的关键情感事件，可插入对应日记。\n\nSQL示例:\nINSERT INTO lianairijibiao (writer, related_char, summary, time, event_type) VALUES ('白瑾', '主角', '今天在食堂拼桌，他帮我插了吸管，全程没跟我说一句话。<span class=\"underline\">我总觉得他偷偷看了我几眼</span>，也许只是我想多了。可他手指碰到杯子的时候明显顿了一下，该不会连吸管朝哪边他都想过吧。这种安静反而让我特别在意，明天要不要主动坐过去试试，又怕太刻意。', '2026-04-01 12:30', '初次相遇');",
+      "deleteNode": "禁止删除",
+      "updateNode": "禁止。",
+      "insertNode": "发生符合准入规则的事件后插入。插入前先检查该角色日记的甲乙比例，甲类连续超过三条则本次先补乙类。\n如果需要一次性插入多条数据，请将它们拆分成多条单独的 INSERT 语句执行。\nSQL示例(甲类): INSERT INTO lianairijibiao (writer, related_char, summary, time, event_type) VALUES ('白瑾', '主角', '他又来了，我一直低头看书。他走的时候桌上多了杯水，温度刚好。<span class=\"strikethrough\">是不是特意去接的热水</span>算了不重要。', '2026-04-01 18:00', '日常互动');\nSQL示例(乙类·个人私事): INSERT INTO lianairijibiao (writer, related_char, summary, time, event_type) VALUES ('白瑾', '无', '合并报表那道题我算了第四遍还是差一千二。<span class=\"messy\">到底是哪一步漏了</span>把纸撕了重新列，列到一半发现是少调了内部交易那笔，气得笑出声。旁边桌的人看了我一眼。晚上回去路过面包店，剩最后一个咸蛋黄的，买了。妈打电话来问考试准备得怎么样，我说还行。其实还差两科。她又说姑姑家表妹已经考完了，我说哦。挂掉之后坐在楼道里把面包吃完才上去。<span class=\"underline\">明天还是先把错题本翻完</span>', '2026-04-03 22:10', '个人私事');",
+      "ddl": "CREATE TABLE lianairijibiao (\n  row_id INTEGER PRIMARY KEY,\n  writer TEXT NOT NULL, -- 写作角色\n  related_char TEXT NOT NULL, -- 关联角色\n  summary TEXT NOT NULL, -- 日记内容\n  time TEXT NOT NULL, -- 发生时间\n  event_type TEXT NOT NULL -- 事件类型\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "写作角色",
+        "关联角色",
+        "日记内容",
+        "发生时间",
+        "事件类型"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 2,
+      "sendLatestRows": 10
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": true,
+      "entryName": "恋爱日记",
+      "entryType": "keyword",
+      "keywords": "写作角色",
+      "preventRecursion": false,
+      "injectionTemplate": "<恋爱日记>\n$1\n【主模型防全知铁律】：上述内容是恋爱对象私人写下的专属心事，主角在客观剧情中完全不知晓其日记内容！严禁主角做出任何知晓日记的表现，此日记仅供模型作为拿捏该角色当下的心理潜台词与内心小动作依据。\n</恋爱日记>",
+      "extraIndexEnabled": true,
+      "extraIndexEntryName": "恋爱日记索引",
+      "extraIndexColumns": [
+        "写作角色",
+        "事件类型",
+        "关联角色",
+        "日记内容",
+        "发生时间"
+      ],
+      "extraIndexColumnModes": {
+        "写作角色": "both",
+        "事件类型": "both",
+        "关联角色": "both",
+        "日记内容": "both",
+        "发生时间": "both"
+      },
+      "extraIndexInjectionTemplate": "<恋爱日记索引>\n$1\n</恋爱日记索引>",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 999,
+        "order": 10000
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 1000,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9999,
+        "order": 99989
+      },
+      "fixedIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9999,
+        "order": 99990
+      },
+      "injectIntoWorldbook": true
+    },
+    "orderNo": 6
+  },
+  "sheet_summary": {
+    "uid": "sheet_summary",
+    "name": "纪要表",
+    "sourceData": {
+      "note": "轮次日志。每轮交互结束后立刻插入一条新记录。\n\n【列定义】\n- 列1: 编码索引 code_index（AM0001 起递增，全表唯一）\n- 列2: 时间跨度 time_span（'YYYY-MM-DD HH:MM ~ YYYY-MM-DD HH:MM'）\n- 列3: 概览 summary（≤40 字）\n- 列4: 纪要 chronicle_text（400-600 字）\n- 列5: 重要对话 key_dialogue（可 NULL）\n\n【编码索引】\n格式 AMXXXX，XXXX 从 0001 开始递增。\n\n【时间跨度】\n本轮事件的时间范围，格式 \"{起始时间} ~ {结束时间}\"，时间格式 YYYY-MM-DD HH:MM。\n\n【概览】\n一句话概括本轮纪要内容，必须体现互动角色名、互动地点和重要事件或变化伏笔，建议 ≤40字。\n\n【纪要规范】\n你是一个严谨的“客观记忆记录枢纽”与“无损信息压缩器”。在每轮交互结束后，你必须提取本轮所有信息，以无损压缩体记述全部细节，尤其是各种延续到后文的约定，计划，伏笔和状态变化等内容,特别是重要数字，同时必须严格记录遇到过的每一个重要角色和互动。移除所有修辞与对话。只记录客观事实不记录主观情感。不加评论，不抒情，不升华。行文生活化，用词直白露骨，文字基调积极向上。避免使用“达成协议”“确立计划”等正式措辞。\n【NSFW规范】\n涉及性行为的场景，纪要仅记录「行为事实」，严禁记录「感官过程」：\n必须记录：谁主动发起/引导、发生了什么行为（口交/插入等）、使用了什么体位、高潮次数及强度（如首次潮吹）、身体里程碑（破处/初次后庭/中出等）、过程中的关键对话、事后反应和态度变化。\n严禁记录：体液细节描写、声音/呻吟描写、节奏和力度变化、肌肤触感和温度、生殖器交合过程的文学描写。\n本质：把NSFW内容当成「性行为事实清单」而非「情色小说摘抄」。\n【角色自身事实】\n本轮中角色自己的事有进展时（考试、工作、家人、与他人的摩擦），即使主角未参与也必须记入纪要，写清具体进展与数字。角色提到的、主角未跟进的事项同样记录。\n\n结尾必须保持开放，不得归纳状态、给出结论性评价或做出封闭式收束。叙述应在事件的自然流动中结束，呈现未完结的持续感。\n如果上下文包含多轮交互，将其整合为一条记录。禁止内容：[极端情绪, 夸张, 比喻, 升华, 情绪总结, 支配欲, 掌控欲, 总结性收尾]\n\n【重要对话】\n仅摘录直接推动剧情转折、揭示关键信息、改变人物关系/决策、或构成承诺/誓约/约定的原文台词（标明说话人）。排除寒暄、重复、情绪感叹等非信息性对白。每行使用“说话人：原文台词”格式，通常为3句，最多5句，总token不超过150。",
+      "initNode": "故事初始化时，插入一条新记录用于记录初始化剧情。",
+      "deleteNode": "禁止。",
+      "updateNode": "禁止。",
+      "insertNode": "每轮交互结束后插入一条新记录。\n\n\nSQL示例:\nINSERT INTO jiyaobiao (\n  code_index,\n  time_span,\n  summary,\n  chronicle_text,\n  key_dialogue\n) VALUES (\n  'AM0036',\n  '2026-02-04 08:00 ~ 2026-02-04 08:30',\n  '一句话概括',\n  '本轮纪要内容...',\n  '对话...'\n);",
+      "ddl": "CREATE TABLE jiyaobiao (\n  row_id INTEGER PRIMARY KEY,\n  code_index TEXT UNIQUE, -- 编码索引\n  time_span TEXT, -- 时间跨度\n  summary TEXT CHECK(LENGTH(summary) <= 80), -- 概览\n  chronicle_text TEXT CHECK(LENGTH(chronicle_text) <= 750), -- 纪要\n  key_dialogue TEXT -- 重要对话\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "编码索引",
+        "时间跨度",
+        "概览",
+        "纪要",
+        "重要对话"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 2,
+      "sendLatestRows": 3
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": true,
+      "entryName": "纪要",
+      "entryType": "keyword",
+      "keywords": "编码索引",
+      "preventRecursion": true,
+      "injectionTemplate": "<记忆回溯>\n$1\n</记忆回溯>",
+      "extraIndexEnabled": true,
+      "extraIndexEntryName": "纪要索引",
+      "extraIndexColumns": [
+        "编码索引",
+        "时间跨度",
+        "概览"
+      ],
+      "extraIndexColumnModes": {
+        "编码索引": "both",
+        "时间跨度": "both",
+        "概览": "index_only"
+      },
+      "extraIndexInjectionTemplate": "<已发生的事件概览>\n$1\n</已发生的事件概览>",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 999,
+        "order": 10000
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 1000,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9999,
+        "order": 99987
+      },
+      "fixedIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9999,
+        "order": 99988
+      }
+    },
+    "orderNo": 7
+  },
+  "sheet_world": {
+    "uid": "sheet_world",
+    "name": "世界",
+    "sourceData": {
+      "note": "掌控世界全景动态与宏观背景推演。此表有且仅有一行（row_id = 1），禁止 INSERT/DELETE，使用 UPDATE 整体覆盖推进。\n\n### 【核心原则一：活体世界定律与世界非中心化 (World Engine Core)】\n世界是活的。不在主角视线内的人也在过自己的生活。\n1. **独立生态系统（非中心化）**：\n   - 主角只是世界的一个参与者，而非世界的中心。NPC有自己的生活目标、日程、社交圈和情感，不会无缘无故围绕主角转。\n   - 事件链、风声、团体进度等即使与主角无关，也会在后台自动推进。\n   - 禁止默认“所有事情都与主角有关”。与主角无关的事件是世界的常态，不是例外。\n2. **感知边界与物理屏障（严格防上帝视角与防透视）**：\n   - 面板记录的是玩家可见的世界状态（玩家全知），不等于正文中的主角或NPC已经知道。\n   - 正文中的角色只能依据其亲眼所见、亲耳所闻、官方通告、合法传播、通讯汇报、现场物证或实际接触到的信息行动。答不上来“它通过什么路径知道”，就视为彻底不知道！\n   - 远处、隐秘、未传播或仅存在于面板中的状态，绝不能直接进入NPC认知，更不得让NPC表现出任何“第六感”、“暗中怀疑”或“话里有话”。\n   - 主角与女角色在私密空间的亲密接触、密室暗杀、隐秘资产，**绝对禁止**被外界无端全知，**绝对禁止**出现在风声流言中！\n3. **推演轮次与时间跨度感知**：\n   - 每次推演前必须先根据新增剧情、行动消耗、移动距离、交谈/战斗/办事线索，自行估计“自上次世界状态更新以来经过的剧情时间”（片刻/数小时/数日/更久）。\n   - 后台变化必须与时间跨度匹配：\n     - 时间很短时：未在场人物通常只产生轻微即时反应；长期计划、跨区域传播、经济与势力结构不应大幅变化；\n     - 时间较长时：未在场人物可按日程推进活动；风声、事件链、势力、经济出现与时间尺度相称的明显变化。\n   - 本轮推演重点是“相对上一次世界状态发生了什么新变化”。输入上下文中的旧对话只作为背景和因果依据，不得把已经处理过的历史内容反复当成新变化。\n4. **地域与势力具名铁律**：涉及地理位置或势力范围时，必须使用具体名称，严禁使用“全城”“全国”“某势力”等模糊词。\n\n---\n\n### 【核心原则二：天下大势、宏观约束与经济脉搏 (world_digest)】\n概括当前世界的宏观长期走向与整体生存环境（≤300字），由三大支柱构成：\n1. **天下大势 (World Trends)**：已经改变国家、区域或整个世界运行方式的长期局势（如“边境战事吃紧引发物资管控”、“新法推行导致旧宗门利益重组”、“秋季联考与学区整合政策落地”）。天下大势是每轮推演必须遵循的世界级长期约束，只有在局势发生根本性转折或结束时才更新。\n2. **经济气候 (World Economy)**：追踪整体经济温度与市场秩序，严格采用四级标尺评估：\n   - `【繁荣】`：贸易旺盛、商路安全、物资充足、物价稳定偏高；\n   - `【平稳】`：日常运作有序、物资供需平衡、物价按季节自然波动；\n   - `【衰退】`：需求萎缩、店铺商号倒闭、普通物资滞销但少数刚需品暴涨；\n   - `【动荡】`：战乱、灾荒、封锁或剧变导致秩序崩溃，黑市猖獗，以物易物回潮。\n3. **四维声誉映射 (Reputation)**：主角在四大圈层的客观口碑（朝堂建制之上、市井百姓之间、草莽体制之外、特定专业领域之中），决定了官方机构与社会大众对待主角的默认初始反应。\n\n---\n\n### 【核心原则三：双类型事件链与影响传导 (event_chains)】\n事件链不是零散的事实清单或任务步骤，而是需要跨轮次追踪的主事项。\n常驻记录 2~3 条正在演化推进的主事项，格式：`【类型·事件名称】阶段 (Lv.N) | 核心矛盾或执行行动 | 最新局势进展与影响链`。\n\n1. **归纳优先原则**：创建新事件前必须先与已有事件比较核心目标或矛盾。若新内容仍在处理同一目标（哪怕是其准备、执行、受阻、善后），必须沿用原事件更新阶段与描述，严禁拆碎成零散短事件！\n2. **双类型事件链划分**：\n   - **冲突型 (conflict)**：用于报复、清算、摩擦、追杀、兼并等会滚向爆发的对抗链。\n     - 正常阶段顺序固定为：`萌芽 → 发酵 → 逼近 → 已爆发`（失去动机或被化解时判定为`已消散`）。\n     - 萌芽：刚露苗头，极少数人察觉；发酵：矛盾扩散，人手、资源与传闻聚集；逼近：箭在弦上，接近临界点；已爆发：正面械斗、公开清算、通缉或决裂落地。\n   - **推进型 (progress)**：用于研发、建设、调查、办事、筹措、制度推行等会滚向完成的事务链。\n     - 正常阶段顺序固定为：`筹备 → 执行 → 关键 → 已完成`（关键条件丧失或彻底受挫时判定为`已失败`）。\n     - 筹备：资源与方案规划；执行：实际启动，持续消耗投入；关键：接近最终成果，最易受外部干扰或反转；已完成：成果正式落地并进入世界常态。\n3. **影响链传导机制 (Influence Chain)**：\n   必须体现重要变化在世界中的传导余波：事件链推进对风声、物价、势力行动产生何种影响；风声传播如何反向刺激势力作出抉择。\n\n---\n\n### 【核心原则四：风声流言与信息传播网络 (winds_rumors)】\n风声是世界中正在传播的公开说法，是各方势力与路人行动的信息中介。常驻记录 3~5 条，格式：`【类型·传播范围】传闻内容`。\n1. **四分法分类规范**：\n   - `【公告·范围】`（announcement）：官方、掌权机构或大组织公开发布的正式通告、法令和公文，内容权威、口吻严肃且保持稳定；\n   - `【消息·范围】`（report）：相对确凿的新闻报道、行业通报或经由可靠信道传开的事实消息；\n   - `【流言·范围】`（rumor）：半真半假的市井小道消息、八卦闲话或被添油加醋的谣传，可随时间发酵变形、失真夸大；\n   - `【舆情·范围】`（sentiment）：特定群体（市民、学生、商贩、弟子、雇员）整体展现出的社会情绪与心理风向（如恐慌、愤慨、期盼、猜忌）。\n2. **传播范围具名化**：传播范围必须具体到街区、场所、校园或城镇（如 `[新华路与滨江商圈]`、`[沪东中学校园内]`、`[城南旧货市场]`）。\n3. **信息回流与自愈映射**：被官方机关暗中“静默平息”的事件，会以被扭曲掩盖的道听途说形式在风声中微弱发酵。\n\n---\n\n### 【核心原则五：势力格局与七级阵营博弈 (factions_state)】\n记录 2~3 个外部独立集体的立场演变、资源动向与幕后博弈。\n1. **势力准入五大铁律**：\n   叙事中出现的一群人不自动成为势力！只有同时满足以下条件才能作为势力追踪：\n   - 有稳定名称或可持续识别的共同身份；\n   - 有共同利益、目标或维护物，不是偶然聚在一起；\n   - 有最低限度的组织决策或协调能力，能作为整体采取行动；\n   - 具备跨轮次持续存在并影响世界的能力；\n   - 必须是能相对主角独立运转的外部集体（临时围观者、一次性商队、普通宾客、无组织百姓绝对禁止创建为势力）。\n2. **七级关系词表（以中立为正中，仅限使用以下 7 个标准词，严禁模糊用词）**：\n   - `血盟`：绝对信任，生死与共，资源全盘共享；\n   - `盟友`：地位平等，共同利益驱动，互相支援协作；\n   - `友好`：认同立场，优先合作，保持礼貌善意；\n   - `中立`：公事公办，不关心也不排斥，依利益行事；\n   - `冷淡`：已注意到但保持戒备距离，不轻易配合；\n   - `敌对`：存在公开立场冲突、利益争端或对抗摩擦；\n   - `世仇`：不可调和的根本仇恨，不死不休。\n3. **势力运行状态 (Status)**：\n   - `稳固`：组织建制健全，资源与声望处于正常水平；\n   - `扩张`：吸纳人手资金，势力范围外延，行动激进；\n   - `困顿`：面临资金断裂、首脑受制或外部打压，收缩防守；\n   - `衰落`：核心骨干流失，威信丧失，濒临被兼并瓦解；\n   - `瓦解`：建制崩塌，残余人员分崩离析。\n\n---\n\n### 【核心原则六：外部敌对与三大流转态势 (hostile_conflicts) —— 核心保留】\n针对仇敌恩怨、敌对势力、黑恶势力或潜在威胁，常驻保持 2~3 条动态危机追踪。\n格式：`【性质·危机名称】危险评级 | 威胁发起方 -> 目标对象 | 处置态势: [三大流转态势之一] | 最新交锋实况与动向`。\n危险评级：`低危(社会治安/口角/尾随)` / `中危(勒索/绑架/黑贷/超能寻仇)` / `高危(致命刺杀/全面清算/毁灭性袭击)`。\n\n【仇敌录准则】：仇敌是因具体伤害行为产生的、不可逆的个人恩怨，具有永不淡化和跨区域追踪特性；与势力层面的利益对立（可谈判）有着本质区别。\n\n每一项危机必须在以下 **三大流转态势** 中选择其一并依法严格演进：\n1. **【静默处理中 / 已静默平息】（世界自愈机制）**：\n   - 发生于主角视线之外，且世界中有相应合法部门（警署、特策局、安保风纪、宗门执法队）或强力 NPC（次主角、财阀保镖、顶尖学长前辈）有能力处置。\n   - 他们已在幕后着手调查、布控截击或秘密抓捕，**主角完全无需出面**；事后转化为《风声流言》中的小道消息，世界展现强大的自我修复秩序。\n2. **【波及身边人 / 触发求助】（剧情钩子与支线委托 —— 核心精髓）**：\n   - 敌对势力算计、绑架、勒索、敲诈或迫害了主角身边的人（**受害对象严格限定在《角色信息表》已建档的角色**，如青梅竹马、合租室友、白月光女主、至交好友或其亲属家族）。\n   - 受害角色无力自拔，惊恐绝望之下向主角发出紧急求援（电话哭诉/加密求助信/当面颤抖求助/现场留下的求救线索），**顺理成章、合情合理地将主角卷入剧情**！\n3. **【主角直面 / 正面对峙】（主线核心交锋）**：\n   - 危机直接发生在主角当前身处的地点，或敌对势力直接将主角锁定为首要目标。\n   - 主角必须在现场展开正面决断、智斗推理、战力交锋或谈判交涉。\n\n---\n\n### 【核心原则七：区域突发事件与倒计时 (regional_incident)】\n1. **系统定位（重大区域级）**：只负责记录足以改变一个城镇、街区、学区或大范围环境的重大突发事件（如大面积断电、交通大动脉封锁、极端风暴肆虐、区域疫病排查、突发宵禁戒严等）。日常琐事不建突发。\n2. **因果独立性**：区域突发事件属于宏观天灾或大社会动荡，与主角当前行为无直接因果，严禁写成某个势力的私家阴谋，不得凭空毁灭主角核心资产。\n3. **关键日程倒计时**：无区域重大突发时，记录关键日程倒计时（如“距离新秀选拔赛开幕还剩 4 天”、“期末考试与留用考核倒计时 48 小时”）。若全无异动则填「常态，无突发异动」。\n\n---\n\n### 【三大严厉禁止与对照表】\n1. **严禁神化主角与降智崇拜**：\n   - 严禁将世界运转描写为完全迎合主角的个人游乐场；\n   - 严禁外部势力与敌对 NPC 为了给主角送经验或装逼打脸而毫无逻辑地做出降智行为。\n2. **严禁自我物化、奴化与丧失人格**：\n   - 无论势力交往还是个人求助，各方角色必须保留自身的组织立场、自尊防线、现实考量与利益博弈。\n3. **严禁极端二极管式的情感定性与病态下定义**：\n   - 势力态度与危机演进必须回归严谨、克制、留有余地的白话叙述，避免空洞极端的网络标签。",
+      "initNode": "初始化世界的最初常态基准，单行种子数据。\nSQL示例:\nINSERT INTO shijie (row_id, world_digest, event_chains, winds_rumors, factions_state, hostile_conflicts, regional_incident) VALUES (1, '【天下大势】常态平稳；【经济气候】平稳运行，市井繁杂如常。', '【推进·日常学业与职场推进】筹备 (Lv.1) | 基础日程展开 | 各方人员按日常作息运转。', '【公告·主城区】市政例行通报公共交通维护计划；【流言·街角巷尾】日常民生琐事传闻。', '【本地主要管理机构】稳固 | 维持基本秩序，对主角态度：中立。', '【社会治安·琐碎矛盾】低危 | 偶发纠纷 -> 社区安保 | 处置态势: [静默处理中 / 已静默平息] | 基层巡防维持平稳，无恶性对抗。', '常态，无突发异动');",
+      "deleteNode": "",
+      "updateNode": "此表有且仅有一行（row_id = 1），更新必须使用 UPDATE 语句，条件固定为 WHERE row_id = 1;，绝对禁止 INSERT/DELETE！\n结合当前最新剧情推进时间尺度、世界大势、双轨事件链、风声四分网络、七级势力格局、危机三大流转态势及区域突发倒计时，全量覆盖更新物理 6 大字段。\n\nSQL示例:\nUPDATE shijie SET \n  world_digest = '【天下大势】秋季全市联合审计大巡查启动，各区金融与实业账目全面收紧；【经济气候】平稳偏紧，小微贷款利率上调，商务宴请与夜间消费明显降温。',\n  event_chains = '【推进·天华事务所留用考核】执行 (Lv.2) | 应届生分组核查项目底稿 | 白瑾组进度领先，但遭遇账目暗账阻滞，传导引发主管合伙人关注；【冲突·城南仓储走私疑云】发酵 (Lv.2) | 海关缉私与黑市货源摩擦 | 风声向周边物流街区扩散，引发局部运费上涨。',\n  winds_rumors = '【公告·金融街】市局发布合规巡查通告，重点核验大额往来凭据；【流言·新华路夜市】传闻昨夜有黑车在仓储区被扣，几家小货运老板连夜退租；【舆情·事务所工位】实习生群体普遍加班焦虑，私下打听留用名额分配比例。',\n  factions_state = '【天华会计师事务所】稳固 | 内部合规组高压运转，对主角态度：中立；【龙腾实业集团】扩张 | 正推进城南物流园区并购，对主角态度：冷淡；【城东民间借贷同盟】困顿 | 受金融合规排查影响，资金链紧缩，转入地下催收。',\n  hostile_conflicts = '【黑贷迫害·林悦旧债危机】中危 | 追债黑恶团伙 -> 林悦 | 处置态势: [波及身边人 / 触发求助] | 催收人员找到林悦兼职咖啡店进行言语恐吓，林悦无力招架，神色仓皇地向主角发来颤抖求助信息；【治安·仓储区械斗余波】低危 | 流窜混混 -> 巡逻警力 | 处置态势: [静默处理中 / 已静默平息] | 属地派出所已于凌晨完成现场封控并带走肇事人员，未波及主街。',\n  regional_incident = '【日程倒计时】距离第一阶段审计底稿归档封箱终审还剩 36 小时；局部暴雨黄色预警持续中。'\nWHERE row_id = 1;",
+      "insertNode": "",
+      "ddl": "CREATE TABLE shijie (\n  row_id INTEGER PRIMARY KEY CHECK(row_id = 1),\n  world_digest TEXT NOT NULL CHECK(LENGTH(world_digest) <= 300), -- 世界大势与总览\n  event_chains TEXT NOT NULL, -- 核心推进事项\n  winds_rumors TEXT NOT NULL, -- 风声流言\n  factions_state TEXT NOT NULL, -- 势力格局与阵营态势\n  hostile_conflicts TEXT NOT NULL, -- 外部敌对与危机应对\n  regional_incident TEXT NOT NULL DEFAULT '常态，无突发异动' -- 突发异动与倒计时\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "世界大势与总览",
+        "核心推进事项",
+        "风声流言",
+        "势力格局与阵营态势",
+        "外部敌对与危机应对",
+        "突发异动与倒计时"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": 3,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 3
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "世界大势",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "<世界运转与大势背景>\n$1\n</世界运转与大势背景>",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "世界大势-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10008
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10018
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99998
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99999
+      }
+    },
+    "orderNo": 8
+  },
+  "sheet_deuteragonist": {
+    "uid": "sheet_deuteragonist",
+    "name": "次主角表",
+    "sourceData": {
+      "note": "次主角（独立二号主角）全景动态人设与即时状态档案。次主角存活期间，本表有且仅有一行（row_id = 1）。\n\n【最高铁律·防全知视角与交集准入】\n1. 绝对禁止全知偷窥：\n   - 当【是否与主角交集】(has_crossover) 填「否」时：次主角根本不知道世界上有“主角”这号人物，不知道主角的姓名、样貌、能力或任何信息！\n   - 严禁隔空意淫：严禁在次主角的心境、个人目标或内心独白中提前提及主角！\n   - 严禁硬凑巧合：未发生合逻辑的客观物理交集前，次主角必须在自己的人生轨迹里独立行动、面对自己的危机与成长，严禁为了产生联系而刻意生硬“偶遇”。\n   - 【对主角态度】严格约束：当 has_crossover 为「否」时，【对主角态度】(attitude_to_protagonist) 必须固定填「素未谋面」或「毫无知觉」，严禁提前产生好感、恶意、探究或戒备！\n2. 真实交集触发条件：\n   - 仅当剧情中主角与次主角在同一物理场景产生了面对面碰头、直接对话、并肩战斗、利益冲突或目击彼此关键高光行动后，方可将【是否与主角交集】修改为「是」。\n   - 置为「是」后，次主角才允许基于真实的接触体验，建立对主角的态度与评价，并允许在后续行动中与主角产生主线交织！\n\n【核心职责分离】\n- 本表只负责记录次主角的“即时状态与人设面板”（当前位置、体能点数、身心现状、对主角态度、核心诉求、阶段进度）；\n- 次主角经历的“具体遭遇事件与暗线战历流水”已全权移交至《次主角纪要表》逐轮追加，本表严禁重复堆砌剧情流水。\n\n【角色更迭与死亡机制】\n- 角色存活期间，保持当前一行（row_id = 1）只做 UPDATE；\n- 若次主角在剧情中彻底死亡、灵魂消散或永久退出故事舞台，大模型执行 DELETE 移除当前行，随后由插件自动清空上一任历史纪要；新次主角登场时方可重新 INSERT 第一行。",
+      "initNode": "【次要主角首轮初始化建档】\n本表有且仅有一行（row_id = 1）。建档时必须生成全量 23 列的 INSERT 语句！\n若尚未与主角产生实际交集，has_crossover 必须填 '否'，attitude_to_protagonist 必须填 '素未谋面'！\n\nSQL示例:\nINSERT INTO deuteragonist_state (\n  row_id, name, gender, age, identity_role, appellations, personality,\n  appearance_detail, body_measurements, voice_scent, clothing_style,\n  interaction_habit, unique_marks_items, social_relations, nsfw_profile,\n  chronicle_resume, other_notes, current_location, personal_status,\n  has_crossover, attitude_to_protagonist, personal_agenda, storyline_progress\n) VALUES (\n  1,\n  '顾青',\n  '男',\n  '20岁',\n  '海城大学外国语学院大二学生 / 视界命格标签观测者 / 属性同化窃取者',\n  '正式: 顾青 | 舍友称呼: 青哥、老顾 | 外号: 海大库里、祖国人',\n  '主性格: 漫不经心、通达从容、情绪巨稳。信条: 信奉不吃牛肉的祖国人哲学，渴望肉身成神、绝对自由。禁忌: 绝不对任何人透露金手指。',\n  '冷白皮近满分神颜，骨相极佳，剑眉星目，深邃双眸带着几分散漫不羁。蓬松微碎黑短发。',\n  '身高186cm，体重76kg。正随着外挂属性加成向倒三角肌肉、六块雕刻腹肌蜕变。',\n  '清朗磁性微带低音共鸣；纯阳男子特有的清冽皂角香。',\n  '纯黑宽松短袖T恤，深灰工装束脚裤，耐克高帮球鞋，简约银钢运动腕表。',\n  '说话时习惯单手插兜；对锁定特定标签的目标会想方设法共同行动满1小时以薅取属性。',\n  'iPhone 15 Pro（微信余额两万元分手费）、海城大学校园卡、便携纯钢哑铃。',\n  '寝室三兄弟（代练陈梓杰、大胃王钱多乐、中锋高飞）；上海特管局巡查眼线。',\n  '纯爷们雄浑尺寸（19cm/4.5cm），充血坚硬如玄铁；强大掌控欲与支配感。',\n  '弄堂长大 -> 考入海城大学 -> 觉醒标签外挂 -> 遭遇分手 -> 全力刷属性成神。',\n  '【核心外挂系统】: 1.万象标签观测; 2.小时同化窃取; 3.百点登神: 当前反应速度进度(8/100)，消化能力进度(9/100)',\n  '海城大学北校区2号男生公寓402室',\n  '反应速度+8、消化能力+9、肉身强度+3，精力充沛如龙',\n  '否',\n  '素未谋面',\n  '拉着陈梓杰打排位刷反应速度、拉着钱多乐吃零食刷消化能力，全力冲击首个百点神级特质',\n  '【肉身成神】阶段: 基因破限(12%) | 关键进展: 成功单手捏弯金属床架，反应大幅超越常人'\n);",
+      "deleteNode": "仅当次主角在剧情中彻底死亡、灵魂湮灭或永久退出故事舞台时，方可执行 DELETE：\nDELETE FROM deuteragonist_state WHERE row_id = 1;\n平时严禁随意删除！",
+      "updateNode": "【次主角即时状态演化】\n次主角有且仅有一行（row_id = 1），必须带 WHERE row_id = 1。\n只更新发生变动的列，未变动的列无需列出。\n未发生实际面对面接触前，严禁将 has_crossover 改为 '是'，严禁修改 attitude_to_protagonist！\n\nSQL示例(仍未交集时):\nUPDATE deuteragonist_state SET\n  current_location = '海城大学生活区国顺路烧烤大排档后巷',\n  personal_status = '消化能力累计+15，反应速度累计+18，肉身体能全面突破凡人界限，精力澎湃如龙',\n  other_notes = '【核心外挂系统】: 1.万象标签观测; 2.小时同化窃取; 3.百点登神: 当前反应速度进度(18/100)，消化能力进度(15/100)',\n  personal_agenda = '大口鲸吞烤肉刷消化点数，盘算今晚去暗巷清理作祟的异化生物',\n  storyline_progress = '【肉身成神】阶段: 基因破限(22%) | 关键进展: 消化系统已能瞬间分解高热量转化为纯阳元气'\nWHERE row_id = 1;\n\nSQL示例(双方发生正式交集碰面后):\nUPDATE deuteragonist_state SET\n  has_crossover = '是',\n  attitude_to_protagonist = '在后巷偶遇主角并目睹其特殊气场，内心产生探究好奇，表面维持散漫客气',\n  current_location = '海城大学校外静安路街角便利店'\nWHERE row_id = 1;",
+      "insertNode": "初次建档时插入第一行（row_id = 1）。若前任次主角已彻底死亡（表中无记录）且新次主角登场时方可再次 INSERT 第一行。表中已有存活次主角时严禁再次 INSERT。",
+      "ddl": "CREATE TABLE deuteragonist_state (\n  row_id INTEGER PRIMARY KEY CHECK(row_id = 1),\n  name TEXT NOT NULL, -- 姓名\n  gender TEXT NOT NULL, -- 性别\n  age TEXT, -- 年龄\n  identity_role TEXT NOT NULL, -- 身份背景与职业\n  appellations TEXT, -- 称谓系统\n  personality TEXT NOT NULL, -- 性格特质\n  appearance_detail TEXT NOT NULL, -- 精细面貌\n  body_measurements TEXT, -- 身体数据\n  voice_scent TEXT, -- 声音与气味\n  clothing_style TEXT, -- 服装风格与着装\n  interaction_habit TEXT, -- 交互模式与习惯\n  unique_marks_items TEXT, -- 独特标记与随身物品\n  social_relations TEXT, -- 人际关系网络\n  nsfw_profile TEXT, -- NSFW私密档案\n  chronicle_resume TEXT, -- 生平履历时间线\n  other_notes TEXT, -- 其他备注\n  current_location TEXT NOT NULL DEFAULT '未交代', -- 当前物理位置\n  personal_status TEXT NOT NULL DEFAULT '正常', -- 身心现状\n  has_crossover TEXT NOT NULL DEFAULT '否' CHECK(has_crossover IN ('是', '否')), -- 是否与主角交集\n  attitude_to_protagonist TEXT NOT NULL DEFAULT '素未谋面', -- 对主角态度\n  personal_agenda TEXT NOT NULL, -- 个人核心目标\n  storyline_progress TEXT NOT NULL DEFAULT '【篇章初期】阶段: 筹备展开(10%) | 关键进展: 确立首要线索' -- 个人剧情线进度\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "姓名",
+        "性别",
+        "年龄",
+        "身份背景与职业",
+        "称谓系统",
+        "性格特质",
+        "精细面貌",
+        "身体数据",
+        "声音与气味",
+        "服装风格与着装",
+        "交互模式与习惯",
+        "独特标记与随身物品",
+        "人际关系网络",
+        "NSFW私密档案",
+        "生平履历时间线",
+        "其他备注",
+        "当前物理位置",
+        "身心现状",
+        "是否与主角交集",
+        "对主角态度",
+        "个人核心目标",
+        "个人剧情线进度"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 3
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "次主角档案",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "<次主角档案>\n$1\n</次主角档案>",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "次主角表-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10025
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 5,
+        "order": 10026
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99986
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99987
+      }
+    },
+    "orderNo": 9
+  },
+  "sheet_deuteragonist_chronicle": {
+    "uid": "sheet_deuteragonist_chronicle",
+    "name": "次主角纪要表",
+    "sourceData": {
+      "note": "次主角专属暗线纪事表。记录次主角在主角视线之外独立历练、外挂变强、暗中化解危机、以及与主线世界交织的历史轨迹。\n\n【核心定位】\n1. 本表是次主角的个人战历与暗线史诗，只要《次主角表》中存在活着的次主角，每回合交互结束后必须插入一条本轮纪要。\n2. 聚焦次主角的个人主体性：他在暗中干了什么、面对了怎样的凶险、外挂点数有何增长、给世界和主角留下了怎样的痕迹。\n3. 若次主角已在剧情中彻底死亡且未有新人建档，本表停止插入。\n\n【列定义】\n- 列1: 次主角姓名 char_name，必须与《次主角表》当前的姓名一致。\n- 列2: 发生时间 time_span，本轮剧情时间或轮次节点（如 \"2026-04-01 傍晚\" 或 \"第5轮交互\"）。\n- 列3: 本轮独立剧情 chronicle_text，叙述他在暗处的独立行动、遭遇战或谋划（80~160字）。不写主线已发生的客观事实，只写次主角自己的暗中视角。\n- 列4: 实力变动收获 growth_gain，记录本轮他的核心外挂进度突破、斩获战利品或体质变化（如 \"消化能力进度(15/100) -> (18/100)，吸收异化血核\"）。\n- 列5: 主线交织痕迹 crossover_trace，记录次主角的行动对主线场景、主角周围环境留下的暗中痕迹或目击传闻（如 \"后巷怪物残骸被特管局目击，引起轰动\"、\"主角路过时闻到淡淡血腥味\"）。\n\n【严禁事项】\n1. 严禁神化与降智描写，次主角的行为必须符合其霸道但克制的个人原则。\n2. 严禁复制静态设定，本表只记录本轮具体动态。",
+      "initNode": "次主角初次建档时，插入第一条初始化纪要。\n\nSQL示例:\nINSERT INTO cizhujue_jiyaobiao (char_name, time_span, chronicle_text, growth_gain, crossover_trace) VALUES\n('陆沉', '2026-04-01 傍晚', '在国顺路后巷遭遇潜伏的异化裂口犬，单手插兜一记重拳将其轰爆在水泥墙上，甩干拳骨血渍后淡定返回大排档。', '消化进度+3，反应速度+2，斩获初级暗核', '怪物残骸与碎裂墙体引来特管局探员封锁调查');",
+      "deleteNode": "禁止删除。大模型严禁执行 DELETE，生命周期淘汰由插件自动管理。",
+      "updateNode": "禁止。本表为纯历史流水，严禁修改历史记录。",
+      "insertNode": "每回合交互结束后，只要《次主角表》中存在当前次主角，必须插入一条新纪要记录。\n如果次主角已在剧情中死亡退场，严禁插入。\n\nSQL示例:\nINSERT INTO cizhujue_jiyaobiao (char_name, time_span, chronicle_text, growth_gain, crossover_trace) VALUES\n('陆沉', '2026-04-01 21:00', '察觉到生活区外围有可疑能量波动，暗中尾随并顺手捏碎两只试图靠近主角宿舍的低阶窥探魔眼。', '神级标签观测进度+1%，肉身感知范围扩大20米', '次日清晨宿管阿姨在花坛边扫出两滩奇怪的紫色粘稠粉末');",
+      "ddl": "CREATE TABLE cizhujue_jiyaobiao (\n  row_id INTEGER PRIMARY KEY,\n  char_name TEXT NOT NULL, -- 次主角姓名\n  time_span TEXT NOT NULL, -- 发生时间\n  chronicle_text TEXT NOT NULL, -- 本轮独立剧情\n  growth_gain TEXT NOT NULL, -- 实力变动收获\n  crossover_trace TEXT NOT NULL -- 主线交织痕迹\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "次主角姓名",
+        "发生时间",
+        "本轮独立剧情",
+        "实力变动收获",
+        "主线交织痕迹"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 3,
+      "sendLatestRows": 10
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "次主角纪要",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "<次主角暗线战历>\n$1\n</次主角暗线战历>",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "次主角纪要-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9,
+        "order": 10027
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9,
+        "order": 10028
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99988
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99989
+      }
+    },
+    "orderNo": 10
+  },
+  "sheet_npc_activities": {
+    "uid": "sheet_npc_activities",
+    "name": "离场NPC活动表",
+    "sourceData": {
+      "note": "你是一个观察细致入微的「幕后角色生态与离场推演引擎」。你的使命是为那些在《角色信息表》中已建档、但暂时不在主角视线内的角色们，推演充满生活气息与真实感的幕后日常。\n\n### 【只读上帝视窗·本轮候选名单与环境感知】\n系统已通过 SQL 严格过滤出【在角色信息表中已建档】且【当前离场 is_present = 0】且【最新推演计数最少】的前 4 位角色：\n- 【本轮优先待推演候选名单（按计数由小到大排序取前4名）】：\n{[sql \"SELECT '【候选待推演】' || a.npc_name || '（' || c.char_type || '·' || c.identity_text || '，当前地点:' || a.current_location || '，推演计数:' || a.activity_count || '）' FROM npc_activities a INNER JOIN juesexinxibiao c ON a.npc_name = c.name WHERE c.is_present = 0 AND a.activity_count = (SELECT MAX(a2.activity_count) FROM npc_activities a2 WHERE a2.npc_name = a.npc_name) ORDER BY a.activity_count ASC, a.row_id ASC LIMIT 4;\"]}\n- 【角色信息表中当前所有不在场的合规角色名册（备查）】：\n{[sql \"SELECT '【离场角色】' || name || '（' || char_type || '，' || identity_text || '）' FROM juesexinxibiao WHERE is_present = 0;\"]}\n- 【主角与当前在场角色（严禁推演、严禁同场冲突）】：\n{[sql \"SELECT '【在场人物】' || name FROM juesexinxibiao WHERE is_present = 1;\"]}\n- 【当前时空与宏观大势】：{[sql \"SELECT '时间:' || cur_time || '，天气:' || COALESCE(weather, '常态') || '，世界大势:' || (SELECT world_digest FROM shijie WHERE row_id=1) FROM quanjushujubiao WHERE row_id = 1;\"]}\n\n---\n\n### 【四大铁律：范围限制与轮换机制】\n\n#### 1. 范围红线：严格只限已建表角色，绝对禁止凭空捏造路人\n- **只限《角色信息表 (juesexinxibiao)》**：推演对象必须 100% 存在于《角色信息表》中（例如恋爱对象、重要配角、关键NPC等）。\n- **严禁凭空捏造**：绝对禁止自作主张为路人、路边摊贩、无建档路人创建活动记录！\n- **绝对排除主角**：主角拥有独立主视角与《主角信息表》，由主剧场直接驱动，**绝对禁止**将主角纳入离场角色推演！\n\n#### 2. 在场互斥：离场角色严禁瞬移至主场景\n- 任何在《角色信息表》中标记为 `is_present = 1` 的角色正在与主角同场互动，绝对禁止更新其离场活动！\n- 离场角色的活动必须发生在他们各自的独立生活空间（各自的办公室、社团大楼、校外住宅、家族企业等），绝对禁止凭空瞬移到主角与在场角色正在密会的私密空间！\n\n#### 3. 计数最小优先公平轮换与历史切片追加 (`activity_count` 递增)\n- 你必须且仅需为上方 SQL 查出的 **4 位候选离场角色** 分别推演一段近期的独立生活与日常（60~120字）。\n- **必须使用 INSERT 追加新记录，严禁 UPDATE 覆写旧数据**！新行中的 `activity_count` 填为该角色最新计数的 `+ 1`！\n  ```sql\n  INSERT INTO npc_activities (npc_name, identity_role, current_location, current_activity, mood_state, activity_count) VALUES\n  ('XXX', '身份', '新地点', '新活动日常', '新心境', 上次计数 + 1);\n  ```\n- 这样每个角色都完整保留过去的日常切片，同时新计数的增加会让下一次推演自动轮换到池子中计数更小的其他离场角色，保证全员公平轮替、生生不息！\n\n#### 4. 新角色入池规则 (INSERT)\n- 若《角色信息表》中新增了有建档的角色且其当前处于离场状态（`is_present = 0`），而该角色尚未收录在 `npc_activities` 中：\n- 可在推演末尾执行 `INSERT INTO npc_activities (npc_name, identity_role, current_location, current_activity, mood_state, activity_count) VALUES ('已建档角色名', '身份', '地点', '活动', '常态', 0);`。\n- 其初始计数为 0，下一轮将以最高优先级被自动推演！**若角色未在角色信息表中建档，绝对禁止 INSERT！**",
+      "initNode": "故事初始化时，仅收录《角色信息表 (juesexinxibiao)》中预设存在且初始离场（is_present = 0）的有名有姓角色，初始 activity_count 均为 0。绝不收录主角与未建档路人。\n\nSQL示例:\nINSERT INTO npc_activities (npc_name, identity_role, current_location, current_activity, mood_state, activity_count) VALUES\n('西园寺琴音', '风纪委员会委员长 / 西园寺财团长女', '风纪委员会部室', '端坐在办公桌前批阅本周校内巡查纪律报表，偶尔抬眼望向窗外阴沉的天色，指尖无意识地轻叩红木桌面。', '严谨冷淡', 0),\n('葛城玲奈', '学生会会长 / 三年级特待生', '学生会会长办公室', '正与校董会联络人通电话确认秋季学园祭经费审批流程，语气从容平和，桌面散落着各社团的活动立项书。', '专注从容', 0),\n('浅仓唯', '主角青梅竹马 / 高二2班图书委员', '学校中央图书馆借阅区', '在第三排书架间整理被同学放乱的文库本，怀里抱着两本厚重的世界史参考书，正打算稍后带回教室。', '平和安静', 0),\n('神崎真寻', '学生会副会长 / 神崎家次子', '校内第一资料档案室', '在昏暗的日光灯下快速翻阅历年赞助明细账册，眉头紧锁，神情警觉而戒备。', '警惕专注', 0);",
+      "deleteNode": "原则上禁止随意删除离场角色。仅当该角色在剧情中明确死亡、永久移居国外或彻底退出故事舞台时，方可执行 DELETE：\nDELETE FROM npc_activities WHERE npc_name = 'XXX';",
+      "updateNode": "每经过设定轮次（默认每 3 轮），针对查询出的 4 位最小计数的离场角色，各自插入（INSERT）一条新的活动日志，每次务必将 activity_count 设为该角色最新计数 + 1。旧活动切片永久留存，严禁覆盖！\n\nSQL示例:\n-- 为第 1 位候选追加新日常（计数+1）\nINSERT INTO npc_activities (npc_name, identity_role, current_location, current_activity, mood_state, activity_count) VALUES\n('西园寺琴音', '风纪委员会委员长 / 西园寺财团长女', '风纪委员会部室门前回廊', '正戴着白手套锁上部室门锁，准备前往教职员室提交违纪汇总，神情肃穆，步伐沉稳。', '一丝不苟', 1);\n\n-- 为第 2 位候选追加新日常（计数+1）\nINSERT INTO npc_activities (npc_name, identity_role, current_location, current_activity, mood_state, activity_count) VALUES\n('葛城玲奈', '学生会会长 / 三年级特待生', '主教学楼三楼教师休息室', '与班主任沟通关于下周班级合唱比赛的排练场地调配问题，手中拿著名单逐项确认，微笑着点头致谢。', '从容得体', 1);\n\n-- 为第 3 位候选追加新日常（计数+1）\nINSERT INTO npc_activities (npc_name, identity_role, current_location, current_activity, mood_state, activity_count) VALUES\n('浅仓唯', '主角青梅竹马 / 高二2班图书委员', '高二2班教室内靠窗座位', '将借来的参考书工整地码在课桌左上角，从铅笔盒里拿出荧光笔开始在笔记本上圈画重点，神情专心致志。', '专心温习', 1);\n\n-- 为第 4 位候选追加新日常（计数+1）\nINSERT INTO npc_activities (npc_name, identity_role, current_location, current_activity, mood_state, activity_count) VALUES\n('神崎真寻', '学生会副会长 / 神崎家次子', '旧校舍一楼连廊暗角', '倚着斑驳的墙壁低头查看手机加密邮件，确认了接头人的回复时间后迅速熄灭屏幕，眼神深沉。', '高度警惕', 1);",
+      "insertNode": "仅当《角色信息表》中有新角色建档且离开主角视线（is_present = 0）时，方可将其收录进本表，初始计数填 0。绝对禁止为未建档角色插入！\n\nSQL示例:\nINSERT OR IGNORE INTO npc_activities (\n  npc_name,\n  identity_role,\n  current_location,\n  current_activity,\n  mood_state,\n  activity_count\n) VALUES (\n  '已在角色信息表中建档的角色姓名',\n  '身份定位',\n  '当前所在独立地点',\n  '正在进行的独立日程与日常活动（60~120字）',\n  '常态',\n  0\n);",
+      "ddl": "CREATE TABLE npc_activities ( -- 离场NPC活动表（严格限定已建表角色，支持多版本历史日志留存）\n  row_id INTEGER PRIMARY KEY AUTOINCREMENT,\n  npc_name TEXT NOT NULL, -- NPC姓名\n  identity_role TEXT NOT NULL, -- 身份定位\n  current_location TEXT NOT NULL, -- 当前所在地点\n  current_activity TEXT NOT NULL, -- 独立日常与活动事件\n  mood_state TEXT NOT NULL DEFAULT '常态', -- 心境与生活态势\n  activity_count INTEGER NOT NULL DEFAULT 0 -- 轮换推演计数\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "NPC姓名",
+        "身份定位",
+        "当前所在地点",
+        "独立日常与活动事件",
+        "心境与生活态势",
+        "轮换推演计数"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": -1,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 3,
+      "sendLatestRows": 10
+    },
+    "exportConfig": {
+      "enabled": true,
+      "splitByRow": false,
+      "entryName": "离场NPC与群像动态",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "<离场NPC与周边群像动态>\n$1\n【主模型演绎指引】：上述是当前处于主角视线之外的离场配角与路人们的最新日常生活状态。当主角路过相关地点、收到短信/电话、听闻他人提及、或在下一幕偶遇他们时，请自然参考上述动态，展现整个世界在主角看不见的地方同样充满生机与烟火气。\n</离场NPC与周边群像动态>",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "离场NPC活动表-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9,
+        "order": 10007
+      },
+      "extraIndexPlacement": {
+        "position": "at_depth_as_system",
+        "depth": 9,
+        "order": 10017
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99984
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99985
+      }
+    },
+    "orderNo": 11
+  },
+  "sheet_misc": {
+    "uid": "sheet_misc",
+    "name": "杂表",
+    "sourceData": {
+      "note": "仅用于记录，不做任何更新",
+      "initNode": "禁止初始化",
+      "deleteNode": "禁止删除",
+      "updateNode": "禁止更新",
+      "insertNode": "禁止新增",
+      "ddl": "CREATE TABLE zabiao (\n  row_id INTEGER PRIMARY KEY,\n  misc_name TEXT NOT NULL UNIQUE, -- 名称\n  misc_description TEXT -- 描述\n);"
+    },
+    "content": [
+      [
+        "row_id",
+        "名称",
+        "描述"
+      ]
+    ],
+    "updateConfig": {
+      "uiSentinel": -1,
+      "contextDepth": -1,
+      "updateFrequency": 0,
+      "batchSize": -1,
+      "skipFloors": -1,
+      "groupId": 4,
+      "sendLatestRows": -1
+    },
+    "exportConfig": {
+      "enabled": false,
+      "splitByRow": false,
+      "entryName": "杂表",
+      "entryType": "constant",
+      "keywords": "",
+      "preventRecursion": true,
+      "injectionTemplate": "",
+      "extraIndexEnabled": false,
+      "extraIndexEntryName": "杂表-索引",
+      "extraIndexColumns": [],
+      "extraIndexColumnModes": {},
+      "extraIndexInjectionTemplate": "",
+      "sqlInjectionTemplate": "",
+      "entryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 10000
+      },
+      "extraIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 10010
+      },
+      "fixedEntryPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99990
+      },
+      "fixedIndexPlacement": {
+        "position": "before_character_definition",
+        "depth": 2,
+        "order": 99991
+      },
+      "injectIntoWorldbook": false
+    },
+    "orderNo": 12
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "display_name": "通用状态栏",
+  "author": "Antigravity",
+  "description": "SillyTavern 通用沉浸式状态栏插件：深度联动 AutoCardUpdater 数据库，实时呈现时空环境、主角属性、在场角色好感与状态、随身背包、备忘日程与私密状态，支持双向数据编辑、多模态布局与暗黑毛玻璃美学。",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "extension",
+  "js": "statusbar.js",
+  "css": "style.css"
+}
