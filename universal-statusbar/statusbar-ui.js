@@ -800,12 +800,6 @@
           <!-- A. 衣着详情列表：每个部位独立占据一行，严格不合并 -->
           <div class="char-clothes-list" id="sb-clothes-list" style="display:${activeCharDetailTab === 'clothes' ? 'block' : 'none'};">
             ${c.hair && c.hair !== '无' ? `<div class="char-clothes-item"><span class="cl">${isP ? '💇 ' : ''}发型</span><span class="cv">${escapeHtml(c.hair)}</span></div>` : ''}
-            ${c.outfit ? `
-              <div class="char-clothes-item char-outfit-summary">
-                <span class="cl">${isP ? '👗 ' : ''}当前穿搭</span>
-                <span class="cv">${escapeHtml(c.outfit)}</span>
-              </div>
-            ` : ''}
             <div class="char-clothes-item"><span class="cl">${isP ? '🧥 ' : ''}上装</span><span class="cv">${escapeHtml(c.top || '-')}</span></div>
             <div class="char-clothes-item"><span class="cl">${isP ? '👖 ' : ''}下装</span><span class="cv">${escapeHtml(c.bottom || '-')}</span></div>
             <div class="char-clothes-item"><span class="cl">${isP ? '👙 ' : ''}内衣</span><span class="cv">${escapeHtml(c.bra || '-')}</span></div>
