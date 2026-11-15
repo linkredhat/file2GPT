@@ -52,7 +52,7 @@
       const value = get(label);
       return value !== '' && value !== '-' && value !== '无' && value !== '未交代';
     };
-    const ageMatch = get('年龄').match(/(?:^|\D)(\d{1,3})(?:\D|$)/);
+    const ageMatch = get('年龄').match(/^(\d{1,3})\s*(?:周岁|岁)?$/);
     const isAdult = Boolean(ageMatch && Number(ageMatch[1]) >= 18);
     const bankBalance = get('银行卡余额');
     const ewalletBalance = get('微信支付宝余额');
@@ -102,7 +102,7 @@
     const get = (label) => r[label] == null ? '' : String(r[label]).trim();
     const rawP = get('是否在场');
     const isPresent = rawP === '1' || rawP.toLowerCase() === 'true';
-    const ageMatch = get('年龄').match(/(?:^|\D)(\d{1,3})(?:\D|$)/);
+    const ageMatch = get('年龄').match(/^(\d{1,3})\s*(?:周岁|岁)?$/);
     const isAdult = Boolean(ageMatch && Number(ageMatch[1]) >= 18);
     const has = (label) => {
       const value = get(label);
@@ -148,13 +148,13 @@
       periodPhase: isAdult ? get('当前生理期') : '', pregnancyNote: isAdult ? get('怀孕备注') : '',
       pregRisk: isAdult ? get('怀孕风险') : '', pregProbability: isAdult ? get('怀孕概率') : '',
       bodyNsfwBaseline: bodyNsfwBaseline || '-',
-      diaries: (function () {
+      diaries: isAdult ? (function () {
         const allDiaries = getAllRomanceDiaries();
         return allDiaries.filter((d) => {
           const writer = d.writer;
           return writer && (writer === charName || charName.includes(writer) || writer.includes(charName));
         });
-      })(),
+      })() : [],
       raw: r
     };
   }
