@@ -672,7 +672,7 @@
               ${c.intro && c.intro !== '未交代' ? '<div class="char-intro-quote" style="font-size:12px;color:var(--text-sub);line-height:1.5;font-style:italic;opacity:0.9;">“' + escapeHtml(profileDisplayValue(c.intro)) + '</div>' : ''}
               ${[c.height && c.height !== '未交代' && '身高 ' + c.height, c.weight && c.weight !== '未交代' && '体重 ' + c.weight, c.figure && c.figure !== '未交代' && c.figure].filter(Boolean).length
                 ? '<div class="char-intro-quote" style="font-size:11px;color:var(--text-sub);line-height:1.5;">' +
-                  escapeHtml([c.height && '身高 ' + c.height, c.weight && '体重 ' + c.weight, c.figure].filter(Boolean).join(' · ')) +
+                  escapeHtml([c.height && c.height !== '未交代' && '身高 ' + c.height, c.weight && c.weight !== '未交代' && '体重 ' + c.weight, c.figure && c.figure !== '未交代' && c.figure].filter(Boolean).join(' · ')) +
                   '</div>' : ''}
               <!-- 1. 即时生理独立行气泡 (独占整行，暗色微光底衬) -->
               ${c.arousal && c.arousal !== '未交代' ? `
@@ -744,12 +744,12 @@
           <!-- A. 人物身体展示：按头部、躯干、四肢，再到当前着装 -->
           <div class="char-clothes-list" id="sb-clothes-list" style="display:${activeCharDetailTab === 'clothes' ? 'block' : 'none'};">
             ${anatomyRows}
-            <div class="char-clothes-item"><span class="cl">👕 上装</span><span class="cv">${escapeHtml(c.top || '—')}</span></div>
-            <div class="char-clothes-item"><span class="cl">👖 下装</span><span class="cv">${escapeHtml(c.bottom || '—')}</span></div>
-            <div class="char-clothes-item"><span class="cl">🩱 内衣</span><span class="cv">${escapeHtml(c.bra || '—')}</span></div>
-            <div class="char-clothes-item"><span class="cl">🩲 内裤</span><span class="cv">${escapeHtml(c.panties || '—')}</span></div>
-            <div class="char-clothes-item"><span class="cl">🧦 鞋袜</span><span class="cv">${escapeHtml(c.shoesSocks || '—')}</span></div>
-            <div class="char-clothes-item"><span class="cl">💍 配饰</span><span class="cv">${escapeHtml(c.accessories || '—')}</span></div>
+            <div class="char-clothes-item"><span class="cl">👕 上装</span><span class="cv">${escapeHtml(profileDisplayValue(c.top))}</span></div>
+            <div class="char-clothes-item"><span class="cl">👖 下装</span><span class="cv">${escapeHtml(profileDisplayValue(c.bottom))}</span></div>
+            <div class="char-clothes-item"><span class="cl">🩱 内衣</span><span class="cv">${escapeHtml(profileDisplayValue(c.bra))}</span></div>
+            <div class="char-clothes-item"><span class="cl">🩲 内裤</span><span class="cv">${escapeHtml(profileDisplayValue(c.panties))}</span></div>
+            <div class="char-clothes-item"><span class="cl">🧦 鞋袜</span><span class="cv">${escapeHtml(profileDisplayValue(c.shoesSocks))}</span></div>
+            <div class="char-clothes-item"><span class="cl">💍 配饰</span><span class="cv">${escapeHtml(profileDisplayValue(c.accessories))}</span></div>
           </div>
 
           <!-- B. 状态与关系：动态状态单独展示，不合并不同字段 -->
@@ -760,11 +760,11 @@
             <div class="char-body-item"><span class="bl">🩺 身体状态</span><span class="bv">${escapeHtml(profileDisplayValue(c.bodyStatus))}</span></div>
             <div class="char-body-item"><span class="bl">🧠 意识状态</span><span class="bv">${escapeHtml(profileDisplayValue(c.consciousness))}</span></div>
             <div class="char-body-item"><span class="bl">🩹 身体痕迹</span><span class="bv">${escapeHtml(profileDisplayValue(c.bodyMarks))}</span></div>
-            <div class="char-body-item"><span class="bl">💗 好感</span><span class="bv">${escapeHtml(String(c.favor || '—'))}</span></div>
+            <div class="char-body-item"><span class="bl">💗 好感</span><span class="bv">${escapeHtml(profileDisplayValue(c.favor))}</span></div>
             <div class="char-body-item"><span class="bl">💬 对主角态度</span><span class="bv">${escapeHtml(profileDisplayValue(c.attitude))}</span></div>
             <div class="char-body-item"><span class="bl">🎭 心境与性格偏移</span><span class="bv">${escapeHtml(profileDisplayValue(c.shift))}</span></div>
             ${isAdult ? '<div class="char-body-item"><span class="bl">🙈 暴露状态</span><span class="bv">' + escapeHtml(profileDisplayValue(c.exposure)) + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">⚡ 即时生理唤起</span><span class="bv">' + escapeHtml(c.arousal || '—') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">⚡ 即时生理唤起</span><span class="bv">' + escapeHtml(profileDisplayValue(c.arousal)) + '</span></div>' +
               '<div class="char-body-item"><span class="bl">💧 湿透情况</span><span class="bv">' + escapeHtml(profileDisplayValue(c.wetStatus)) + '</span></div>' +
               '<div class="char-body-item"><span class="bl">💧 即时分泌量</span><span class="bv">' + escapeHtml(profileDisplayValue(c.fluidAmount)) + '</span></div>' +
               '<div class="char-body-item"><span class="bl">💠 性癖</span><span class="bv">' + escapeHtml(profileDisplayValue(c.fetishes)) + '</span></div>' +
