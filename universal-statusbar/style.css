@@ -6918,3 +6918,135 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
 
 /* Performance pass: glass appearance is simulated by static layered gradients,
    translucent surfaces, highlights and borders. No live backdrop sampling. */
+
+
+
+/* Current-schema protagonist and character profile layout. */
+.sb-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+  margin: 0 0 12px;
+}
+.sb-profile-grid .sb-profile-group {
+  min-width: 0;
+  margin: 0;
+  height: 100%;
+}
+.sb-profile-grid .sb-panel-card-head {
+  gap: 8px;
+}
+.sb-profile-field-row {
+  min-width: 0;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--divider-light);
+}
+.sb-profile-field-row:last-child {
+  border-bottom: 0;
+}
+.sb-profile-field-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.sb-profile-field-text {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.sb-profile-field-value .sb-edit-pro-btn,
+.sb-profile-field-value .sb-edit-char-btn {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+.sb-profile-identity-card {
+  margin-bottom: 12px;
+}
+.sb-profile-header-main,
+.sb-profile-badges,
+.sb-profile-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+}
+.sb-profile-name {
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.sb-profile-heading-copy {
+  min-width: 0;
+}
+.sb-profile-intro {
+  margin-top: 8px;
+  color: var(--text-sub);
+  font-size: 12px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sb-profile-identity-card .sb-panel-card-head {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sb-profile-diary-card {
+  margin-top: 12px;
+}
+.sb-profile-diary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sb-character-diary-entry {
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--divider);
+}
+.sb-character-diary-entry:last-child {
+  border-bottom: 0;
+}
+.sb-character-diary-meta {
+  margin-bottom: 6px;
+  color: var(--text-sub);
+  font-size: 11px;
+  font-weight: 600;
+}
+.sb-profile-empty-note {
+  padding: 12px 0;
+  color: var(--text-muted, var(--text-sub));
+  font-size: 12px;
+  text-align: center;
+}
+.protagonist-tab-avatar-box {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+@media (max-width: 680px) {
+  .sb-profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .sb-profile-grid .sb-panel-card {
+    padding: 10px 12px;
+  }
+  .sb-profile-field-row {
+    gap: 8px;
+  }
+  .sb-profile-field-row .info-label {
+    min-width: 72px;
+  }
+  .sb-profile-identity-card .sb-panel-card-head {
+    align-items: flex-start;
+  }
+}
