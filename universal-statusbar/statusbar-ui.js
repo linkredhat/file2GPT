@@ -669,13 +669,13 @@
             <!-- 下方全宽流式展示区：一句话介绍、心声气泡与状态标签（独占整行全宽，避免任何挤压与竖排现象） -->
             <div class="char-details-flow" style="display:flex;flex-direction:column;gap:8px;width:100%;">
               <!-- 一句话介绍与基本体格 -->
-              ${c.intro ? '<div class="char-intro-quote" style="font-size:12px;color:var(--text-sub);line-height:1.5;font-style:italic;opacity:0.9;">“' + escapeHtml(c.intro) + '</div>' : ''}
-              ${[c.height && '身高 ' + c.height, c.weight && '体重 ' + c.weight, c.figure].filter(Boolean).length
+              ${c.intro && c.intro !== '未交代' ? '<div class="char-intro-quote" style="font-size:12px;color:var(--text-sub);line-height:1.5;font-style:italic;opacity:0.9;">“' + escapeHtml(profileDisplayValue(c.intro)) + '</div>' : ''}
+              ${[c.height && c.height !== '未交代' && '身高 ' + c.height, c.weight && c.weight !== '未交代' && '体重 ' + c.weight, c.figure && c.figure !== '未交代' && c.figure].filter(Boolean).length
                 ? '<div class="char-intro-quote" style="font-size:11px;color:var(--text-sub);line-height:1.5;">' +
                   escapeHtml([c.height && '身高 ' + c.height, c.weight && '体重 ' + c.weight, c.figure].filter(Boolean).join(' · ')) +
                   '</div>' : ''}
               <!-- 1. 即时生理独立行气泡 (独占整行，暗色微光底衬) -->
-              ${c.arousal ? `
+              ${c.arousal && c.arousal !== '未交代' ? `
                 <div class="char-arousal-box">
                   <span class="arousal-label">⚡ 即时生理:</span><span class="arousal-text">${escapeHtml(profileDisplayValue(c.arousal))}</span>
                 </div>
@@ -754,28 +754,28 @@
 
           <!-- B. 状态与关系：动态状态单独展示，不合并不同字段 -->
           <div class="char-body-list" id="sb-body-list" style="display:${activeCharDetailTab === 'body' ? 'block' : 'none'};">
-            <div class="char-body-item"><span class="bl">📍 当前动作与姿势</span><span class="bv">${escapeHtml(c.currentPose || '—')}</span></div>
-            <div class="char-body-item"><span class="bl">📌 所在位置</span><span class="bv">${escapeHtml(c.location || '—')}</span></div>
-            <div class="char-body-item"><span class="bl">😊 情绪</span><span class="bv">${escapeHtml(profileRaw['情绪'] || '—')}</span></div>
-            <div class="char-body-item"><span class="bl">🩺 身体状态</span><span class="bv">${escapeHtml(c.bodyStatus || '—')}</span></div>
-            <div class="char-body-item"><span class="bl">🧠 意识状态</span><span class="bv">${escapeHtml(c.consciousness || '—')}</span></div>
-            <div class="char-body-item"><span class="bl">🩹 身体痕迹</span><span class="bv">${escapeHtml(c.bodyMarks || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">📍 当前动作与姿势</span><span class="bv">${escapeHtml(profileDisplayValue(c.currentPose))}</span></div>
+            <div class="char-body-item"><span class="bl">📌 所在位置</span><span class="bv">${escapeHtml(profileDisplayValue(c.location))}</span></div>
+            <div class="char-body-item"><span class="bl">😊 情绪</span><span class="bv">${escapeHtml(profileDisplayValue(profileRaw['情绪']))}</span></div>
+            <div class="char-body-item"><span class="bl">🩺 身体状态</span><span class="bv">${escapeHtml(profileDisplayValue(c.bodyStatus))}</span></div>
+            <div class="char-body-item"><span class="bl">🧠 意识状态</span><span class="bv">${escapeHtml(profileDisplayValue(c.consciousness))}</span></div>
+            <div class="char-body-item"><span class="bl">🩹 身体痕迹</span><span class="bv">${escapeHtml(profileDisplayValue(c.bodyMarks))}</span></div>
             <div class="char-body-item"><span class="bl">💗 好感</span><span class="bv">${escapeHtml(String(c.favor || '—'))}</span></div>
-            <div class="char-body-item"><span class="bl">💬 对主角态度</span><span class="bv">${escapeHtml(c.attitude || '—')}</span></div>
-            <div class="char-body-item"><span class="bl">🎭 心境与性格偏移</span><span class="bv">${escapeHtml(c.shift || '—')}</span></div>
-            ${isAdult ? '<div class="char-body-item"><span class="bl">🙈 暴露状态</span><span class="bv">' + escapeHtml(c.exposure || '—') + '</span></div>' +
+            <div class="char-body-item"><span class="bl">💬 对主角态度</span><span class="bv">${escapeHtml(profileDisplayValue(c.attitude))}</span></div>
+            <div class="char-body-item"><span class="bl">🎭 心境与性格偏移</span><span class="bv">${escapeHtml(profileDisplayValue(c.shift))}</span></div>
+            ${isAdult ? '<div class="char-body-item"><span class="bl">🙈 暴露状态</span><span class="bv">' + escapeHtml(profileDisplayValue(c.exposure)) + '</span></div>' +
               '<div class="char-body-item"><span class="bl">⚡ 即时生理唤起</span><span class="bv">' + escapeHtml(c.arousal || '—') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">💧 湿透情况</span><span class="bv">' + escapeHtml(c.wetStatus || '—') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">💧 即时分泌量</span><span class="bv">' + escapeHtml(c.fluidAmount || '—') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">💠 性癖</span><span class="bv">' + escapeHtml(c.fetishes || '—') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">🔒 性经验与防线</span><span class="bv">' + escapeHtml(c.eroticMindset || '—') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">🔢 性爱次数</span><span class="bv">' + escapeHtml(String(c.sexCount || '—')) + '</span></div>' +
-              (genderType === 'female' && profileRaw['月经日期'] ? '<div class="char-body-item"><span class="bl">🗓️ 月经日期</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['月经日期'])) + '</span></div>' : '') +
-              (genderType === 'female' && profileRaw['当前生理期'] ? '<div class="char-body-item"><span class="bl">🌙 当前生理期</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['当前生理期'])) + '</span></div>' : '') +
-              (genderType === 'female' && profileRaw['怀孕状态'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕状态</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕状态'])) + '</span></div>' : '') +
-              (genderType === 'female' && profileRaw['怀孕备注'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕备注</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕备注'])) + '</span></div>' : '') +
-              (genderType === 'female' && profileRaw['怀孕风险'] ? '<div class="char-body-item"><span class="bl">⚠️ 怀孕风险</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕风险'])) + '</span></div>' : '') +
-              (genderType === 'female' && profileRaw['怀孕概率'] ? '<div class="char-body-item"><span class="bl">📊 怀孕概率</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕概率'])) + '</span></div>' : '') : ''}
+              '<div class="char-body-item"><span class="bl">💧 湿透情况</span><span class="bv">' + escapeHtml(profileDisplayValue(c.wetStatus)) + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">💧 即时分泌量</span><span class="bv">' + escapeHtml(profileDisplayValue(c.fluidAmount)) + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">💠 性癖</span><span class="bv">' + escapeHtml(profileDisplayValue(c.fetishes)) + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">🔒 性经验与防线</span><span class="bv">' + escapeHtml(profileDisplayValue(c.eroticMindset)) + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">🔢 性爱次数</span><span class="bv">' + escapeHtml(profileDisplayValue(c.sexCount)) + '</span></div>' +
+              (genderType === 'female' && profileRaw['月经日期'] && profileRaw['月经日期'] !== '未交代' ? '<div class="char-body-item"><span class="bl">🗓️ 月经日期</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['月经日期'])) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['当前生理期'] && profileRaw['当前生理期'] !== '未交代' ? '<div class="char-body-item"><span class="bl">🌙 当前生理期</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['当前生理期'])) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕状态'] && profileRaw['怀孕状态'] !== '未交代' ? '<div class="char-body-item"><span class="bl">🤰 怀孕状态</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕状态'])) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕备注'] && profileRaw['怀孕备注'] !== '未交代' ? '<div class="char-body-item"><span class="bl">🤰 怀孕备注</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕备注'])) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕风险'] && profileRaw['怀孕风险'] !== '未交代' ? '<div class="char-body-item"><span class="bl">⚠️ 怀孕风险</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕风险'])) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕概率'] && profileRaw['怀孕概率'] !== '未交代' ? '<div class="char-body-item"><span class="bl">📊 怀孕概率</span><span class="bv">' + escapeHtml(profileDisplayValue(profileRaw['怀孕概率'])) + '</span></div>' : '') : ''}
           </div>
 
           <!-- C. 心声手帐列表 (收纳私密日记流) -->
