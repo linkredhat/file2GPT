@@ -346,9 +346,9 @@
         '</div>' + (c.intro ? '<div class="sb-profile-intro">' + escapeHtml(c.intro) + '</div>' : '') +
       '</section>' +
       renderSchemaProfileGroups(raw, groups, 'character', c._rowIndex || raw._rowIndex) +
-      '<section class="sb-panel-card sb-profile-diary-card">' +
+      (isAdult ? '<section class="sb-panel-card sb-profile-diary-card">' +
         '<div class="sb-panel-card-head"><span class="sb-panel-card-title">恋爱日记</span><span class="text-badge">' + diaries.length + ' 篇</span></div>' +
-        '<div class="sb-profile-diary-list">' + diaryHtml + '</div></section>' +
+        '<div class="sb-profile-diary-list">' + diaryHtml + '</div></section>' : '') +
       '</div>';
   }
 
@@ -2466,8 +2466,8 @@
               </div>
             </div>
           </div>
-        </div>`
-    '</div>';
+        </div>` +
+      '</div>';
   }
 
   function renderWorldTab(world) {
