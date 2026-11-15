@@ -513,13 +513,12 @@
 
             <!-- 下方全宽流式展示区：一句话介绍、心声气泡与状态标签（独占整行全宽，避免任何挤压与竖排现象） -->
             <div class="char-details-flow" style="display:flex;flex-direction:column;gap:8px;width:100%;">
-              <!-- 一句话介绍（独立呈现，轻盈自然） -->
-              ${c.intro ? `
-                <div class="char-intro-quote" style="font-size:12px;color:var(--text-sub);line-height:1.5;font-style:italic;opacity:0.9;">
-                  “${escapeHtml(c.intro)}”
-                </div>
-              ` : ''}
-
+              <!-- 一句话介绍与基本体格 -->
+              ${c.intro ? '<div class="char-intro-quote" style="font-size:12px;color:var(--text-sub);line-height:1.5;font-style:italic;opacity:0.9;">“' + escapeHtml(c.intro) + '</div>' : ''}
+              ${[c.height && '身高 ' + c.height, c.weight && '体重 ' + c.weight, c.figure].filter(Boolean).length
+                ? '<div class="char-intro-quote" style="font-size:11px;color:var(--text-sub);line-height:1.5;">' +
+                  escapeHtml([c.height && '身高 ' + c.height, c.weight && '体重 ' + c.weight, c.figure].filter(Boolean).join(' · ')) +
+                  '</div>' : ''}
               <!-- 1. 即时生理独立行气泡 (独占整行，暗色微光底衬) -->
               ${c.arousal ? `
                 <div class="char-arousal-box">
@@ -972,7 +971,7 @@
       });
     }
 
-    // 好感度与调教值槽点击 -> 快捷打开角色详情档案
+    // 好感度槽点击 -> 快捷打开角色详情档案
     wrapperEl.querySelectorAll('.char-dual-meters-row .char-train-wrap').forEach(el => {
       el.style.cursor = 'pointer';
       el.setAttribute('title', '点击查看与编辑角色详情档案');
