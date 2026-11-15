@@ -7050,3 +7050,74 @@ details.settings-section[open] > summary.settings-section-summary .summary-title
     align-items: flex-start;
   }
 }
+
+
+/* Two-page profile navigation: page 1 is physical appearance, page 2 is current state and relationships. */
+.sb-profile-pager {
+  display: block;
+  min-width: 0;
+}
+.sb-profile-pager-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 3px 0 10px;
+  border-bottom: 1px solid var(--divider);
+}
+.sb-profile-page-btn {
+  appearance: none;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  padding: 7px 15px;
+  background: var(--card-light);
+  color: var(--text-sub);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.sb-profile-page-btn:hover {
+  border-color: var(--accent-soft);
+  color: var(--text);
+}
+.sb-profile-page-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-bg-faint);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+}
+.sb-profile-page {
+  min-width: 0;
+  animation: sb-profile-page-in .16s ease-out;
+}
+@keyframes sb-profile-page-in {
+  from { opacity: .72; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.sb-profile-page .sb-profile-grid {
+  margin-bottom: 0;
+}
+.sb-profile-page .sb-profile-group .info-label {
+  min-width: 94px;
+}
+.sb-profile-page .sb-profile-field-row .info-label {
+  line-height: 1.55;
+}
+.sb-profile-page .sb-profile-field-text {
+  line-height: 1.65;
+}
+.sb-profile-page .sb-profile-adult-group .sb-panel-card-head {
+  border-bottom-color: var(--lust-border-soft);
+}
+@media (max-width: 680px) {
+  .sb-profile-pager-nav {
+    gap: 6px;
+  }
+  .sb-profile-page-btn {
+    flex: 1 1 auto;
+    padding: 8px 10px;
+    min-width: 0;
+  }
+}
