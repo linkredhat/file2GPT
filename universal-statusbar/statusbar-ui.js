@@ -763,12 +763,12 @@
               '<div class="char-body-item"><span class="bl">💠 性癖</span><span class="bv">' + escapeHtml(c.fetishes || '—') + '</span></div>' +
               '<div class="char-body-item"><span class="bl">🔒 性经验与防线</span><span class="bv">' + escapeHtml(c.eroticMindset || '—') + '</span></div>' +
               '<div class="char-body-item"><span class="bl">🔢 性爱次数</span><span class="bv">' + escapeHtml(String(c.sexCount || '—')) + '</span></div>' +
-              (profileRaw['月经日期'] ? '<div class="char-body-item"><span class="bl">🗓️ 月经日期</span><span class="bv">' + escapeHtml(profileRaw['月经日期']) + '</span></div>' : '') +
-              (profileRaw['当前生理期'] ? '<div class="char-body-item"><span class="bl">🌙 当前生理期</span><span class="bv">' + escapeHtml(profileRaw['当前生理期']) + '</span></div>' : '') +
-              (profileRaw['怀孕状态'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕状态</span><span class="bv">' + escapeHtml(profileRaw['怀孕状态']) + '</span></div>' : '') +
-              (profileRaw['怀孕备注'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕备注</span><span class="bv">' + escapeHtml(profileRaw['怀孕备注']) + '</span></div>' : '') +
-              (profileRaw['怀孕风险'] ? '<div class="char-body-item"><span class="bl">⚠️ 怀孕风险</span><span class="bv">' + escapeHtml(profileRaw['怀孕风险']) + '</span></div>' : '') +
-              (profileRaw['怀孕概率'] ? '<div class="char-body-item"><span class="bl">📊 怀孕概率</span><span class="bv">' + escapeHtml(profileRaw['怀孕概率']) + '</span></div>' : '') : ''}
+              (genderType === 'female' && profileRaw['月经日期'] ? '<div class="char-body-item"><span class="bl">🗓️ 月经日期</span><span class="bv">' + escapeHtml(profileRaw['月经日期']) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['当前生理期'] ? '<div class="char-body-item"><span class="bl">🌙 当前生理期</span><span class="bv">' + escapeHtml(profileRaw['当前生理期']) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕状态'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕状态</span><span class="bv">' + escapeHtml(profileRaw['怀孕状态']) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕备注'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕备注</span><span class="bv">' + escapeHtml(profileRaw['怀孕备注']) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕风险'] ? '<div class="char-body-item"><span class="bl">⚠️ 怀孕风险</span><span class="bv">' + escapeHtml(profileRaw['怀孕风险']) + '</span></div>' : '') +
+              (genderType === 'female' && profileRaw['怀孕概率'] ? '<div class="char-body-item"><span class="bl">📊 怀孕概率</span><span class="bv">' + escapeHtml(profileRaw['怀孕概率']) + '</span></div>' : '') : ''}
           </div>
 
           <!-- C. 心声手帐列表 (收纳私密日记流) -->
