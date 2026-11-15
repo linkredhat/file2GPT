@@ -46,266 +46,113 @@
    */
   function getProtagonistState() {
     const bridge = db();
-    const pTable = bridge?.getTable('主角信息表');
-
-    // 1. 核心身份与外貌
-    let name = bridge?.getCell('主角信息表', 1, '姓名') || '';
-    const gender = bridge?.getCell('主角信息表', 1, '性别') || '';
-    const age = bridge?.getCell('主角信息表', 1, '年龄') || '';
-    const appearance = bridge?.getCell('主角信息表', 1, '外貌特征') || '';
-    const identity = bridge?.getCell('主角信息表', 1, '身份背景') || '';
-    const condition = bridge?.getCell('主角信息表', 1, '近况') || '';
-    const temperament = bridge?.getCell('主角信息表', 1, '气质') || '';
-
-    // 2. 体格体态与居所不动产
-    const height = bridge?.getCell('主角信息表', 1, '身高') || '';
-    const weight = bridge?.getCell('主角信息表', 1, '体重') || '';
-    const figure = bridge?.getCell('主角信息表', 1, '身材') || '';
-    const vehicle = bridge?.getCell('主角信息表', 1, '座驾') || '';
-    const pastAddress = bridge?.getCell('主角信息表', 1, '历史住址') || '';
-    const houseType = bridge?.getCell('主角信息表', 1, '房屋属性') || '';
-    const cohabitants = bridge?.getCell('主角信息表', 1, '同住人') || '';
-    const addressLocation = bridge?.getCell('主角信息表', 1, '地理位置') || '';
-    const houseInside = bridge?.getCell('主角信息表', 1, '房屋内部') || '';
-    const ownBedroom = bridge?.getCell('主角信息表', 1, '自己卧室') || '';
-
-    // 3. 通用身心状态
-    const mood = bridge?.getCell('主角信息表', 1, '情绪') || '';
-    const exposure = bridge?.getCell('主角信息表', 1, '暴露状态') || '';
-    const wetStatus = bridge?.getCell('主角信息表', 1, '湿透情况') || '';
-    const arousal = bridge?.getCell('主角信息表', 1, '兴奋度') || '';
-    const consciousness = bridge?.getCell('主角信息表', 1, '意识状态') || '';
-    const fetishes = bridge?.getCell('主角信息表', 1, '性癖') || '';
-    const bodyStatus = bridge?.getCell('主角信息表', 1, '身体状态') || '';
-
-    // 4. 后穴体系
-    const anusWidth = bridge?.getCell('主角信息表', 1, '后穴宽度') || '';
-    const anusDepth = bridge?.getCell('主角信息表', 1, '后穴深度') || '';
-    const anusDev = bridge?.getCell('主角信息表', 1, '后穴开发度') || '';
-
-    // 5. 男性特有生理指标 (真实提取，绝不强行加默认值)
-    const dickLength = bridge?.getCell('主角信息表', 1, '肉棒长度') || '';
-    const dickDiameter = bridge?.getCell('主角信息表', 1, '肉棒直径') || '';
-    const dickStatus = bridge?.getCell('主角信息表', 1, '肉棒状态') || '';
-    const dickExposed = bridge?.getCell('主角信息表', 1, '是否外露') || '';
-
-    // 6. 女性特有生理与受孕系统 (真实提取，绝不强行加默认值)
-    const fluidAmount = bridge?.getCell('主角信息表', 1, '爱液量') || '';
-    const nipples = bridge?.getCell('主角信息表', 1, '乳头') || '';
-    const clitoris = bridge?.getCell('主角信息表', 1, '阴蒂') || '';
-    const pussyWidth = bridge?.getCell('主角信息表', 1, '小穴宽度') || '';
-    const pussyDepth = bridge?.getCell('主角信息表', 1, '小穴深度') || '';
-    const pussyHymen = bridge?.getCell('主角信息表', 1, '处女膜') || '';
-    const uterus = bridge?.getCell('主角信息表', 1, '子宫') || '';
-    const squirtCount = bridge?.getCell('主角信息表', 1, '潮吹') || '';
-    const periodDate = bridge?.getCell('主角信息表', 1, '月经日期') || '';
-    const periodPhase = bridge?.getCell('主角信息表', 1, '当前生理期') || '';
-    const pregnantStatus = bridge?.getCell('主角信息表', 1, '怀孕状态') || '';
-    const pregnantNote = bridge?.getCell('主角信息表', 1, '怀孕备注') || '';
-    const pregRisk = bridge?.getCell('主角信息表', 1, '怀孕风险') || '';
-    const pregProbability = bridge?.getCell('主角信息表', 1, '怀孕概率') || '';
-
-    // 7. 当前着装与脱下服装
-    const top = bridge?.getCell('主角信息表', 1, '上装') || '';
-    const bottom = bridge?.getCell('主角信息表', 1, '下装') || '';
-    const bra = bridge?.getCell('主角信息表', 1, '内衣') || '';
-    const panties = bridge?.getCell('主角信息表', 1, '内裤') || '';
-    const legs = bridge?.getCell('主角信息表', 1, '腿部') || '';
-    const shoes = bridge?.getCell('主角信息表', 1, '鞋子') || '';
-    const accessories = bridge?.getCell('主角信息表', 1, '配饰') || '';
-    const sexToys = bridge?.getCell('主角信息表', 1, '情趣道具') || '';
-
-    const takenTop = bridge?.getCell('主角信息表', 1, '脱下上装') || '';
-    const takenBottom = bridge?.getCell('主角信息表', 1, '脱下下装') || '';
-    const takenBra = bridge?.getCell('主角信息表', 1, '脱下内衣') || '';
-    const takenPanties = bridge?.getCell('主角信息表', 1, '脱下内裤') || '';
-    const takenSocks = bridge?.getCell('主角信息表', 1, '脱下鞋袜') || '';
-    const takenAccessories = bridge?.getCell('主角信息表', 1, '脱下配饰') || '';
-
-    // 8. 随身资产与通讯工具
-    const bankBalance = bridge?.getCell('主角信息表', 1, '银行卡余额') || '';
-    const ewalletBalance = bridge?.getCell('主角信息表', 1, '微信支付宝余额') || '';
-    const cash = bridge?.getCell('主角信息表', 1, '现金') || '';
-    const phone1 = bridge?.getCell('主角信息表', 1, '随身手机1') || '';
-    const phone2 = bridge?.getCell('主角信息表', 1, '随身手机2') || '';
-    const phone = phone1 || phone2;
-    const tempItems = bridge?.getCell('主角信息表', 1, '临时物品') || '';
-
-    const raw = {};
-    if (pTable && Array.isArray(pTable.content) && pTable.content.length > 1) {
-      const headers = pTable.content[0] || [];
-      const row = pTable.content[1] || [];
-      headers.forEach((col, idx) => {
-        raw[col] = row[idx] ?? '';
-      });
-    }
-
-    const numBank = parseInt(String(bankBalance).replace(/[^0-9.-]/g, ''), 10) || 0;
-    const numEwallet = parseInt(String(ewalletBalance).replace(/[^0-9.-]/g, ''), 10) || 0;
-    const numCash = parseInt(String(cash).replace(/[^0-9.-]/g, ''), 10) || 0;
-    const totalCash = numBank + numEwallet + numCash;
-
-    const hasDick = dickLength && dickLength !== '-' && dickLength !== '无' && dickLength !== '0';
-    const hasPussy = (pussyWidth && pussyWidth !== '-' && pussyWidth !== '无') || (fluidAmount && fluidAmount !== '-' && fluidAmount !== '无') || (pussyHymen && pussyHymen !== '-' && pussyHymen !== '无');
-    const hasPeriod = periodPhase && periodPhase !== '-' && periodPhase !== '无';
-    const hasPregnancy = pregnantStatus && pregnantStatus !== '-' && pregnantStatus !== '否' && pregnantStatus !== '无';
-
+    const raw = bridge?.getAllRows('主角信息表')?.[0] || {};
+    const get = (label) => raw[label] == null ? '' : String(raw[label]).trim();
+    const has = (label) => {
+      const value = get(label);
+      return value !== '' && value !== '-' && value !== '无' && value !== '未交代';
+    };
+    const ageMatch = get('年龄').match(/(?:^|\D)(\d{1,3})(?:\D|$)/);
+    const isAdult = Boolean(ageMatch && Number(ageMatch[1]) >= 18);
+    const bankBalance = get('银行卡余额');
+    const ewalletBalance = get('微信支付宝余额');
+    const cash = get('现金');
+    const toAmount = (value) => Number(String(value || '').replace(/[^0-9.-]/g, '')) || 0;
+    const intimateBodyLabels = ['乳房', '乳头', '臀部', '阴蒂', '阴唇', '阴道', '肛门', '子宫', '阴囊', '阴茎'];
+    const bodyNsfwBaseline = isAdult ? intimateBodyLabels.filter(has).map((label) => label + '：' + get(label)).join('；') : '';
+    const pregnantStatus = isAdult ? get('怀孕状态') : '';
+    const periodCycle = isAdult ? [get('月经日期'), get('当前生理期')].filter((value) => value && value !== '-' && value !== '无').join('；') : '';
     return {
-      name,
-      gender,
-      age,
-      identity,
-      condition,
-      appearance,
-      temperament,
-      height,
-      weight,
-      figure,
-      vehicle,
-      pastAddress,
-      houseType,
-      cohabitants,
-      addressLocation,
-      houseInside,
-      ownBedroom,
-      mood,
-      exposure,
-      wetStatus,
-      arousal,
-      consciousness,
-      fetishes,
-      bodyStatus,
-      anusWidth,
-      anusDepth,
-      anusDev,
-      dickLength,
-      dickDiameter,
-      dickStatus,
-      dickExposed,
-      fluidAmount,
-      nipples,
-      clitoris,
-      pussyWidth,
-      pussyDepth,
-      pussyHymen,
-      uterus,
-      squirtCount,
-      periodDate,
-      periodPhase,
-      pregnantStatus,
-      pregnantNote,
-      pregRisk,
-      pregProbability,
-      hasDick,
-      hasPussy,
-      hasPeriod,
-      hasPregnancy,
-      top,
-      bottom,
-      bra,
-      panties,
-      legs,
-      shoes,
-      accessories,
-      sexToys,
-      takenTop,
-      takenBottom,
-      takenBra,
-      takenPanties,
-      takenSocks,
-      takenAccessories,
-      bankBalance,
-      ewalletBalance,
-      cash,
-      totalCash,
-      phone1,
-      phone2,
-      phone,
-      tempItems,
-      raw
+      name: get('姓名'), gender: get('性别'), age: get('年龄'),
+      appearance: get('外貌特征'), identity: get('身份背景'), condition: get('近况'),
+      height: get('身高'), weight: get('体重'), vehicle: get('座驾'), figure: get('身材'), temperament: get('气质'),
+      pastAddress: get('历史住址'), houseType: get('房屋属性'), cohabitants: get('同住人'),
+      addressLocation: get('地理位置'), houseInside: get('房屋内部'), ownBedroom: get('自己卧室'),
+      mood: get('情绪'), currentPose: get('当前动作与姿势'),
+      exposure: isAdult ? get('暴露状态') : '', wetStatus: isAdult ? get('湿透情况') : '',
+      arousal: isAdult ? get('兴奋度') : '', fluidAmount: isAdult ? get('爱液量') : '',
+      consciousness: get('意识状态'), bodyStatus: get('身体状态'), oralCavity: get('口腔'),
+      hands: get('手部'), legFeatures: get('腿部特征'), feet: get('脚部'),
+      breasts: isAdult ? get('乳房') : '', nipples: isAdult ? get('乳头') : '', buttocks: isAdult ? get('臀部') : '',
+      clitoris: isAdult ? get('阴蒂') : '', labia: isAdult ? get('阴唇') : '', vagina: isAdult ? get('阴道') : '',
+      anus: isAdult ? get('肛门') : '', uterus: isAdult ? get('子宫') : '', scrotum: isAdult ? get('阴囊') : '',
+      dick: isAdult ? get('阴茎') : '', fetishes: isAdult ? get('性癖') : '',
+      squirtCount: isAdult ? get('潮吹') : '', periodDate: isAdult ? get('月经日期') : '',
+      periodPhase: isAdult ? get('当前生理期') : '', pregnantStatus,
+      pregnantNote: isAdult ? get('怀孕备注') : '', pregRisk: isAdult ? get('怀孕风险') : '',
+      pregProbability: isAdult ? get('怀孕概率') : '',
+      hasDick: isAdult && has('阴茎'), hasPussy: isAdult && ['阴道', '阴蒂', '阴唇'].some(has),
+      hasPeriod: isAdult && (has('月经日期') || has('当前生理期')),
+      hasPregnancy: isAdult && (has('怀孕状态') || has('怀孕备注') || has('怀孕风险') || has('怀孕概率')),
+      top: get('上装'), bottom: get('下装'), bra: get('内衣'), panties: get('内裤'),
+      shoesSocks: get('鞋袜'), legs: get('腿部特征'), shoes: get('鞋袜'), accessories: get('配饰'),
+      sexToys: isAdult ? get('情趣道具') : '',
+      bankBalance, ewalletBalance, cash,
+      totalCash: toAmount(bankBalance) + toAmount(ewalletBalance) + toAmount(cash),
+      bodyNsfwBaseline, periodCycle, raw
     };
   }
 
   /**
-   * 将单行角色数据映射为全量 45 列对象 (角色信息表)
+   * 将单行角色数据映射为前端使用的角色对象。
+   * raw 保留数据库原始列名，详情页按当前表头动态分组，避免字段调整后漏显。
    */
+
   function mapFullCharacterRow(r, i) {
-    const rawP = r['是否在场'];
-    const isPresent = String(rawP ?? '').trim() === '1';
-    const outfitParts = [r['上装'], r['下装']].filter(Boolean);
-    const outfit = outfitParts.join(' / ');
-
+    const get = (label) => r[label] == null ? '' : String(r[label]).trim();
+    const rawP = get('是否在场');
+    const isPresent = rawP === '1' || rawP.toLowerCase() === 'true';
+    const ageMatch = get('年龄').match(/(?:^|\D)(\d{1,3})(?:\D|$)/);
+    const isAdult = Boolean(ageMatch && Number(ageMatch[1]) >= 18);
+    const has = (label) => {
+      const value = get(label);
+      return value !== '' && value !== '-' && value !== '无' && value !== '未交代';
+    };
+    const bodyLabels = ['口腔', '乳房', '乳头', '臀部', '阴蒂', '阴唇', '子宫', '阴囊', '手部', '腿部特征', '脚部', '阴道', '肛门', '阴茎'];
+    const bodyNsfwBaseline = isAdult ? bodyLabels.filter(has).map((label) => label + '：' + get(label)).join('；') : '';
+    const periodCycle = isAdult ? [get('月经日期'), get('当前生理期')].filter((value) => value && value !== '-' && value !== '无').join('；') : '';
+    const pregnancyStatus = isAdult
+      ? [get('生育避孕状态'), get('怀孕备注'), get('怀孕风险'), get('怀孕概率')].filter((value) => value && value !== '-' && value !== '无').join('；')
+      : '';
+    const charName = get('姓名');
     return {
-      _sourceTable: '角色信息表',
-      _rowIndex: r._rowIndex || (i + 1),
-      rowId: r['row_id'] || (i + 1),
-      name: String(r['姓名'] || '').trim(),
-      charType: r['角色类型'] || '',
-      isPresent: isPresent,
-      gender: r['性别'] || '',
-      age: r['年龄'] || '',
-      intro: r['一句话介绍'] || '',
-      appearance: r['外貌特征'] || '',
-      identity: r['身份背景'] || '',
-      speechStyle: r['语言风格和口癖'] || '',
-
-      // 心理与偏移
-      favor: r['好感'] || '',
-      affection: r['好感'] || '',
-      attitude: r['对主角态度'] || '',
-      shift: r['近期心境与性格偏移'] || '',
-      innerThought: r['内心想法'] || '',
-
-      // 关系与里程碑
-      milestones: r['里程碑事件'] || '',
-      relationState: r['人际关系'] || '',
-      pastExperience: r['过往经历'] || '',
-      personalAffairs: r['个人事务'] || '',
-      recentInteractions: r['最近亲密互动'] || '',
-
-      // 状态与在场
-      status: r['当前状态'] || '',
-      location: r['所在位置'] || '',
-      exposure: r['暴露状态'] || '',
-      arousal: r['即时生理唤起'] || '',
-      bodyMarks: r['身体痕迹'] || '',
-
-      // 衣着 6 部位与道具
-      top: r['上装'] || '',
-      bottom: r['下装'] || '',
-      bra: r['内衣'] || '',
-      panties: r['内裤'] || '',
-      shoesSocks: r['鞋袜'] || '',
-      accessories: r['配饰'] || '',
-      sexToys: r['情趣道具'] || '',
-      outfit: outfit,
-      underwear: [r['内衣'], r['内裤']].filter(Boolean).join(' / '),
-
-      // 财产与住所
-      residence: r['住所'] || '',
-      money: r['金钱'] || '',
-      playerGiftItems: r['主角赠送物品'] || '',
-      carryItems: r['随身物品'] || '',
-      tempItems: r['临时物品'] || '',
-
-      // NSFW身体基线与性档案
-      fetishes: r['性癖'] || '',
-      measurements: r['三围罩杯'] || '',
-      bodyNsfwBaseline: r['隐私身体基线'] || '',
-      eroticMindset: r['性经验与防线'] || '',
-      bedStyle: r['床上风格与称呼'] || '',
-      trainingValue: r['调教值'] || '',
-      sexCount: r['性爱次数'] || '',
-      periodCycle: r['生理周期'] || '',
-      pregnancyStatus: r['生育避孕状态'] || '',
-
-      // 提取属于该角色的恋爱日记（恋爱日记）
+      _sourceTable: '角色信息表', _rowIndex: r._rowIndex || (i + 1), rowId: r['row_id'] || (i + 1),
+      name: charName, charType: get('角色类型'), isPresent, lifecycleStatus: get('生命周期状态'),
+      gender: get('性别'), age: get('年龄'), intro: get('一句话介绍'), appearance: get('外貌特征'),
+      identity: get('身份背景'), height: get('身高'), weight: get('体重'), figure: get('身材'),
+      speechStyle: get('语言风格和口癖'),
+      favor: get('好感'), affection: get('好感'), fetishes: isAdult ? get('性癖') : '',
+      attitude: get('对主角态度'), shift: get('近期心境与性格偏移'), milestones: get('里程碑事件'),
+      relationState: get('人际关系'), pastExperience: get('过往经历'), personalAffairs: get('个人事务'),
+      recentInteractions: isAdult ? get('最近亲密互动') : '', innerThought: get('内心想法'),
+      status: get('当前动作与姿势'), currentPose: get('当前动作与姿势'), location: get('所在位置'),
+      exposure: isAdult ? get('暴露状态') : '', arousal: isAdult ? get('即时生理唤起') : '',
+      bodyMarks: get('身体痕迹'), wetStatus: isAdult ? get('湿透情况') : '',
+      fluidAmount: isAdult ? get('即时分泌量') : '', bodyStatus: get('身体状态'), consciousness: get('意识状态'),
+      top: get('上装'), bottom: get('下装'), bra: get('内衣'), panties: get('内裤'),
+      shoesSocks: get('鞋袜'), socks: get('鞋袜'), accessories: get('配饰'),
+      sexToys: isAdult ? get('情趣道具') : '', outfit: [get('上装'), get('下装')].filter(Boolean).join(' / '),
+      underwear: [get('内衣'), get('内裤')].filter(Boolean).join(' / '),
+      residence: get('住所'), money: get('金钱'), playerGiftItems: get('主角赠送物品'),
+      carryItems: get('随身物品'), tempItems: get('临时物品'),
+      measurements: isAdult ? get('三围罩杯') : '', oralCavity: get('口腔'),
+      breasts: isAdult ? get('乳房') : '', nipples: isAdult ? get('乳头') : '',
+      buttocks: isAdult ? get('臀部') : '', clitoris: isAdult ? get('阴蒂') : '',
+      labia: isAdult ? get('阴唇') : '', uterus: isAdult ? get('子宫') : '',
+      scrotum: isAdult ? get('阴囊') : '', hands: get('手部'), legFeatures: get('腿部特征'), feet: get('脚部'),
+      eroticMindset: isAdult ? get('性经验与防线') : '', bedStyle: isAdult ? get('床上风格与称呼') : '',
+      trainingValue: '', sexCount: isAdult ? get('性爱次数') : '',
+      periodCycle: periodCycle || '-', pregnancyStatus: pregnancyStatus || '-',
+      vagina: isAdult ? get('阴道') : '', anus: isAdult ? get('肛门') : '', dick: isAdult ? get('阴茎') : '',
+      squirtCount: isAdult ? get('潮吹次数') : '', periodDate: isAdult ? get('月经日期') : '',
+      periodPhase: isAdult ? get('当前生理期') : '', pregnancyNote: isAdult ? get('怀孕备注') : '',
+      pregRisk: isAdult ? get('怀孕风险') : '', pregProbability: isAdult ? get('怀孕概率') : '',
+      bodyNsfwBaseline: bodyNsfwBaseline || '-',
       diaries: (function () {
-        const charName = (r['姓名'] || '').trim();
         const allDiaries = getAllRomanceDiaries();
-        return allDiaries.filter(d => {
-          const w = d.writer;
-          return w && (w === charName || charName.includes(w) || w.includes(charName));
+        return allDiaries.filter((d) => {
+          const writer = d.writer;
+          return writer && (writer === charName || charName.includes(writer) || writer.includes(charName));
         });
       })(),
       raw: r
@@ -315,6 +162,7 @@
   /**
    * 提取所有角色列表
    */
+
   function getAllCharactersState() {
     const bridge = db();
     const allChars = bridge?.getAllRows('角色信息表') || [];
