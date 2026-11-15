@@ -238,316 +238,120 @@
   }
 
   /**
-   * 渲染角色全景档案 (角色信息表 45 列 + 恋爱日记手帐流 · 7 大全景模块)
+   * 渲染角色全景档案：按当前角色表字段分组展示，并保留恋爱日记。
    */
-  function renderCharacterDossierHtml(c, isMainView = false) {
-    if (!c) return '';
-    const isP = c.isPresent;
-    const favorNum = Math.min(100, Math.max(0, parseInt(c.favor || c.affection) || 0));
-    const fetishList = (c.fetishes || '').split(/[,，、|/]/).map(x => x.trim()).filter(Boolean);
-    const diaries = c.diaries || [];
-
-    return `
-      <div class="char-dossier-wrap">
-        <!-- 1. 基础生平与身份 (Basic Bio & Identity) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;border-left:3px solid var(--sb-accent);">
-          <div class="sb-panel-card-head">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span class="sb-panel-card-title" style="font-size:16px;">${escapeHtml(c.name)}</span>
-              ${c.charType ? `<span class="text-badge ${c.charType === '恋爱对象' ? 'text-badge-rose' : 'text-badge-accent'}">${escapeHtml(c.charType)}</span>` : ''}
-              <span class="text-badge ${isP ? 'text-badge-accent' : ''}">${isP ? '当前在场' : '离场不在'}</span>
-              ${[c.gender, c.age].filter(Boolean).length > 0 ? `<span class="text-badge">${[c.gender, c.age].filter(Boolean).map(escapeHtml).join(' · ')}</span>` : ''}
-              <button class="btn-mini-action sb-copy-char-name-btn" data-name="${escapeHtml(c.name)}" title="插入角色名到输入框: ${escapeHtml(c.name)}" style="padding:2px 8px;font-size:11px;cursor:pointer;border-radius:var(--sb-radius-sm);background:var(--card-light);border:1px solid var(--divider);color:var(--text-sub);line-height:1.4;">角色名插入</button>
-              <button class="btn-mini-action btn-char-investigate sb-dossier-iv-btn" data-name="${escapeHtml(c.name)}" title="查看或生成【${escapeHtml(c.name)}】大调查机密档案" style="padding:2px 8px;font-size:11px;cursor:pointer;border-radius:var(--sb-radius-sm);background:var(--card-light);border:1px solid var(--divider);color:var(--text-sub);line-height:1.4;">调查</button>
-              <button class="btn-mini-action btn-char-interview sb-dossier-itv-btn" data-name="${escapeHtml(c.name)}" title="查看或发起对【${escapeHtml(c.name)}】的色情采访" style="padding:2px 8px;font-size:11px;cursor:pointer;border-radius:var(--sb-radius-sm);background:var(--card-light);border:1px solid var(--divider);color:var(--text-sub);line-height:1.4;">采访</button>
-            </div>
-          </div>
-
-          ${c.intro ? `
-            <div style="font-size:13px;color:var(--sb-accent);font-style:italic;margin:6px 0 10px 0;line-height:1.6;">
-              “${escapeHtml(c.intro)}”
-            </div>
-          ` : ''}
-
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">身份背景</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.identity || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">角色定位</span>
-              <div class="info-value">
-                <span>${[c.charType, c.age ? '年龄: ' + c.age : '', c.gender ? '性别: ' + c.gender : ''].filter(Boolean).map(escapeHtml).join(' · ') || '-'}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">外貌特征</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;">${escapeHtml(c.appearance || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">语言口癖</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.speechStyle || '-')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. 心理活动与性格偏移 (Psychology & Shifts) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;border-left:3px solid var(--sb-rose, #e06c75);">
-          <div class="sb-panel-card-head">
-            <span class="sb-panel-card-title">心理活动与性格偏移</span>
-          </div>
-
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">好感度</span>
-              <div class="info-value">
-                <div class="favor-bar-wrap">
-                  <div class="favor-bar-track">
-                    <div class="favor-bar-fill" style="width:${favorNum}%;"></div>
-                  </div>
-                  <span class="favor-bar-num">${favorNum}/100</span>
-                  ${c.attitude ? `<span style="font-size:11px;color:var(--sb-secondary-text);margin-left:8px;">${escapeHtml(c.attitude)}</span>` : ''}
-                </div>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">对主角态度</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.attitude || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">性格偏移</span>
-              <div class="info-value">
-                <span class="info-value-rose" style="line-height:1.6;font-size:12px;">${escapeHtml(c.shift || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">内心想法</span>
-              <div class="info-value">
-                <span style="font-style:italic;color:var(--sb-secondary-text);line-height:1.6;font-size:12px;">${escapeHtml(c.innerThought || '-')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. 人际关系与里程碑 (Relationships & Milestones) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;">
-          <div class="sb-panel-card-head">
-            <span class="sb-panel-card-title">人际网络与大事记</span>
-          </div>
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">里程碑事件</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;color:var(--sb-accent);">${escapeHtml(c.milestones || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">人际关系</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;">${escapeHtml(c.relationState || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">个人事务</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;color:var(--sb-muted);">${escapeHtml(c.personalAffairs || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">亲密互动</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.recentInteractions || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">过往经历</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;max-height:120px;overflow-y:auto;">${escapeHtml(c.pastExperience || '-')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. 当前状态与行止衣着 (Presence & Outfit) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;">
-          <div class="sb-panel-card-head">
-            <span class="sb-panel-card-title">当前衣着与行止状态</span>
-          </div>
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">所在与行动</span>
-              <div class="info-value">
-                <span class="info-value-accent">${escapeHtml(c.status || '')}${c.location ? ` · 地点: ${escapeHtml(c.location)}` : ''}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">外层衣着</span>
-              <div class="info-value">
-                <span>上: ${escapeHtml(c.top || '-')} · 下: ${escapeHtml(c.bottom || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">内着衣物</span>
-              <div class="info-value">
-                <span>内衣: ${escapeHtml(c.bra || '-')} · 内裤: ${escapeHtml(c.panties || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">鞋袜配饰</span>
-              <div class="info-value">
-                <span>鞋袜: ${escapeHtml(c.shoesSocks || '-')} · 配饰: ${escapeHtml(c.accessories || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">暴露与唤起</span>
-              <div class="info-value">
-                <span class="info-value-rose">暴露: ${escapeHtml(c.exposure || '-')} · 生理唤起: ${escapeHtml(c.arousal || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">身体痕迹</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.bodyMarks || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">情趣道具</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.sexToys || '-')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5. 隐私身体基线与性档案 (NSFW Baseline & Erotic Profile) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;border-left:3px solid var(--sb-rose, #e06c75);">
-          <div class="sb-panel-card-head">
-            <span class="sb-panel-card-title">隐私身体基线与性特征</span>
-          </div>
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">性癖倾向</span>
-              <div class="info-value">
-                <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                  ${fetishList.length > 0 ? fetishList.map(f => `
-                    <span class="text-badge text-badge-rose" style="font-size:10px;">${escapeHtml(f)}</span>
-                  `).join('') : '<span style="color:var(--sb-muted);">-</span>'}
-                </div>
-              </div>
-            </div>
-            ${(c.measurements && c.measurements !== '-') ? `
-            <div class="info-row">
-              <span class="info-label">三围罩杯</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.measurements || '-')}</span>
-              </div>
-            </div>` : ''}
-            <div class="info-row">
-              <span class="info-label">${(c.gender === '男' || c.measurements === '-') ? '男性生理基线' : '隐私身体基线'}</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;">${escapeHtml(c.bodyNsfwBaseline || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">性经验防线</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;">${escapeHtml(c.eroticMindset || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">床上风格称呼</span>
-              <div class="info-value">
-                <span style="line-height:1.6;font-size:12px;">${escapeHtml(c.bedStyle || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">调教与次数</span>
-              <div class="info-value">
-                <span>调教受驯值: ${escapeHtml(String(c.trainingValue || '0'))}/1000 · 性爱累计: ${escapeHtml(String(c.sexCount || '0'))} 次</span>
-              </div>
-            </div>
-            ${(c.gender !== '男' && c.periodCycle !== '-') ? `
-            <div class="info-row">
-              <span class="info-label">生理与避孕</span>
-              <div class="info-value">
-                <span>周期: ${escapeHtml(c.periodCycle || '-')} · 状态: ${escapeHtml(c.pregnancyStatus || '-')}</span>
-              </div>
-            </div>` : ''}
-          </div>
-        </div>
-
-        <!-- 6. 财产与随身物品 (Belongings & Residence) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;">
-          <div class="sb-panel-card-head">
-            <span class="sb-panel-card-title">财产与随身物品</span>
-          </div>
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">居所</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.residence || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">个人资金</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.money || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">主角赠送物品</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.playerGiftItems || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">随身物品</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.carryItems || '-')}</span>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">临时持有</span>
-              <div class="info-value">
-                <span>${escapeHtml(c.tempItems || '无')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 7. 私密手帐心声流 (Private Romance Diary Stream) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;border-left:3px solid var(--sb-rose, #e06c75);">
-          <div class="sb-panel-card-head">
-            <span class="sb-panel-card-title">私密手帐日记流 (心声记录 · ${diaries.length} 篇)</span>
-          </div>
-          <div style="margin-top:6px;">
-            ${diaries.length > 0 ? diaries.map(d => `
-              <div style="border-bottom:1px dashed var(--sb-divider);padding:10px 0;">
-                <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--sb-rose);margin-bottom:6px;">
-                  <span style="font-weight:600;">${d.eventType ? `【${escapeHtml(d.eventType)}】` : ''}${escapeHtml(d.writer || '')}${d.targetChar ? ` 与 ${escapeHtml(d.targetChar)}` : ''}${d.time || d.date ? ` · ${escapeHtml(d.time || d.date)}` : ''}</span>
-                </div>
-                <div class="diary-body-content" style="font-size:12px;line-height:1.7;background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:4px;border-left:2px solid var(--sb-rose);">${renderDiaryContentHtml(d.content)}</div>
-              </div>
-            `).join('') : `
-              <div style="font-size:12px;color:var(--sb-muted);padding:8px 0;">该角色暂无私密手帐日记。随着剧情推进与亲密交互，日记将自动沉淀并记录于此。</div>
-            `}
-          </div>
-        </div>
-      </div>
-    `;
+  function isConfirmedAdultProfile(raw) {
+    const age = String(raw?.['年龄'] ?? '').trim();
+    const match = age.match(/^(\d{1,3})\s*(?:周岁|岁)?$/);
+    return Boolean(match && Number(match[1]) >= 18);
   }
 
-  /**
-   * 绑定角色全景交互事件 (字段修改、在场切换、脱衣、穿衣、手帐日记修改)
-   */
+  const PROFILE_ADULT_FIELD_LABELS = new Set([
+    '性癖', '最近亲密互动', '暴露状态', '即时生理唤起', '情趣道具', '三围罩杯',
+    '乳房', '乳头', '臀部', '阴蒂', '阴唇', '子宫', '阴囊', '性经验与防线',
+    '床上风格与称呼', '性爱次数', '生育避孕状态', '阴道', '肛门', '阴茎',
+    '湿透情况', '即时分泌量', '潮吹次数', '月经日期', '当前生理期',
+    '怀孕状态', '怀孕备注', '怀孕风险', '怀孕概率', '兴奋度', '爱液量'
+  ]);
+
+  function renderSchemaProfileGroups(raw, groups, editType = 'readonly', rowIndex = 0) {
+    const data = raw && typeof raw === 'object' ? raw : {};
+    const isAdult = isConfirmedAdultProfile(data);
+    const consumed = new Set(['row_id', '_rowIndex']);
+    const cards = [];
+    const renderField = (field) => {
+      const value = data[field] == null ? '' : String(data[field]);
+      const displayValue = value.trim() ? value : '未填写';
+      let editButton = '';
+      if (editType === 'protagonist') {
+        editButton = '<button type="button" class="btn-mini-action sb-edit-pro-btn" data-field="' +
+          escapeHtml(field) + '" data-val="' + escapeHtml(value) + '">修改</button>';
+      } else if (editType === 'character') {
+        editButton = '<button type="button" class="btn-mini-action sb-edit-char-btn" data-row="' +
+          escapeHtml(String(rowIndex || data._rowIndex || 0)) + '" data-field="' +
+          escapeHtml(field) + '" data-val="' + escapeHtml(value) + '">修改</button>';
+      }
+      return '<div class="info-row sb-profile-field-row">' +
+        '<span class="info-label">' + escapeHtml(field) + '</span>' +
+        '<div class="info-value sb-profile-field-value">' +
+        '<span class="sb-profile-field-text">' + escapeHtml(displayValue) + '</span>' +
+        editButton + '</div></div>';
+    };
+    for (const group of groups) {
+      const fields = Array.isArray(group.fields) ? group.fields : [];
+      fields.forEach((field) => consumed.add(field));
+      if (group.adultOnly && !isAdult) continue;
+      const rows = fields.map(renderField).join('');
+      if (!rows) continue;
+      cards.push('<section class="sb-panel-card sb-profile-group' +
+        (group.adultOnly ? ' sb-profile-adult-group' : '') + '">' +
+        '<div class="sb-panel-card-head"><span class="sb-panel-card-title">' +
+        escapeHtml(group.title || '档案信息') + '</span>' +
+        (group.adultOnly ? '<span class="text-badge text-badge-rose">成年档案</span>' : '') +
+        '</div><div class="info-list">' + rows + '</div></section>');
+    }
+    const unknownFields = Object.keys(data).filter((field) => {
+      if (consumed.has(field) || field.startsWith('_')) return false;
+      if (!isAdult && PROFILE_ADULT_FIELD_LABELS.has(field)) return false;
+      if (!isAdult && /(性癖|亲密|性经验|床上|生殖|阴茎|阴道|阴蒂|阴唇|肛门|阴囊|乳房|乳头|怀孕|月经|潮吹|三围|情趣|暴露|湿透|兴奋度|爱液)/.test(field)) return false;
+      return true;
+    });
+    if (unknownFields.length) {
+      cards.push('<section class="sb-panel-card sb-profile-group">' +
+        '<div class="sb-panel-card-head"><span class="sb-panel-card-title">其他字段</span></div>' +
+        '<div class="info-list">' + unknownFields.map(renderField).join('') + '</div></section>');
+    }
+    return '<div class="sb-grid-2 sb-profile-grid">' + cards.join('') + '</div>';
+  }
+
+  function renderCharacterDossierHtml(c, isMainView = false) {
+    if (!c) return '';
+    const raw = c.raw || {};
+    const isAdult = isConfirmedAdultProfile(raw);
+    const isPresent = Boolean(c.isPresent);
+    const lifecycle = c.lifecycleStatus || raw['生命周期状态'] || '';
+    const diaries = isAdult && Array.isArray(c.diaries) ? c.diaries : [];
+    const name = String(c.name || raw['姓名'] || '');
+    const groups = [
+      { title: '基本身份', fields: ['姓名', '角色类型', '是否在场', '生命周期状态', '性别', '年龄', '一句话介绍', '外貌特征', '身份背景', '身高', '体重', '身材', '语言风格和口癖'] },
+      { title: '心理与关系', fields: ['好感', '对主角态度', '近期心境与性格偏移', '里程碑事件', '人际关系', '过往经历', '个人事务', '内心想法'] },
+      { title: '当前状态', fields: ['当前动作与姿势', '所在位置', '身体痕迹', '身体状态', '意识状态'] },
+      { title: '当前着装', fields: ['上装', '下装', '内衣', '内裤', '鞋袜', '配饰'] },
+      { title: '住所与物品', fields: ['住所', '金钱', '主角赠送物品', '随身物品', '临时物品'] },
+      { title: '基础身体特征', fields: ['口腔', '手部', '腿部特征', '脚部'] },
+      { title: '成人档案', adultOnly: true, fields: ['性癖', '最近亲密互动', '暴露状态', '即时生理唤起', '情趣道具', '三围罩杯', '乳房', '乳头', '臀部', '阴蒂', '阴唇', '子宫', '阴囊', '性经验与防线', '床上风格与称呼', '性爱次数', '生育避孕状态', '阴道', '肛门', '阴茎', '湿透情况', '即时分泌量', '潮吹次数', '月经日期', '当前生理期', '怀孕备注', '怀孕风险', '怀孕概率'] }
+    ];
+    const actionButtons =
+      '<button type="button" class="btn-mini-action sb-copy-char-name-btn" data-name="' + escapeHtml(name) + '">角色名插入</button>' +
+      '<button type="button" class="btn-mini-action btn-char-investigate sb-dossier-iv-btn" data-name="' + escapeHtml(name) + '">调查</button>' +
+      (isAdult ? '<button type="button" class="btn-mini-action btn-char-interview sb-dossier-itv-btn" data-name="' + escapeHtml(name) + '" title="仅限已确认成年角色">采访</button>' : '');
+    const diaryHtml = diaries.length
+      ? diaries.map((d) => '<article class="sb-character-diary-entry">' +
+          '<div class="sb-character-diary-meta">' +
+          (d.eventType ? '【' + escapeHtml(d.eventType) + '】' : '') +
+          escapeHtml(d.writer || name) + (d.targetChar ? ' 与 ' + escapeHtml(d.targetChar) : '') +
+          ((d.time || d.date) ? ' · ' + escapeHtml(d.time || d.date) : '') +
+          '</div><div class="diary-body-content">' + renderDiaryContentHtml(d.content || '') + '</div></article>').join('')
+      : '<div class="sb-profile-empty-note">该角色暂无恋爱日记记录。</div>';
+    return '<div class="char-dossier-wrap">' +
+      '<section class="sb-panel-card sb-profile-identity-card">' +
+        '<div class="sb-panel-card-head">' +
+          '<div class="sb-profile-header-main">' +
+            '<div class="sb-profile-name">' + escapeHtml(name || '未命名角色') + '</div>' +
+            (c.charType ? '<span class="text-badge text-badge-accent">' + escapeHtml(c.charType) + '</span>' : '') +
+            '<span class="text-badge ' + (isPresent ? 'text-badge-accent' : '') + '">' + (isPresent ? '当前在场' : '当前不在场') + '</span>' +
+            (lifecycle ? '<span class="text-badge">' + escapeHtml(lifecycle) + '</span>' : '') +
+            ([c.gender, c.age].filter(Boolean).length ? '<span class="text-badge">' + escapeHtml([c.gender, c.age].filter(Boolean).join(' · ')) + '</span>' : '') +
+          '</div><div class="sb-profile-actions">' + actionButtons + '</div>' +
+        '</div>' + (c.intro ? '<div class="sb-profile-intro">' + escapeHtml(c.intro) + '</div>' : '') +
+      '</section>' +
+      renderSchemaProfileGroups(raw, groups, 'character', c._rowIndex || raw._rowIndex) +
+      '<section class="sb-panel-card sb-profile-diary-card">' +
+        '<div class="sb-panel-card-head"><span class="sb-panel-card-title">恋爱日记</span><span class="text-badge">' + diaries.length + ' 篇</span></div>' +
+        '<div class="sb-profile-diary-list">' + diaryHtml + '</div></section>' +
+      '</div>';
+  }
+
   function bindCharacterActionEvents(container) {
     if (!container) return;
 
@@ -557,7 +361,8 @@
         const row = parseInt(e.currentTarget.getAttribute('data-row'), 10);
         const field = e.currentTarget.getAttribute('data-field');
         const currentVal = e.currentTarget.getAttribute('data-val') || '';
-        const isLong = (currentVal && currentVal.length > 25) || ['性格', '容貌', '心理', '履历', '关系', '外貌', '生平', '服装', '特征'].some(k => field.includes(k));
+        const shortFields = ['姓名', '性别', '年龄', '身高', '体重', '好感', '是否在场', '生命周期状态', '性爱次数', '潮吹次数'];
+        const isLong = (currentVal && currentVal.length > 25) || !shortFields.includes(field);
         const form = await showFormDialog({
           title: `修改角色档案 · ${field}`,
           fields: [
@@ -664,12 +469,10 @@
     if (!c) return '';
     // 主面板只渲染当前在场角色；衣着/身体字段的 emoji 仅对在场角色启用。
     const isP = Boolean(c.isPresent);
+    const isAdult = isConfirmedAdultProfile(c.raw || {});
     const favorNum = Math.min(100, Math.max(0, parseInt(c.favor || c.affection) || 0));
-    const trainNum = parseInt(c.trainingValue, 10) || 0;
-    const maxTrain = 1000;
-    const trainPercent = Math.min(100, Math.max(0, (trainNum / maxTrain) * 100));
 
-    const diaries = c.diaries || [];
+    const diaries = isAdult ? (c.diaries || []) : [];
     const charName = escapeHtml(c.name);
 
     let html = `
@@ -703,7 +506,7 @@
                   <button class="btn-mini-action" id="btn-copy-char-name-main" data-char="${charName}" type="button" style="padding:3px 8px;font-size:11px;border-radius:var(--sb-radius-sm);border:1px solid var(--divider);background:var(--card);color:var(--text-sub);cursor:pointer;" title="插入角色名到输入框">角色名插入</button>
                   <button class="btn-mini-action" id="btn-open-char-profile-main" data-char="${charName}" type="button" style="padding:3px 9px;font-size:11px;border-radius:var(--sb-radius-sm);border:1px solid var(--accent);background:var(--card);color:var(--accent);cursor:pointer;" title="查看角色专属档案">档案 &rarr;</button>
                   <button class="btn-mini-action btn-char-investigate" id="btn-char-investigate-main" data-char="${charName}" type="button" style="padding:3px 9px;font-size:11px;border-radius:var(--sb-radius-sm);border:1px solid var(--divider);background:var(--card);color:var(--text-sub);cursor:pointer;" title="点击查看或重新生成【${charName}】大调查机密档案">调查</button>
-                  <button class="btn-mini-action btn-char-interview" id="btn-char-interview-main" data-char="${charName}" type="button" style="padding:3px 9px;font-size:11px;border-radius:var(--sb-radius-sm);border:1px solid var(--divider);background:var(--card);color:var(--text-sub);cursor:pointer;" title="点击查看或发起对【${charName}】的色情采访">采访</button>
+                  ${isAdult ? '<button class="btn-mini-action btn-char-interview" id="btn-char-interview-main" data-char="' + charName + '" type="button" style="padding:3px 9px;font-size:11px;border-radius:var(--sb-radius-sm);border:1px solid var(--divider);background:var(--card);color:var(--text-sub);cursor:pointer;" title="仅限已确认成年角色">采访</button>' : ''}
                 </div>
               </div>
             </div>
@@ -761,28 +564,15 @@
               </div>
             </div>
 
-            <!-- 2. 双维度核心养成仪表条：好感度 (粉红渐变) + 调教值 (魅紫发光) -->
-            <div class="char-dual-meters-row" style="margin-top:12px;padding:10px 14px;background:var(--card-light);border:1px solid var(--divider);border-radius:var(--sb-radius-sm);display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px 18px;">
-              <!-- 好感度槽 -->
-              <div class="char-train-wrap" style="margin:0;display:flex;align-items:center;gap:8px;">
-                <div class="char-train-label" style="font-size:11px;font-weight:600;color:var(--text);min-width:44px;">好感度</div>
-                <div class="char-train-bar" style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;position:relative;">
-                  <div class="char-train-fill char-favor-fill" style="height:100%;background:linear-gradient(90deg, #ff7a90, #ff5376);border-radius:4px;width:${favorNum}%;"></div>
-                  <div class="char-train-glow" style="position:absolute;top:0;left:0;height:100%;background:#ff7a90;border-radius:4px;opacity:0.4;filter:blur(3px);width:${favorNum}%;"></div>
-                </div>
-                <div class="char-train-value" style="font-size:11px;font-weight:600;color:#ff7a90;min-width:48px;text-align:right;">${favorNum}/100</div>
-              </div>
-
-              <!-- 调教值槽 -->
-              <div class="char-train-wrap" style="margin:0;display:flex;align-items:center;gap:8px;">
-                <div class="char-train-label" style="font-size:11px;font-weight:600;color:var(--text);min-width:44px;">调教值</div>
-                <div class="char-train-bar" style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;position:relative;">
-                  <div class="char-train-fill" style="height:100%;background:linear-gradient(90deg, #b347d9, #ff2d87);border-radius:4px;width:${trainPercent}%;"></div>
-                  <div class="char-train-glow" style="position:absolute;top:0;left:0;height:100%;background:#ff2d87;border-radius:4px;opacity:0.4;filter:blur(3px);width:${trainPercent}%;"></div>
-                </div>
-                <div class="char-train-value" style="font-size:11px;font-weight:600;color:#ff479c;min-width:54px;text-align:right;">${trainNum}/1000</div>
-              </div>
-            </div>
+            <!-- 2. 好感度 -->
+            ${c.favor !== '' && c.favor != null ? '<div class="char-dual-meters-row" style="margin-top:12px;padding:10px 14px;background:var(--card-light);border:1px solid var(--divider);border-radius:var(--sb-radius-sm);">' +
+              '<div class="char-train-wrap" style="margin:0;display:flex;align-items:center;gap:8px;">' +
+                '<div class="char-train-label" style="font-size:11px;font-weight:600;color:var(--text);min-width:44px;">好感</div>' +
+                '<div class="char-train-bar" style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;position:relative;">' +
+                  '<div class="char-train-fill char-favor-fill" style="height:100%;background:linear-gradient(90deg, #ff7a90, #ff5376);border-radius:4px;width:' + favorNum + '%;"></div>' +
+                '</div>' +
+                '<div class="char-train-value" style="font-size:11px;font-weight:600;color:#ff7a90;min-width:48px;text-align:right;">' + escapeHtml(String(c.favor)) + '/100</div>' +
+              '</div></div>' : ''}
           </div>
         </div>
 
@@ -797,29 +587,33 @@
             </div>
           </div>
 
-          <!-- A. 衣着详情列表：每个部位独立占据一行，严格不合并 -->
+          <!-- A. 当前着装 -->
           <div class="char-clothes-list" id="sb-clothes-list" style="display:${activeCharDetailTab === 'clothes' ? 'block' : 'none'};">
-            ${c.hair && c.hair !== '无' ? `<div class="char-clothes-item"><span class="cl">${isP ? '💇 ' : ''}发型</span><span class="cv">${escapeHtml(c.hair)}</span></div>` : ''}
-            <div class="char-clothes-item"><span class="cl">${isP ? '🧥 ' : ''}上装</span><span class="cv">${escapeHtml(c.top || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">${isP ? '👖 ' : ''}下装</span><span class="cv">${escapeHtml(c.bottom || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">${isP ? '👙 ' : ''}内衣</span><span class="cv">${escapeHtml(c.bra || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">${isP ? '🩲 ' : ''}内裤</span><span class="cv">${escapeHtml(c.panties || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">${isP ? '🧦 ' : ''}鞋袜</span><span class="cv">${escapeHtml(c.shoesSocks || c.socks || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">${isP ? '💍 ' : ''}饰品</span><span class="cv">${escapeHtml(c.accessories || '-')}</span></div>
-            <div class="char-clothes-item"><span class="cl">${isP ? '🙈 ' : ''}走光状态</span><span class="cv">${escapeHtml(c.exposure || '-')}</span></div>
+            <div class="char-clothes-item"><span class="cl">上装</span><span class="cv">${escapeHtml(c.top || '未填写')}</span></div>
+            <div class="char-clothes-item"><span class="cl">下装</span><span class="cv">${escapeHtml(c.bottom || '未填写')}</span></div>
+            <div class="char-clothes-item"><span class="cl">内衣</span><span class="cv">${escapeHtml(c.bra || '未填写')}</span></div>
+            <div class="char-clothes-item"><span class="cl">内裤</span><span class="cv">${escapeHtml(c.panties || '未填写')}</span></div>
+            <div class="char-clothes-item"><span class="cl">鞋袜</span><span class="cv">${escapeHtml(c.shoesSocks || '未填写')}</span></div>
+            <div class="char-clothes-item"><span class="cl">配饰</span><span class="cv">${escapeHtml(c.accessories || '未填写')}</span></div>
+            ${isAdult ? '<div class="char-clothes-item"><span class="cl">暴露状态</span><span class="cv">' + escapeHtml(c.exposure || '未填写') + '</span></div>' : ''}
           </div>
 
-          <!-- B. 身体状态列表：每一个生理与隐私状态独立一行 -->
+          <!-- B. 当前身体与状态 -->
           <div class="char-body-list" id="sb-body-list" style="display:${activeCharDetailTab === 'body' ? 'block' : 'none'};">
-            <div class="char-body-item"><span class="bl">${isP ? '⚡ ' : ''}即时反应</span><span class="bv">${escapeHtml(c.arousal || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">${isP ? '🩹 ' : ''}身体痕迹</span><span class="bv">${escapeHtml(c.bodyMarks || '-')}</span></div>
-            ${(c.measurements && c.measurements !== '-') ? `<div class="char-body-item"><span class="bl">${isP ? '📏 ' : ''}三围罩杯</span><span class="bv">${escapeHtml(c.measurements || '-')}</span></div>` : ''}
-            <div class="char-body-item"><span class="bl">${(c.gender === '男' || c.measurements === '-') ? (isP ? '🧬 男性生理基线' : '男性生理基线') : (isP ? '🔒 隐私基线' : '隐私基线')}</span><span class="bv">${escapeHtml(c.bodyNsfwBaseline || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">${isP ? '🛡️ ' : ''}性爱防线</span><span class="bv">${escapeHtml(c.eroticMindset || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">${isP ? '💠 ' : ''}特殊癖好</span><span class="bv">${escapeHtml(c.fetishes || '-')}</span></div>
-            ${(c.gender !== '男' && c.periodCycle !== '-') ? `
-            <div class="char-body-item"><span class="bl">${isP ? '🌙 ' : ''}生理周期</span><span class="bv">${escapeHtml(c.periodCycle || '-')}</span></div>
-            <div class="char-body-item"><span class="bl">${isP ? '🛡️ ' : ''}避孕状态</span><span class="bv">${escapeHtml(c.pregnancyStatus || '-')}</span></div>` : ''}
+            <div class="char-body-item"><span class="bl">当前动作与姿势</span><span class="bv">${escapeHtml(c.currentPose || '未填写')}</span></div>
+            <div class="char-body-item"><span class="bl">所在位置</span><span class="bv">${escapeHtml(c.location || '未填写')}</span></div>
+            <div class="char-body-item"><span class="bl">身体状态</span><span class="bv">${escapeHtml(c.bodyStatus || '未填写')}</span></div>
+            <div class="char-body-item"><span class="bl">意识状态</span><span class="bv">${escapeHtml(c.consciousness || '未填写')}</span></div>
+            <div class="char-body-item"><span class="bl">身体痕迹</span><span class="bv">${escapeHtml(c.bodyMarks || '未填写')}</span></div>
+            <div class="char-body-item"><span class="bl">基础身体特征</span><span class="bv">${escapeHtml(c.bodyNsfwBaseline || '未填写')}</span></div>
+            ${isAdult ? '<div class="char-body-item"><span class="bl">即时生理唤起</span><span class="bv">' + escapeHtml(c.arousal || '未填写') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">湿透情况</span><span class="bv">' + escapeHtml(c.wetStatus || '未填写') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">即时分泌量</span><span class="bv">' + escapeHtml(c.fluidAmount || '未填写') + '</span></div>' +
+              (c.measurements ? '<div class="char-body-item"><span class="bl">三围罩杯</span><span class="bv">' + escapeHtml(c.measurements) + '</span></div>' : '') +
+              '<div class="char-body-item"><span class="bl">性癖</span><span class="bv">' + escapeHtml(c.fetishes || '未填写') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">性经验与防线</span><span class="bv">' + escapeHtml(c.eroticMindset || '未填写') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">生育避孕状态</span><span class="bv">' + escapeHtml(c.pregnancyStatus || '未填写') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">月经与生理期</span><span class="bv">' + escapeHtml(c.periodCycle || '未填写') + '</span></div>' : ''}
           </div>
 
           <!-- C. 心声手帐列表 (收纳私密日记流) -->
@@ -2490,7 +2284,7 @@
     `;
   }
 
-  // --- TAB 5: 角色名册 (角色信息表 45 列 · 6 大模块深度全景档案) ---
+  // --- TAB 5: 角色名册（按当前 69 个业务字段展示） ---
   function renderCharactersTab(presentChars, offscreenChars, allChars) {
     const allList = (allChars && allChars.length > 0) ? allChars : [...presentChars, ...offscreenChars];
     if (allList.length === 0) {
@@ -2567,564 +2361,42 @@
     `;
   }
 
-  // --- TAB 6: 主角属性 (男女通用超集 66 列 · 遵循纯生理差距自适应) ---
+  // --- TAB 6: 主角属性（按当前 57 个业务字段展示） ---
   function renderProtagonistTab(pro, snapshot) {
     const inv = snapshot?.inventory || [];
     const tasks = snapshot?.tasks || [];
     const memos = snapshot?.memos || [];
     const proName = String(pro.name || '').trim();
-
-    // 先按主角性别排除不适用的生理卡片；性别未填写/非二元时仍尊重数据库显式标记。
-    const protagonistGender = String(pro.gender || '').trim().toLowerCase();
-    const isMaleProtagonist = /^男/.test(protagonistGender) || /^(male|man)$/.test(protagonistGender);
-    const isFemaleProtagonist = /^女/.test(protagonistGender) || /^(female|woman)$/.test(protagonistGender);
-    const hasDick = !isFemaleProtagonist && Boolean(pro.hasDick);
-    const hasPussy = !isMaleProtagonist && Boolean(pro.hasPussy || pro.hasPeriod || pro.hasPregnancy);
-    const hasAnus = Boolean(pro.anusWidth || pro.anusDepth || pro.anusDev);
-
-    // 脱下衣物汇总
-    const takenItems = [
-      pro.takenTop && pro.takenTop !== '无' ? `上装:${pro.takenTop}` : '',
-      pro.takenBottom && pro.takenBottom !== '无' ? `下装:${pro.takenBottom}` : '',
-      pro.takenBra && pro.takenBra !== '无' ? `内衣:${pro.takenBra}` : '',
-      pro.takenPanties && pro.takenPanties !== '无' ? `内裤:${pro.takenPanties}` : '',
-      pro.takenSocks && pro.takenSocks !== '无' ? `鞋袜:${pro.takenSocks}` : '',
-      pro.takenAccessories && pro.takenAccessories !== '无' ? `配饰:${pro.takenAccessories}` : ''
-    ].filter(Boolean);
-
-    return `
-      <div class="sb-protagonist-tab">
-        <!-- 1. 顶部核心总览卡片 (通用) -->
-        <div class="sb-panel-card" style="margin-bottom:12px;border-left:3px solid var(--sb-accent);">
-          <div class="sb-panel-card-head" style="align-items:flex-start;">
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-              <!-- 主角专属头像框：点击打开图库与生图 -->
-              <div class="char-avatar-box protagonist-tab-avatar-box" id="sb-pro-tab-avatar-btn" data-char-name="${escapeHtml(proName)}" title="点击打开【${escapeHtml(proName)}】专属立绘头像图库与AI生图" style="width:48px;height:48px;border-radius:50%;flex-shrink:0;cursor:pointer;position:relative;overflow:hidden;border:2px solid var(--accent);background:var(--card-light);display:flex;align-items:center;justify-content:center;">
-                ${(function () {
-        const s = store()?.getSettings() || {};
-        const key = proName;
-        const curAva = s.charAvatars?.[key] || '';
-        if (curAva) {
-          return `<img src="${escapeHtml(curAva)}" class="char-avatar-img" alt="${escapeHtml(proName)}" style="width:100%;height:100%;object-fit:cover;">`;
-        }
-        return `<span style="font-size:18px;font-weight:bold;color:var(--accent);">${escapeHtml(proName ? proName.slice(0, 1) : '?')}</span>`;
-      })()}
-                <div class="char-avatar-hover-tip" style="font-size:10px;border-radius:0 0 50% 50%;">图库/生图</div>
-              </div>
-
-              <div>
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                  <span class="sb-panel-card-title" style="font-size:16px;">${escapeHtml(proName)}</span>
-                  ${(pro.gender || pro.age) ? `<span class="text-badge text-badge-accent">${[pro.gender, pro.age].filter(Boolean).map(escapeHtml).join(' · ')}</span>` : ''}
-                  ${pro.temperament ? `<span class="text-badge">${escapeHtml(pro.temperament)}</span>` : ''}
-                  ${pro.identity ? `<span style="font-size:11px;color:var(--sb-secondary-text);">[${escapeHtml(pro.identity)}]</span>` : ''}
-                </div>
-              </div>
-            </div>
-
-            <div style="display:flex;gap:6px;align-items:center;">
-              <button class="btn-line" id="sb-pro-open-gallery-btn" type="button" style="background:var(--accent);color:#fff;border:none;padding:4px 10px;font-size:12px;border-radius:4px;cursor:pointer;">立绘图库/AI生图</button>
-              <button class="btn-line sb-edit-pro-btn" data-field="近况" data-val="${escapeHtml(pro.condition || '')}" title="修改主角近况">编辑近况</button>
-            </div>
-          </div>
-          ${pro.condition ? `
-          <div style="font-size:13px;color:var(--sb-accent);font-style:italic;margin:6px 0 10px 0;line-height:1.6;">
-            “${escapeHtml(pro.condition)}”
-          </div>
-          ` : ''}
-          <div class="info-list">
-            <div class="info-row">
-              <span class="info-label">身份背景</span>
-              <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                <span>${escapeHtml(pro.identity || '-')}</span>
-                <button class="btn-mini-action sb-edit-pro-btn" data-field="身份背景" data-val="${escapeHtml(pro.identity || '')}">修改</button>
-              </div>
-            </div>
-            <div class="info-row">
-              <span class="info-label">外貌特征</span>
-              <div class="info-value" style="display:flex;justify-content:space-between;align-items:flex-start;">
-                <span style="line-height:1.6;font-size:12px;">${escapeHtml(pro.appearance || '-')}</span>
-                <button class="btn-mini-action sb-edit-pro-btn" data-field="外貌特征" data-val="${escapeHtml(pro.appearance || '')}">修改</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. 二列网格：体态身心基础 & 居所环境 (男女通用) -->
-        <div class="sb-grid-2" style="margin-bottom:12px;">
-          <!-- 板块 1: 体格体态与身心状态 -->
-          <div class="sb-panel-card">
-            <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">体格体态与身心状态</span>
-              ${pro.exposure ? `<span class="text-badge text-badge-accent">${escapeHtml(pro.exposure)}</span>` : ''}
-            </div>
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">📏 身高</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.height || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="身高" data-val="${escapeHtml(pro.height || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">⚖️ 体重</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.weight || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="体重" data-val="${escapeHtml(pro.weight || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🧍 身材体态</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.figure || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="身材" data-val="${escapeHtml(pro.figure || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🙈 暴露状态</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.exposure || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="暴露状态" data-val="${escapeHtml(pro.exposure || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">💧 湿透情况</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.wetStatus || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="湿透情况" data-val="${escapeHtml(pro.wetStatus || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">😊 情绪</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.mood || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="情绪" data-val="${escapeHtml(pro.mood || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🔥 兴奋度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.arousal || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="兴奋度" data-val="${escapeHtml(pro.arousal || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🧠 意识状态</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.consciousness || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="意识状态" data-val="${escapeHtml(pro.consciousness || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🩺 身体状态</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:11px;line-height:1.4;">${escapeHtml(pro.bodyStatus || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="身体状态" data-val="${escapeHtml(pro.bodyStatus || '')}">修改</button>
-                </div>
-              </div>
-              ${pro.fetishes ? `
-              <div class="info-row">
-                <span class="info-label">💠 性癖倾向</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:11px;color:var(--sb-accent);">${escapeHtml(pro.fetishes)}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="性癖" data-val="${escapeHtml(pro.fetishes || '')}">修改</button>
-                </div>
-              </div>
-              ` : ''}
-            </div>
-          </div>
-
-          <!-- 板块 2: 居所不动产与生活环境 -->
-          <div class="sb-panel-card">
-            <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">居所与生活环境</span>
-              ${pro.houseType ? `<span class="text-badge">${escapeHtml(pro.houseType)}</span>` : ''}
-            </div>
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">📍 地理位置</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.addressLocation || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="地理位置" data-val="${escapeHtml(pro.addressLocation || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🏡 房屋属性</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.houseType || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="房屋属性" data-val="${escapeHtml(pro.houseType || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">👥 同住人</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.cohabitants || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="同住人" data-val="${escapeHtml(pro.cohabitants || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🛋️ 房屋内部</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.houseInside || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="房屋内部" data-val="${escapeHtml(pro.houseInside || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🛏️ 自己卧室</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.ownBedroom || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="自己卧室" data-val="${escapeHtml(pro.ownBedroom || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🗺️ 历史住址</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.pastAddress || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="历史住址" data-val="${escapeHtml(pro.pastAddress || '')}">修改</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. 生殖生理专区 (纯生理差距 · 极简按需自适应) -->
-        ${(hasDick || hasPussy) ? `
-        <div class="${(hasDick && hasPussy) ? 'sb-grid-2' : ''}" style="margin-bottom:12px;">
-          ${hasDick ? `
-          <!-- 男性生理特征卡片 -->
-          <div class="sb-panel-card" style="border-left:3px solid #3b82f6;">
-            <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">男性生理特征</span>
-              <span class="text-badge">${escapeHtml(pro.dickExposed && pro.dickExposed !== '-' ? pro.dickExposed : '未外露')}</span>
-            </div>
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">📏 肉棒长度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.dickLength || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="肉棒长度" data-val="${escapeHtml(pro.dickLength || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">📐 肉棒直径</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.dickDiameter || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="肉棒直径" data-val="${escapeHtml(pro.dickDiameter || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">⚡ 勃起状态</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span class="info-value-accent">${escapeHtml(pro.dickStatus || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="肉棒状态" data-val="${escapeHtml(pro.dickStatus || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">👀 是否外露</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.dickExposed || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="是否外露" data-val="${escapeHtml(pro.dickExposed || '')}">修改</button>
-                </div>
-              </div>
-              ${hasAnus ? `
-              <div class="info-row">
-                <span class="info-label">🍑 后穴宽度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.anusWidth || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴宽度" data-val="${escapeHtml(pro.anusWidth || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">↕️ 后穴深度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.anusDepth || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴深度" data-val="${escapeHtml(pro.anusDepth || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">📈 后穴开发度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.anusDev || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴开发度" data-val="${escapeHtml(pro.anusDev || "")}">修改</button>
-                </div>
-              </div>
-              ` : ''}
-            </div>
-          </div>
-          ` : ''}
-
-          ${hasPussy ? `
-          <!-- 女性私密生理与受孕卡片 -->
-          <div class="sb-panel-card" style="border-left:3px solid #ec4899;">
-            <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">女性私密生理与受孕</span>
-              <span class="text-badge text-badge-accent">${escapeHtml(pro.periodPhase && pro.periodPhase !== '-' ? pro.periodPhase : '-')}</span>
-            </div>
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">📐 小穴宽度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.pussyWidth || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="小穴宽度" data-val="${escapeHtml(pro.pussyWidth || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">↕️ 小穴深度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.pussyDepth || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="小穴深度" data-val="${escapeHtml(pro.pussyDepth || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">处女膜</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span class="info-value-accent">${escapeHtml(pro.pussyHymen || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="处女膜" data-val="${escapeHtml(pro.pussyHymen || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🩺 子宫状态</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.uterus || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="子宫" data-val="${escapeHtml(pro.uterus || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🌊 潮吹次数</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.squirtCount || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="潮吹" data-val="${escapeHtml(pro.squirtCount || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🌸 乳头</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.nipples || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="乳头" data-val="${escapeHtml(pro.nipples || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">✨ 阴蒂</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.clitoris || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="阴蒂" data-val="${escapeHtml(pro.clitoris || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">爱液分泌</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.fluidAmount || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="爱液量" data-val="${escapeHtml(pro.fluidAmount || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🗓️ 月经日期</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.periodDate || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="月经日期" data-val="${escapeHtml(pro.periodDate || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🌙 当前生理期</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.periodPhase || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="当前生理期" data-val="${escapeHtml(pro.periodPhase || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🤰 怀孕状态</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.pregnantStatus || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="怀孕状态" data-val="${escapeHtml(pro.pregnantStatus || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">📊 怀孕概率</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.pregProbability || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="怀孕概率" data-val="${escapeHtml(pro.pregProbability || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">⚠️ 怀孕风险</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.pregRisk || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="怀孕风险" data-val="${escapeHtml(pro.pregRisk || "")}">修改</button>
-                </div>
-              </div>              ${(pro.pregnantNote && pro.pregnantNote !== '-' && pro.pregnantNote !== '无') ? `
-              <div class="info-row">
-                <span class="info-label">孕期备注</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:11px;color:var(--sb-accent);">${escapeHtml(pro.pregnantNote)}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="怀孕备注" data-val="${escapeHtml(pro.pregnantNote || '')}">修改</button>
-                </div>
-              </div>
-              ` : ''}
-              ${(!hasDick && hasAnus) ? `
-              <div class="info-row">
-                <span class="info-label">🍑 后穴宽度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.anusWidth || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴宽度" data-val="${escapeHtml(pro.anusWidth || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">↕️ 后穴深度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.anusDepth || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴深度" data-val="${escapeHtml(pro.anusDepth || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">📈 后穴开发度</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.anusDev || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="后穴开发度" data-val="${escapeHtml(pro.anusDev || "")}">修改</button>
-                </div>
-              </div>
-              ` : ''}
-            </div>
-          </div>
-          ` : ''}
-        </div>
-        ` : ''}
-
-        <!-- 4. 二列网格：当前穿搭 & 随身资产通讯 (男女通用) -->
-        <div class="sb-grid-2" style="margin-bottom:12px;">
-          <!-- 板块 3: 当前穿搭与随身装束 -->
-          <div class="sb-panel-card">
-            <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">当前穿搭与随身装束</span>
-            </div>
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">🧥 上装</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.top || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="上装" data-val="${escapeHtml(pro.top || '')}">换穿</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">👖 下装</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.bottom || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="下装" data-val="${escapeHtml(pro.bottom || '')}">换穿</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">👙 内衣</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.bra || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="内衣" data-val="${escapeHtml(pro.bra || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🩲 内裤</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.panties || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="内裤" data-val="${escapeHtml(pro.panties || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🦵 腿部</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.legs || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="腿部" data-val="${escapeHtml(pro.legs || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">👟 鞋子</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.shoes || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="鞋子" data-val="${escapeHtml(pro.shoes || "")}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">💍 随心配饰</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.accessories || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="配饰" data-val="${escapeHtml(pro.accessories || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🎒 情趣道具</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span class="${pro.sexToys && pro.sexToys !== '-' ? 'info-value-rose' : ''}">${escapeHtml(pro.sexToys || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="情趣道具" data-val="${escapeHtml(pro.sexToys || '')}">佩戴/卸下</button>
-                </div>
-              </div>
-              ${takenItems.length > 0 ? `
-              <div class="info-row" style="background:var(--sb-card-light);padding:4px 8px;border-radius:4px;">
-                <span class="info-label" style="color:var(--sb-accent);">🧺 已脱下衣物</span>
-                <span class="info-value" style="font-size:11px;color:var(--sb-accent);">${escapeHtml(takenItems.join(' · '))}</span>
-              </div>
-              ` : ''}
-            </div>
-          </div>
-
-          <!-- 板块 4: 随身资产与通讯工具 -->
-          <div class="sb-panel-card">
-            <div class="sb-panel-card-head">
-              <span class="sb-panel-card-title">随身资产与通讯工具</span>
-              <span class="text-badge text-badge-accent">💰 资金: ¥${(pro.totalCash || 0).toLocaleString()}</span>
-            </div>
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">💳 银行卡余额</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>¥${escapeHtml(pro.bankBalance || '0')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="银行卡余额" data-val="${escapeHtml(pro.bankBalance || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">📲 微信支付宝</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>¥${escapeHtml(pro.ewalletBalance || '0')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="微信支付宝余额" data-val="${escapeHtml(pro.ewalletBalance || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">💵 随身现金</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>¥${escapeHtml(pro.cash || '0')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="现金" data-val="${escapeHtml(pro.cash || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">📱 随身手机1</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.phone1 || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="随身手机1" data-val="${escapeHtml(pro.phone1 || "")}">修改</button>
-                </div>
-              </div>
-              ${pro.phone2 ? `
-              <div class="info-row">
-                <span class="info-label">📱 随身手机2</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.phone2 || "-")}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="随身手机2" data-val="${escapeHtml(pro.phone2 || "")}">修改</button>
-                </div>
-              </div>
-              ` : ""}
-              <div class="info-row">
-                <span class="info-label">🚗 座驾载具</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.vehicle || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="座驾" data-val="${escapeHtml(pro.vehicle || '')}">修改</button>
-                </div>
-              </div>
-              <div class="info-row">
-                <span class="info-label">🎒 临时物品</span>
-                <div class="info-value" style="display:flex;justify-content:space-between;align-items:center;">
-                  <span>${escapeHtml(pro.tempItems || '-')}</span>
-                  <button class="btn-mini-action sb-edit-pro-btn" data-field="临时物品" data-val="${escapeHtml(pro.tempItems || '')}">修改</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. 主角关联子表联动专区 (Sub-Tables Linkage) -->
+    const raw = pro.raw || {};
+    const groups = [
+      { title: '基本信息', fields: ['姓名', '性别', '年龄', '外貌特征', '身份背景', '近况', '身高', '体重', '身材', '气质'] },
+      { title: '生活与住所', fields: ['座驾', '历史住址', '房屋属性', '同住人', '地理位置', '房屋内部', '自己卧室'] },
+      { title: '即时状态', fields: ['情绪', '意识状态', '身体状态', '当前动作与姿势'] },
+      { title: '当前着装', fields: ['上装', '下装', '内衣', '内裤', '鞋袜', '配饰'] },
+      { title: '基础身体特征', fields: ['口腔', '手部', '腿部特征', '脚部'] },
+      { title: '成人档案', adultOnly: true, fields: ['暴露状态', '湿透情况', '兴奋度', '爱液量', '乳房', '乳头', '臀部', '阴蒂', '阴唇', '阴道', '肛门', '子宫', '阴囊', '阴茎', '潮吹', '月经日期', '当前生理期', '怀孕状态', '怀孕备注', '怀孕风险', '怀孕概率', '性癖', '情趣道具'] },
+      { title: '财务', fields: ['银行卡余额', '微信支付宝余额', '现金'] }
+    ];
+    const avatarSettings = store()?.getSettings() || {};
+    const avatar = (avatarSettings.charAvatars && avatarSettings.charAvatars[proName]) || '';
+    const header = '<section class="sb-panel-card sb-profile-identity-card">' +
+      '<div class="sb-panel-card-head"><div class="sb-profile-header-main">' +
+        '<div class="char-avatar-box protagonist-tab-avatar-box" id="sb-pro-tab-avatar-btn" data-char-name="' + escapeHtml(proName) + '" title="打开主角立绘图库">' +
+          (avatar ? '<img src="' + escapeHtml(avatar) + '" class="char-avatar-img" alt="' + escapeHtml(proName) + '">' :
+          '<span class="char-avatar-placeholder">' + escapeHtml(proName.slice(0, 1) || '?') + '</span>') +
+        '</div><div class="sb-profile-heading-copy">' +
+          '<div class="sb-profile-name">' + escapeHtml(proName || '主角档案') + '</div>' +
+          '<div class="sb-profile-badges">' +
+            (pro.gender ? '<span class="text-badge text-badge-accent">' + escapeHtml(pro.gender) + '</span>' : '') +
+            (pro.age ? '<span class="text-badge">' + escapeHtml(pro.age) + '</span>' : '') +
+            (pro.temperament ? '<span class="text-badge">' + escapeHtml(pro.temperament) + '</span>' : '') +
+          '</div></div></div>' +
+        '<div class="sb-profile-actions"><button type="button" class="btn-line" id="sb-pro-open-gallery-btn">立绘图库 / AI 生图</button></div>' +
+      '</div>' + (pro.condition ? '<div class="sb-profile-intro">' + escapeHtml(pro.condition) + '</div>' : '') +
+      '</section>';
+    return '<div class="sb-protagonist-tab">' + header +
+      renderSchemaProfileGroups(raw, groups, 'protagonist', 1) +
+`<!-- 4. 主角关联子表联动专区 (Sub-Tables Linkage) -->
         <div class="sb-panel-card" style="margin-bottom:12px;">
           <div class="sb-panel-card-head">
             <span class="sb-panel-card-title">主角关联子表联动看板 (Sub-Tables)</span>
@@ -3195,12 +2467,10 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    `;
+        </div>`
+    '</div>';
   }
 
-  // --- TAB 7: 世界大势 ---
   function renderWorldTab(world) {
     return `
       <div class="sb-panel-card">
@@ -5301,7 +4571,8 @@
         btn.addEventListener('click', async (e) => {
           const field = e.currentTarget.getAttribute('data-field');
           const currentVal = e.currentTarget.getAttribute('data-val') || '';
-          const isLong = (currentVal && currentVal.length > 25) || ['外貌', '近况', '气质', '身体状态', '性癖', '历史住址', '房屋内部', '自己卧室', '怀孕备注', '其他', '临时物品'].some(k => field.includes(k));
+          const shortFields = ['姓名', '性别', '年龄', '身高', '体重', '兴奋度', '潮吹', '怀孕概率', '银行卡余额', '微信支付宝余额', '现金'];
+          const isLong = (currentVal && currentVal.length > 25) || !shortFields.includes(field);
           const form = await showFormDialog({
             title: `修改主角档案 · ${field}`,
             fields: [
