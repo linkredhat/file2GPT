@@ -254,54 +254,157 @@
     '怀孕状态', '怀孕备注', '怀孕风险', '怀孕概率', '兴奋度', '爱液量'
   ]);
 
-  function renderSchemaProfileGroups(raw, groups, editType = 'readonly', rowIndex = 0) {
+  const PROFILE_FEMALE_ONLY_FIELDS = new Set([
+    '三围罩杯', '乳房', '乳头', '阴蒂', '阴唇', '阴道', '子宫',
+    '爱液量', '潮吹', '潮吹次数', '月经日期', '当前生理期',
+    '怀孕状态', '怀孕备注', '怀孕风险', '怀孕概率', '生育避孕状态'
+  ]);
+
+  const PROFILE_MALE_ONLY_FIELDS = new Set(['阴囊', '阴茎']);
+
+  const PROFILE_FIELD_ICONS = {
+    '姓名': '👤', '角色类型': '🎭', '是否在场': '📍', '生命周期状态': '♻️',
+    '性别': '⚧️', '年龄': '🎂', '一句话介绍': '💬', '外貌特征': '👁️',
+    '身份背景': '🪪', '身高': '📏', '体重': '⚖️', '身材': '🧍',
+    '语言风格和口癖': '🗣️', '近况': '📰', '座驾': '🚗',
+    '历史住址': '🗺️', '房屋属性': '🏡', '同住人': '👥',
+    '地理位置': '📍', '房屋内部': '🏠', '自己卧室': '🛏️',
+    '情绪': '😊', '意识状态': '🧠', '身体状态': '🩺',
+    '当前动作与姿势': '🧍', '暴露状态': '🙈', '湿透情况': '💧',
+    '兴奋度': '⚡', '即时生理唤起': '⚡', '爱液量': '💧',
+    '即时分泌量': '💧', '口腔': '👄', '乳房': '🩷', '乳头': '🌸',
+    '臀部': '🍑', '阴蒂': '🧬', '阴唇': '🧬', '阴道': '🧬',
+    '肛门': '🧬', '子宫': '🧬', '阴囊': '🧬', '阴茎': '🧬',
+    '手部': '🖐️', '腿部特征': '🦵', '脚部': '🦶',
+    '上装': '👕', '下装': '👖', '内衣': '🩱', '内裤': '🩲',
+    '鞋袜': '🧦', '配饰': '💍', '身体痕迹': '🩹',
+    '好感': '💗', '性癖': '💠', '对主角态度': '💬',
+    '近期心境与性格偏移': '🎭', '里程碑事件': '🏅',
+    '人际关系': '👥', '过往经历': '📚', '个人事务': '📌',
+    '最近亲密互动': '❤️', '内心想法': '💭', '所在位置': '📍',
+    '情趣道具': '🎀', '住所': '🏠', '金钱': '💰',
+    '主角赠送物品': '🎁', '随身物品': '🎒', '临时物品': '🛍️',
+    '三围罩杯': '📐', '性经验与防线': '🔒', '床上风格与称呼': '🛏️',
+    '性爱次数': '🔢', '生育避孕状态': '🛡️', '潮吹': '💧',
+    '潮吹次数': '💧', '月经日期': '🗓️', '当前生理期': '🌙',
+    '怀孕状态': '🤰', '怀孕备注': '🤰', '怀孕风险': '⚠️',
+    '怀孕概率': '📊', '银行卡余额': '🏦',
+    '微信支付宝余额': '📱', '现金': '💵'
+  };
+
+  function getProfileGenderType(rawOrGender) {
+    const raw = rawOrGender && typeof rawOrGender === 'object' ? rawOrGender : {};
+    const gender = String(raw['性别'] ?? raw.gender ?? rawOrGender ?? '').trim().toLowerCase();
+    if (/^(男|男性|male|man)$/.test(gender)) return 'male';
+    if (/^(女|女性|female|woman)$/.test(gender)) return 'female';
+    return 'other';
+  }
+
+  function isProfileFieldVisible(field, genderType, isAdult) {
+    if (!isAdult && PROFILE_ADULT_FIELD_LABELS.has(field)) return false;
+    if (genderType === 'male' && PROFILE_FEMALE_ONLY_FIELDS.has(field)) return false;
+    if (genderType === 'female' && PROFILE_MALE_ONLY_FIELDS.has(field)) return false;
+    return true;
+  }
+
+  function renderSchemaProfileGroups(raw, pages, editType = 'readonly', rowIndex = 0, extraPageContent = '') {
     const data = raw && typeof raw === 'object' ? raw : {};
     const isAdult = isConfirmedAdultProfile(data);
+    const genderType = getProfileGenderType(data);
     const consumed = new Set(['row_id', '_rowIndex']);
-    const cards = [];
+    const renderedPages = [];
+
     const renderField = (field) => {
-      const value = data[field] == null ? '' : String(data[field]);
-      const displayValue = value.trim() ? value : '未填写';
+      const rawValue = data[field] == null ? '' : String(data[field]);
+      const value = rawValue.trim();
+      const displayValue = !value || value === '未交代' ? '—' : value;
+      const icon = PROFILE_FIELD_ICONS[field] || '📌';
       let editButton = '';
       if (editType === 'protagonist') {
         editButton = '<button type="button" class="btn-mini-action sb-edit-pro-btn" data-field="' +
-          escapeHtml(field) + '" data-val="' + escapeHtml(value) + '">修改</button>';
+          escapeHtml(field) + '" data-val="' + escapeHtml(rawValue) + '">修改</button>';
       } else if (editType === 'character') {
         editButton = '<button type="button" class="btn-mini-action sb-edit-char-btn" data-row="' +
           escapeHtml(String(rowIndex || data._rowIndex || 0)) + '" data-field="' +
-          escapeHtml(field) + '" data-val="' + escapeHtml(value) + '">修改</button>';
+          escapeHtml(field) + '" data-val="' + escapeHtml(rawValue) + '">修改</button>';
       }
       return '<div class="info-row sb-profile-field-row">' +
-        '<span class="info-label">' + escapeHtml(field) + '</span>' +
+        '<span class="info-label">' + icon + ' ' + escapeHtml(field) + '</span>' +
         '<div class="info-value sb-profile-field-value">' +
         '<span class="sb-profile-field-text">' + escapeHtml(displayValue) + '</span>' +
         editButton + '</div></div>';
     };
-    for (const group of groups) {
-      const fields = Array.isArray(group.fields) ? group.fields : [];
-      fields.forEach((field) => consumed.add(field));
-      if (group.adultOnly && !isAdult) continue;
-      const rows = fields.map(renderField).join('');
-      if (!rows) continue;
-      cards.push('<section class="sb-panel-card sb-profile-group' +
-        (group.adultOnly ? ' sb-profile-adult-group' : '') + '">' +
-        '<div class="sb-panel-card-head"><span class="sb-panel-card-title">' +
-        escapeHtml(group.title || '档案信息') + '</span>' +
-        (group.adultOnly ? '<span class="text-badge text-badge-rose">成年档案</span>' : '') +
-        '</div><div class="info-list">' + rows + '</div></section>');
-    }
-    const unknownFields = Object.keys(data).filter((field) => {
-      if (consumed.has(field) || field.startsWith('_')) return false;
-      if (!isAdult && PROFILE_ADULT_FIELD_LABELS.has(field)) return false;
-      if (!isAdult && /(性癖|亲密|性经验|床上|生殖|阴茎|阴道|阴蒂|阴唇|肛门|阴囊|乳房|乳头|怀孕|月经|潮吹|三围|情趣|暴露|湿透|兴奋度|爱液)/.test(field)) return false;
-      return true;
+
+    (Array.isArray(pages) ? pages : []).forEach((page, pageIndex) => {
+      const cards = [];
+      const groups = Array.isArray(page.groups) ? page.groups : [];
+      for (const group of groups) {
+        const fields = Array.isArray(group.fields) ? group.fields : [];
+        fields.forEach((field) => consumed.add(field));
+        if (group.adultOnly && !isAdult) continue;
+        const visibleFields = fields.filter((field) => isProfileFieldVisible(field, genderType, isAdult));
+        if (!visibleFields.length) continue;
+        const rows = visibleFields.map(renderField).join('');
+        cards.push('<section class="sb-panel-card sb-profile-group' +
+          (group.adultOnly ? ' sb-profile-adult-group' : '') + '">' +
+          '<div class="sb-panel-card-head"><span class="sb-panel-card-title">' +
+          escapeHtml(group.title || '档案信息') + '</span>' +
+          (group.adultOnly ? '<span class="text-badge text-badge-rose">成年档案</span>' : '') +
+          '</div><div class="info-list">' + rows + '</div></section>');
+      }
+
+      if (pageIndex === 1) {
+        const unknownFields = Object.keys(data).filter((field) => {
+          if (consumed.has(field) || field.startsWith('_')) return false;
+          if (!isProfileFieldVisible(field, genderType, isAdult)) return false;
+          return true;
+        });
+        if (unknownFields.length) {
+          cards.push('<section class="sb-panel-card sb-profile-group">' +
+            '<div class="sb-panel-card-head"><span class="sb-panel-card-title">📌 其他字段</span></div>' +
+            '<div class="info-list">' + unknownFields.map(renderField).join('') + '</div></section>');
+        }
+      }
+
+      const extra = pageIndex === 1 && extraPageContent ? extraPageContent : '';
+      renderedPages.push('<div class="sb-profile-page' + (pageIndex === 0 ? ' active' : '') +
+        '" data-profile-page="' + pageIndex + '" style="display:' + (pageIndex === 0 ? 'block' : 'none') + ';">' +
+        '<div class="sb-grid-2 sb-profile-grid">' + cards.join('') + '</div>' +
+        extra + '</div>');
     });
-    if (unknownFields.length) {
-      cards.push('<section class="sb-panel-card sb-profile-group">' +
-        '<div class="sb-panel-card-head"><span class="sb-panel-card-title">其他字段</span></div>' +
-        '<div class="info-list">' + unknownFields.map(renderField).join('') + '</div></section>');
-    }
-    return '<div class="sb-grid-2 sb-profile-grid">' + cards.join('') + '</div>';
+
+    const nav = (Array.isArray(pages) ? pages : []).map((page, index) =>
+      '<button type="button" class="sb-profile-page-btn' + (index === 0 ? ' active' : '') +
+      '" data-profile-page-btn="' + index + '" aria-pressed="' + (index === 0 ? 'true' : 'false') + '">' +
+      escapeHtml(page.label || ('第' + (index + 1) + '页')) + '</button>'
+    ).join('');
+
+    return '<div class="sb-profile-pager" data-profile-pager>' +
+      '<div class="sb-profile-pager-nav" role="tablist">' + nav + '</div>' +
+      renderedPages.join('') + '</div>';
+  }
+
+  function bindProfilePagerEvents(container) {
+    if (!container) return;
+    container.querySelectorAll('.sb-profile-pager').forEach((pager) => {
+      if (pager.getAttribute('data-profile-pager-bound') === '1') return;
+      pager.setAttribute('data-profile-pager-bound', '1');
+      pager.querySelectorAll('[data-profile-page-btn]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          const selected = String(event.currentTarget.getAttribute('data-profile-page-btn'));
+          pager.querySelectorAll('[data-profile-page]').forEach((page) => {
+            const active = String(page.getAttribute('data-profile-page')) === selected;
+            page.style.display = active ? 'block' : 'none';
+            page.classList.toggle('active', active);
+          });
+          pager.querySelectorAll('[data-profile-page-btn]').forEach((item) => {
+            const active = item === event.currentTarget;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-pressed', active ? 'true' : 'false');
+          });
+        });
+      });
+    });
   }
 
   function renderCharacterDossierHtml(c, isMainView = false) {
@@ -312,19 +415,34 @@
     const lifecycle = c.lifecycleStatus || raw['生命周期状态'] || '';
     const diaries = isAdult && Array.isArray(c.diaries) ? c.diaries : [];
     const name = String(c.name || raw['姓名'] || '');
-    const groups = [
-      { title: '基本身份', fields: ['姓名', '角色类型', '是否在场', '生命周期状态', '性别', '年龄', '一句话介绍', '外貌特征', '身份背景', '身高', '体重', '身材', '语言风格和口癖'] },
-      { title: '心理与关系', fields: ['好感', '对主角态度', '近期心境与性格偏移', '里程碑事件', '人际关系', '过往经历', '个人事务', '内心想法'] },
-      { title: '当前状态', fields: ['当前动作与姿势', '所在位置', '身体痕迹', '身体状态', '意识状态'] },
-      { title: '当前着装', fields: ['上装', '下装', '内衣', '内裤', '鞋袜', '配饰'] },
-      { title: '住所与物品', fields: ['住所', '金钱', '主角赠送物品', '随身物品', '临时物品'] },
-      { title: '基础身体特征', fields: ['口腔', '手部', '腿部特征', '脚部'] },
-      { title: '成人档案', adultOnly: true, fields: ['性癖', '最近亲密互动', '暴露状态', '即时生理唤起', '情趣道具', '三围罩杯', '乳房', '乳头', '臀部', '阴蒂', '阴唇', '子宫', '阴囊', '性经验与防线', '床上风格与称呼', '性爱次数', '生育避孕状态', '阴道', '肛门', '阴茎', '湿透情况', '即时分泌量', '潮吹次数', '月经日期', '当前生理期', '怀孕备注', '怀孕风险', '怀孕概率'] }
+    const pages = [
+      {
+        label: '🧍 人物与身体',
+        groups: [
+          { title: '👤 人物资料', fields: ['姓名', '角色类型', '性别', '年龄', '一句话介绍', '外貌特征', '身份背景', '身高', '体重', '身材', '语言风格和口癖'] },
+          { title: '👄 头部与上身', fields: ['口腔', '乳房', '乳头'] },
+          { title: '🧬 躯干与骨盆', fields: ['三围罩杯', '臀部', '阴蒂', '阴唇', '阴道', '子宫', '肛门', '阴囊', '阴茎'] },
+          { title: '🖐️ 四肢', fields: ['手部', '腿部特征', '脚部'] },
+          { title: '👕 当前着装', fields: ['上装', '下装', '内衣', '内裤', '鞋袜', '配饰'] }
+        ]
+      },
+      {
+        label: '📋 状态与关系',
+        groups: [
+          { title: '📍 当前状态', fields: ['是否在场', '生命周期状态', '当前动作与姿势', '所在位置', '暴露状态', '即时生理唤起', '湿透情况', '即时分泌量', '身体痕迹', '身体状态', '意识状态'] },
+          { title: '🧠 心理与关系', fields: ['好感', '性癖', '对主角态度', '近期心境与性格偏移', '内心想法'] },
+          { title: '📚 经历与事务', fields: ['里程碑事件', '人际关系', '过往经历', '个人事务', '最近亲密互动'] },
+          { title: '🩺 生理与亲密', adultOnly: true, fields: ['情趣道具', '性经验与防线', '床上风格与称呼', '性爱次数', '生育避孕状态', '潮吹次数', '月经日期', '当前生理期', '怀孕备注', '怀孕风险', '怀孕概率'] },
+          { title: '🏠 住所与物品', fields: ['住所', '金钱', '主角赠送物品', '随身物品', '临时物品'] }
+        ]
+      }
     ];
+
     const actionButtons =
-      '<button type="button" class="btn-mini-action sb-copy-char-name-btn" data-name="' + escapeHtml(name) + '">角色名插入</button>' +
-      '<button type="button" class="btn-mini-action btn-char-investigate sb-dossier-iv-btn" data-name="' + escapeHtml(name) + '">调查</button>' +
-      (isAdult ? '<button type="button" class="btn-mini-action btn-char-interview sb-dossier-itv-btn" data-name="' + escapeHtml(name) + '" title="仅限已确认成年角色">采访</button>' : '');
+      '<button type="button" class="btn-mini-action sb-copy-char-name-btn" data-name="' + escapeHtml(name) + '">🔤 角色名插入</button>' +
+      '<button type="button" class="btn-mini-action btn-char-investigate sb-dossier-iv-btn" data-name="' + escapeHtml(name) + '">🔎 调查</button>' +
+      (isAdult ? '<button type="button" class="btn-mini-action btn-char-interview sb-dossier-itv-btn" data-name="' + escapeHtml(name) + '" title="仅限已确认成年角色">🎤 采访</button>' : '');
+
     const diaryHtml = diaries.length
       ? diaries.map((d) => '<article class="sb-character-diary-entry">' +
           '<div class="sb-character-diary-meta">' +
@@ -333,27 +451,31 @@
           ((d.time || d.date) ? ' · ' + escapeHtml(d.time || d.date) : '') +
           '</div><div class="diary-body-content">' + renderDiaryContentHtml(d.content || '') + '</div></article>').join('')
       : '<div class="sb-profile-empty-note">该角色暂无恋爱日记记录。</div>';
+    const diarySection = isAdult
+      ? '<section class="sb-panel-card sb-profile-diary-card">' +
+        '<div class="sb-panel-card-head"><span class="sb-panel-card-title">📔 恋爱日记</span><span class="text-badge">' + diaries.length + ' 篇</span></div>' +
+        '<div class="sb-profile-diary-list">' + diaryHtml + '</div></section>'
+      : '';
+
     return '<div class="char-dossier-wrap">' +
       '<section class="sb-panel-card sb-profile-identity-card">' +
         '<div class="sb-panel-card-head">' +
           '<div class="sb-profile-header-main">' +
-            '<div class="sb-profile-name">' + escapeHtml(name || '未命名角色') + '</div>' +
+            '<div class="sb-profile-name">👤 ' + escapeHtml(name || '未命名角色') + '</div>' +
             (c.charType ? '<span class="text-badge text-badge-accent">' + escapeHtml(c.charType) + '</span>' : '') +
-            '<span class="text-badge ' + (isPresent ? 'text-badge-accent' : '') + '">' + (isPresent ? '当前在场' : '当前不在场') + '</span>' +
-            (lifecycle ? '<span class="text-badge">' + escapeHtml(lifecycle) + '</span>' : '') +
+            '<span class="text-badge ' + (isPresent ? 'text-badge-accent' : '') + '">' + (isPresent ? '📍 当前在场' : '离场') + '</span>' +
+            (lifecycle ? '<span class="text-badge">♻️ ' + escapeHtml(lifecycle) + '</span>' : '') +
             ([c.gender, c.age].filter(Boolean).length ? '<span class="text-badge">' + escapeHtml([c.gender, c.age].filter(Boolean).join(' · ')) + '</span>' : '') +
           '</div><div class="sb-profile-actions">' + actionButtons + '</div>' +
-        '</div>' + (c.intro ? '<div class="sb-profile-intro">' + escapeHtml(c.intro) + '</div>' : '') +
+        '</div>' + (c.intro ? '<div class="sb-profile-intro">💬 ' + escapeHtml(c.intro) + '</div>' : '') +
       '</section>' +
-      renderSchemaProfileGroups(raw, groups, 'character', c._rowIndex || raw._rowIndex) +
-      (isAdult ? '<section class="sb-panel-card sb-profile-diary-card">' +
-        '<div class="sb-panel-card-head"><span class="sb-panel-card-title">恋爱日记</span><span class="text-badge">' + diaries.length + ' 篇</span></div>' +
-        '<div class="sb-profile-diary-list">' + diaryHtml + '</div></section>' : '') +
+      renderSchemaProfileGroups(raw, pages, 'character', c._rowIndex || raw._rowIndex, diarySection) +
       '</div>';
   }
 
   function bindCharacterActionEvents(container) {
     if (!container) return;
+    bindProfilePagerEvents(container);
 
     // 1. 字段即时内联编辑 (45列全覆盖)
     container.querySelectorAll('.sb-edit-char-btn').forEach(btn => {
@@ -469,8 +591,34 @@
     if (!c) return '';
     // 主面板只渲染当前在场角色；衣着/身体字段的 emoji 仅对在场角色启用。
     const isP = Boolean(c.isPresent);
-    const isAdult = isConfirmedAdultProfile(c.raw || {});
+    const profileRaw = c.raw || {};
+    const isAdult = isConfirmedAdultProfile(profileRaw);
+    const genderType = getProfileGenderType(profileRaw);
     const favorNum = Math.min(100, Math.max(0, parseInt(c.favor || c.affection) || 0));
+
+    const anatomyRows = [
+      {"field":"口腔","adultOnly":false},
+      {"field":"三围罩杯","adultOnly":true},
+      {"field":"乳房","adultOnly":true},
+      {"field":"乳头","adultOnly":true},
+      {"field":"臀部","adultOnly":true},
+      {"field":"阴蒂","adultOnly":true},
+      {"field":"阴唇","adultOnly":true},
+      {"field":"阴道","adultOnly":true},
+      {"field":"子宫","adultOnly":true},
+      {"field":"肛门","adultOnly":true},
+      {"field":"阴囊","adultOnly":true},
+      {"field":"阴茎","adultOnly":true},
+      {"field":"手部","adultOnly":false},
+      {"field":"腿部特征","adultOnly":false},
+      {"field":"脚部","adultOnly":false}
+    ].filter((item) => isProfileFieldVisible(item.field, genderType, isAdult)).map((item) => {
+      const value = profileRaw[item.field] == null ? '' : String(profileRaw[item.field]).trim();
+      if (!value || value === '无' || value === '-') return '';
+      const icon = PROFILE_FIELD_ICONS[item.field] || '📌';
+      return '<div class="char-clothes-item"><span class="cl">' + icon + ' ' + escapeHtml(item.field) +
+        '</span><span class="cv">' + escapeHtml(value) + '</span></div>';
+    }).join('');
 
     const diaries = isAdult ? (c.diaries || []) : [];
     const charName = escapeHtml(c.name);
@@ -522,7 +670,7 @@
               <!-- 1. 即时生理独立行气泡 (独占整行，暗色微光底衬) -->
               ${c.arousal ? `
                 <div class="char-arousal-box">
-                  <span class="arousal-label">即时生理:</span><span class="arousal-text">${escapeHtml(c.arousal)}</span>
+                  <span class="arousal-label">⚡ 即时生理:</span><span class="arousal-text">${escapeHtml(c.arousal)}</span>
                 </div>
               ` : ''}
 
@@ -530,7 +678,7 @@
               ${c.innerThought && c.innerThought !== '无' ? `
                 <div class="char-inner-thought">
                   <div class="inner-thought-title-row">
-                    <span class="inner-thought-title">心声独白</span>
+                    <span class="inner-thought-title">💭 心声独白</span>
                   </div>
                   <div class="inner-thought-text">「${escapeHtml(c.innerThought)}」</div>
                 </div>
@@ -539,12 +687,12 @@
               <!-- 角色状态信息流水：清晰标签列 -->
               <div class="char-status-col" style="display:flex;flex-direction:column;gap:5px;">
                 <div class="char-status" style="display:flex;align-items:flex-start;gap:6px;font-size:12px;">
-                  <span class="char-label-tag" style="background:var(--card-light);padding:1px 6px;border-radius:3px;color:var(--accent);font-weight:600;white-space:nowrap;font-size:11px;">当前状态</span>
+                  <span class="char-label-tag" style="background:var(--card-light);padding:1px 6px;border-radius:3px;color:var(--accent);font-weight:600;white-space:nowrap;font-size:11px;">📍 当前状态</span>
                   <span style="color:var(--text);line-height:1.5;">${escapeHtml(c.status || '-')}</span>
                 </div>
                 ${c.attitude ? `
                   <div class="char-attitude" style="display:flex;align-items:flex-start;gap:6px;font-size:12px;">
-                    <span class="char-label-tag" style="background:var(--card-light);padding:1px 6px;border-radius:3px;color:var(--accent);font-weight:600;white-space:nowrap;font-size:11px;">对主角态度</span>
+                    <span class="char-label-tag" style="background:var(--card-light);padding:1px 6px;border-radius:3px;color:var(--accent);font-weight:600;white-space:nowrap;font-size:11px;">💬 对主角态度</span>
                     <span style="color:var(--text);line-height:1.5;">${escapeHtml(c.attitude)}</span>
                   </div>
                 ` : ''}
@@ -580,39 +728,47 @@
           <div class="char-section-label-row">
             <span class="char-section-label">详情面板</span>
             <div class="char-switch-btns">
-              <button class="char-switch-btn ${activeCharDetailTab === 'clothes' ? 'active-switch' : ''}" id="sb-switch-clothes" type="button">衣着详情</button>
-              <button class="char-switch-btn ${activeCharDetailTab === 'body' ? 'active-switch' : ''}" id="sb-switch-body" type="button">身体状态</button>
-              <button class="char-switch-btn ${activeCharDetailTab === 'diary' ? 'active-switch' : ''}" id="sb-switch-diary" type="button">恋爱日记 (${diaries.length})</button>
+              <button class="char-switch-btn ${activeCharDetailTab === 'clothes' ? 'active-switch' : ''}" id="sb-switch-clothes" type="button">🧍 人物与身体</button>
+              <button class="char-switch-btn ${activeCharDetailTab === 'body' ? 'active-switch' : ''}" id="sb-switch-body" type="button">📋 状态与关系</button>
+              <button class="char-switch-btn ${activeCharDetailTab === 'diary' ? 'active-switch' : ''}" id="sb-switch-diary" type="button">📔 恋爱日记 (${diaries.length})</button>
             </div>
           </div>
 
-          <!-- A. 当前着装 -->
+          <!-- A. 人物身体展示：按头部、躯干、四肢，再到当前着装 -->
           <div class="char-clothes-list" id="sb-clothes-list" style="display:${activeCharDetailTab === 'clothes' ? 'block' : 'none'};">
-            <div class="char-clothes-item"><span class="cl">上装</span><span class="cv">${escapeHtml(c.top || '未填写')}</span></div>
-            <div class="char-clothes-item"><span class="cl">下装</span><span class="cv">${escapeHtml(c.bottom || '未填写')}</span></div>
-            <div class="char-clothes-item"><span class="cl">内衣</span><span class="cv">${escapeHtml(c.bra || '未填写')}</span></div>
-            <div class="char-clothes-item"><span class="cl">内裤</span><span class="cv">${escapeHtml(c.panties || '未填写')}</span></div>
-            <div class="char-clothes-item"><span class="cl">鞋袜</span><span class="cv">${escapeHtml(c.shoesSocks || '未填写')}</span></div>
-            <div class="char-clothes-item"><span class="cl">配饰</span><span class="cv">${escapeHtml(c.accessories || '未填写')}</span></div>
-            ${isAdult ? '<div class="char-clothes-item"><span class="cl">暴露状态</span><span class="cv">' + escapeHtml(c.exposure || '未填写') + '</span></div>' : ''}
+            ${anatomyRows}
+            <div class="char-clothes-item"><span class="cl">👕 上装</span><span class="cv">${escapeHtml(c.top || '—')}</span></div>
+            <div class="char-clothes-item"><span class="cl">👖 下装</span><span class="cv">${escapeHtml(c.bottom || '—')}</span></div>
+            <div class="char-clothes-item"><span class="cl">🩱 内衣</span><span class="cv">${escapeHtml(c.bra || '—')}</span></div>
+            <div class="char-clothes-item"><span class="cl">🩲 内裤</span><span class="cv">${escapeHtml(c.panties || '—')}</span></div>
+            <div class="char-clothes-item"><span class="cl">🧦 鞋袜</span><span class="cv">${escapeHtml(c.shoesSocks || '—')}</span></div>
+            <div class="char-clothes-item"><span class="cl">💍 配饰</span><span class="cv">${escapeHtml(c.accessories || '—')}</span></div>
           </div>
 
-          <!-- B. 当前身体与状态 -->
+          <!-- B. 状态与关系：动态状态单独展示，不合并不同字段 -->
           <div class="char-body-list" id="sb-body-list" style="display:${activeCharDetailTab === 'body' ? 'block' : 'none'};">
-            <div class="char-body-item"><span class="bl">当前动作与姿势</span><span class="bv">${escapeHtml(c.currentPose || '未填写')}</span></div>
-            <div class="char-body-item"><span class="bl">所在位置</span><span class="bv">${escapeHtml(c.location || '未填写')}</span></div>
-            <div class="char-body-item"><span class="bl">身体状态</span><span class="bv">${escapeHtml(c.bodyStatus || '未填写')}</span></div>
-            <div class="char-body-item"><span class="bl">意识状态</span><span class="bv">${escapeHtml(c.consciousness || '未填写')}</span></div>
-            <div class="char-body-item"><span class="bl">身体痕迹</span><span class="bv">${escapeHtml(c.bodyMarks || '未填写')}</span></div>
-            <div class="char-body-item"><span class="bl">基础身体特征</span><span class="bv">${escapeHtml(c.bodyNsfwBaseline || '未填写')}</span></div>
-            ${isAdult ? '<div class="char-body-item"><span class="bl">即时生理唤起</span><span class="bv">' + escapeHtml(c.arousal || '未填写') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">湿透情况</span><span class="bv">' + escapeHtml(c.wetStatus || '未填写') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">即时分泌量</span><span class="bv">' + escapeHtml(c.fluidAmount || '未填写') + '</span></div>' +
-              (c.measurements ? '<div class="char-body-item"><span class="bl">三围罩杯</span><span class="bv">' + escapeHtml(c.measurements) + '</span></div>' : '') +
-              '<div class="char-body-item"><span class="bl">性癖</span><span class="bv">' + escapeHtml(c.fetishes || '未填写') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">性经验与防线</span><span class="bv">' + escapeHtml(c.eroticMindset || '未填写') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">生育避孕状态</span><span class="bv">' + escapeHtml(c.pregnancyStatus || '未填写') + '</span></div>' +
-              '<div class="char-body-item"><span class="bl">月经与生理期</span><span class="bv">' + escapeHtml(c.periodCycle || '未填写') + '</span></div>' : ''}
+            <div class="char-body-item"><span class="bl">📍 当前动作与姿势</span><span class="bv">${escapeHtml(c.currentPose || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">📌 所在位置</span><span class="bv">${escapeHtml(c.location || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">😊 情绪</span><span class="bv">${escapeHtml(profileRaw['情绪'] || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">🩺 身体状态</span><span class="bv">${escapeHtml(c.bodyStatus || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">🧠 意识状态</span><span class="bv">${escapeHtml(c.consciousness || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">🩹 身体痕迹</span><span class="bv">${escapeHtml(c.bodyMarks || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">💗 好感</span><span class="bv">${escapeHtml(String(c.favor || '—'))}</span></div>
+            <div class="char-body-item"><span class="bl">💬 对主角态度</span><span class="bv">${escapeHtml(c.attitude || '—')}</span></div>
+            <div class="char-body-item"><span class="bl">🎭 心境与性格偏移</span><span class="bv">${escapeHtml(c.shift || '—')}</span></div>
+            ${isAdult ? '<div class="char-body-item"><span class="bl">🙈 暴露状态</span><span class="bv">' + escapeHtml(c.exposure || '—') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">⚡ 即时生理唤起</span><span class="bv">' + escapeHtml(c.arousal || '—') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">💧 湿透情况</span><span class="bv">' + escapeHtml(c.wetStatus || '—') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">💧 即时分泌量</span><span class="bv">' + escapeHtml(c.fluidAmount || '—') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">💠 性癖</span><span class="bv">' + escapeHtml(c.fetishes || '—') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">🔒 性经验与防线</span><span class="bv">' + escapeHtml(c.eroticMindset || '—') + '</span></div>' +
+              '<div class="char-body-item"><span class="bl">🔢 性爱次数</span><span class="bv">' + escapeHtml(String(c.sexCount || '—')) + '</span></div>' +
+              (profileRaw['月经日期'] ? '<div class="char-body-item"><span class="bl">🗓️ 月经日期</span><span class="bv">' + escapeHtml(profileRaw['月经日期']) + '</span></div>' : '') +
+              (profileRaw['当前生理期'] ? '<div class="char-body-item"><span class="bl">🌙 当前生理期</span><span class="bv">' + escapeHtml(profileRaw['当前生理期']) + '</span></div>' : '') +
+              (profileRaw['怀孕状态'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕状态</span><span class="bv">' + escapeHtml(profileRaw['怀孕状态']) + '</span></div>' : '') +
+              (profileRaw['怀孕备注'] ? '<div class="char-body-item"><span class="bl">🤰 怀孕备注</span><span class="bv">' + escapeHtml(profileRaw['怀孕备注']) + '</span></div>' : '') +
+              (profileRaw['怀孕风险'] ? '<div class="char-body-item"><span class="bl">⚠️ 怀孕风险</span><span class="bv">' + escapeHtml(profileRaw['怀孕风险']) + '</span></div>' : '') +
+              (profileRaw['怀孕概率'] ? '<div class="char-body-item"><span class="bl">📊 怀孕概率</span><span class="bv">' + escapeHtml(profileRaw['怀孕概率']) + '</span></div>' : '') : ''}
           </div>
 
           <!-- C. 心声手帐列表 (收纳私密日记流) -->
@@ -2367,15 +2523,29 @@
     const memos = snapshot?.memos || [];
     const proName = String(pro.name || '').trim();
     const raw = pro.raw || {};
-    const groups = [
-      { title: '基本信息', fields: ['姓名', '性别', '年龄', '外貌特征', '身份背景', '近况', '身高', '体重', '身材', '气质'] },
-      { title: '生活与住所', fields: ['座驾', '历史住址', '房屋属性', '同住人', '地理位置', '房屋内部', '自己卧室'] },
-      { title: '即时状态', fields: ['情绪', '意识状态', '身体状态', '当前动作与姿势'] },
-      { title: '当前着装', fields: ['上装', '下装', '内衣', '内裤', '鞋袜', '配饰'] },
-      { title: '基础身体特征', fields: ['口腔', '手部', '腿部特征', '脚部'] },
-      { title: '成人档案', adultOnly: true, fields: ['暴露状态', '湿透情况', '兴奋度', '爱液量', '乳房', '乳头', '臀部', '阴蒂', '阴唇', '阴道', '肛门', '子宫', '阴囊', '阴茎', '潮吹', '月经日期', '当前生理期', '怀孕状态', '怀孕备注', '怀孕风险', '怀孕概率', '性癖', '情趣道具'] },
-      { title: '财务', fields: ['银行卡余额', '微信支付宝余额', '现金'] }
+    const pages = [
+      {
+        label: '🧍 人物与身体',
+        groups: [
+          { title: '👤 人物资料', fields: ['姓名', '性别', '年龄', '外貌特征', '身份背景', '身高', '体重', '身材', '气质'] },
+          { title: '👄 头部与上身', fields: ['口腔', '乳房', '乳头'] },
+          { title: '🧬 躯干与骨盆', fields: ['臀部', '阴蒂', '阴唇', '阴道', '子宫', '肛门', '阴囊', '阴茎'] },
+          { title: '🖐️ 四肢', fields: ['手部', '腿部特征', '脚部'] },
+          { title: '👕 当前着装', fields: ['上装', '下装', '内衣', '内裤', '鞋袜', '配饰'] }
+        ]
+      },
+      {
+        label: '📋 状态与生活',
+        groups: [
+          { title: '📍 当前状态', fields: ['近况', '情绪', '暴露状态', '湿透情况', '兴奋度', '爱液量', '意识状态', '身体状态', '当前动作与姿势'] },
+          { title: '🩺 生理周期与生育', fields: ['潮吹', '月经日期', '当前生理期', '怀孕状态', '怀孕备注', '怀孕风险', '怀孕概率'] },
+          { title: '🧠 偏好与道具', adultOnly: true, fields: ['性癖', '情趣道具'] },
+          { title: '🏠 生活与住所', fields: ['座驾', '历史住址', '房屋属性', '同住人', '地理位置', '房屋内部', '自己卧室'] },
+          { title: '💰 财务', fields: ['银行卡余额', '微信支付宝余额', '现金'] }
+        ]
+      }
     ];
+
     const avatarSettings = store()?.getSettings() || {};
     const avatar = (avatarSettings.charAvatars && avatarSettings.charAvatars[proName]) || '';
     const header = '<section class="sb-panel-card sb-profile-identity-card">' +
@@ -2384,17 +2554,17 @@
           (avatar ? '<img src="' + escapeHtml(avatar) + '" class="char-avatar-img" alt="' + escapeHtml(proName) + '">' :
           '<span class="char-avatar-placeholder">' + escapeHtml(proName.slice(0, 1) || '?') + '</span>') +
         '</div><div class="sb-profile-heading-copy">' +
-          '<div class="sb-profile-name">' + escapeHtml(proName || '主角档案') + '</div>' +
+          '<div class="sb-profile-name">👤 ' + escapeHtml(proName || '主角档案') + '</div>' +
           '<div class="sb-profile-badges">' +
             (pro.gender ? '<span class="text-badge text-badge-accent">' + escapeHtml(pro.gender) + '</span>' : '') +
-            (pro.age ? '<span class="text-badge">' + escapeHtml(pro.age) + '</span>' : '') +
-            (pro.temperament ? '<span class="text-badge">' + escapeHtml(pro.temperament) + '</span>' : '') +
+            (pro.age ? '<span class="text-badge">🎂 ' + escapeHtml(pro.age) + '</span>' : '') +
+            (pro.temperament ? '<span class="text-badge">🧍 ' + escapeHtml(pro.temperament) + '</span>' : '') +
           '</div></div></div>' +
-        '<div class="sb-profile-actions"><button type="button" class="btn-line" id="sb-pro-open-gallery-btn">立绘图库 / AI 生图</button></div>' +
-      '</div>' + (pro.condition ? '<div class="sb-profile-intro">' + escapeHtml(pro.condition) + '</div>' : '') +
+        '<div class="sb-profile-actions"><button type="button" class="btn-line" id="sb-pro-open-gallery-btn">🖼️ 立绘图库 / AI 生图</button></div>' +
+      '</div>' + (pro.condition ? '<div class="sb-profile-intro">📰 ' + escapeHtml(pro.condition) + '</div>' : '') +
       '</section>';
     return '<div class="sb-protagonist-tab">' + header +
-      renderSchemaProfileGroups(raw, groups, 'protagonist', 1) +
+      renderSchemaProfileGroups(raw, pages, 'protagonist', 1,
 `<!-- 4. 主角关联子表联动专区 (Sub-Tables Linkage) -->
         <div class="sb-panel-card" style="margin-bottom:12px;">
           <div class="sb-panel-card-head">
@@ -2466,8 +2636,9 @@
               </div>
             </div>
           </div>
-        </div>` +
-      '</div>';
+        </div>`
+      ) +
+    '</div>';
   }
 
   function renderWorldTab(world) {
@@ -4555,6 +4726,7 @@
 
     if (tabKey === 'protagonist') {
       // 0. 主角头像框或立绘图库按钮点击 -> 打开主角立绘图库与AI生图
+      bindProfilePagerEvents(modalEl);
       const proName = String(snapshot.protagonist?.name || '').trim();
       modalEl.querySelector('#sb-pro-tab-avatar-btn')?.addEventListener('click', () => {
         focusedCharName = proName;
