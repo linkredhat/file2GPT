@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.4.0
-// @description  在账房页按可配置的时间段领取每日签到和整点补给，并确认领取结果
+// @version      0.4.1
+// @description  自动领取并核验签到赠金、整点补给及游戏赠金余额，失败时安全刷新重试
 // @match        https://casino.soliumbra.com/wallet*
 // @run-at       document-idle
 // @grant        GM_notification
@@ -11,12 +11,13 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.4.0';
+  const VERSION = '0.4.1';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
   const CLICK_VERIFY_MS = 8 * 1000;
-  const RELOAD_SETTLE_MS = 3 * 1000;
+  const RELOAD_SETTLE_MS = 5 * 1000;
+  const RECOVERY_TIMEOUT_MS = 45 * 1000;
   const MAX_CLAIM_ATTEMPTS = 3;
   const STATUS_ID = 'casino-rewards-status';
   const SETTINGS_KEY = 'casino-rewards:settings';
@@ -203,17 +204,19 @@
     }
   }
 
-  function markExhausted(target, pending) {
+  function markExhausted(target, pending, reason = '') {
     try {
       sessionStorage.setItem(failedStorageKey(pending.bucket), '1');
     } catch {
       // The status message still prevents a tight retry loop in this page.
     }
     clearPending(target);
-    renderStatus(`${target.name} 连续 ${MAX_CLAIM_ATTEMPTS} 次仍未确认，已停止本轮自动重试。`);
+    const message = reason || (target.name + ' 连续 ' + MAX_CLAIM_ATTEMPTS + ' 次仍未确认，已停止本轮自动重试。');
+    notify(target.name + '未能确认', message);
+    renderStatus(message);
   }
 
-  function windowBounds(target, value) {
+    function windowBounds(target, value) {
     const cycleStart = windowStart(target, value);
     const range = settings[target.key];
     return {
@@ -508,7 +511,170 @@
     return successTexts(target).some((text) => !baseline.has(text));
   }
 
-  function completeClaim(target, pending, message) {
+  function parseAmount(value) {
+    const match = String(value || '').replace(/,/g, '').match(/-?\d+/);
+    return match ? Number(match[0]) : null;
+  }
+
+  function formatAmount(value) {
+    return Number.isFinite(value) ? Math.abs(value).toLocaleString('en-US') : '未知';
+  }
+
+  function smallestTextContainer(predicate, maxLength = 700) {
+    const candidates = Array.from(document.querySelectorAll('div, section, article, li, tr, button'));
+    let best = '';
+    for (const element of candidates) {
+      const text = normalize(element.innerText || element.textContent);
+      if (!text || text.length > maxLength || !predicate(text)) continue;
+      if (!best || text.length < best.length) best = text;
+    }
+    return best;
+  }
+
+  // 读取账房顶部「游戏赠金」余额，不使用总余额或模型可用额度。
+  function readGameBonusBalance() {
+    const labels = Array.from(document.querySelectorAll('body *'))
+      .filter((element) => element.children.length === 0 && normalize(element.textContent) === '游戏赠金');
+    let bestLength = Infinity;
+    let bestValue = null;
+    for (const label of labels) {
+      let ancestor = label.parentElement;
+      for (let depth = 0; ancestor && depth < 7; depth++, ancestor = ancestor.parentElement) {
+        const text = normalize(ancestor.innerText || ancestor.textContent);
+        if (!text || text.length > 700) continue;
+        const match = /游戏赠金\s*([\d,]+)/.exec(text);
+        if (match && text.length < bestLength) {
+          bestLength = text.length;
+          bestValue = parseAmount(match[1]);
+        }
+      }
+    }
+    return bestValue;
+  }
+
+  // 读取签到/补给卡片上当前实际展示的加成后金额，例如 160,000，而非基础 20,000。
+  function readExpectedReward(target) {
+    const text = smallestTextContainer((value) =>
+      value.includes(target.name) && value.includes('赠金') && value.includes('只能下注')
+    );
+    if (!text) return null;
+    const position = text.indexOf(target.name);
+    const tail = text.slice(position + target.name.length);
+    const match = /\s*([\d,]+)\s*赠金/.exec(tail) || /([\d,]+)\s*赠金/.exec(text);
+    return match ? parseAmount(match[1]) : null;
+  }
+
+  // 只识别账本流水行：必须同时含事由、变动、正向金额、赠金和结余。
+  // 签到卡片上的奖励金额不会满足「变动 +金额 / 结余」条件。
+  function findLedgerEntries(target) {
+    const candidates = [];
+    const elements = document.querySelectorAll('div, li, article, section, tr, button');
+    for (const element of elements) {
+      const text = normalize(element.innerText || element.textContent);
+      if (text.length < 12 || text.length > 420) continue;
+      if (!text.includes(target.name) || !text.includes('变动') ||
+          !text.includes('赠金') || !/变动\s*\+\s*[\d,]+/.test(text) ||
+          !/余\s*[\d,]+/.test(text)) continue;
+      candidates.push({ element, text });
+    }
+
+    // 丢弃同时包含另一个匹配节点的外层容器，保留最接近单条流水的元素。
+    const leafMatches = candidates.filter((candidate) =>
+      !candidates.some((other) =>
+        other.element !== candidate.element && candidate.element.contains(other.element)
+      )
+    );
+    const unique = [];
+    for (const candidate of leafMatches) {
+      if (!unique.includes(candidate.text)) unique.push(candidate.text);
+    }
+    return unique.slice(0, 40);
+  }
+
+  function findNewLedgerEntry(target, baseline) {
+    const counts = new Map();
+    for (const value of baseline || []) counts.set(value, (counts.get(value) || 0) + 1);
+    const seen = new Map();
+    for (const value of findLedgerEntries(target)) {
+      const count = (seen.get(value) || 0) + 1;
+      seen.set(value, count);
+      if (count > (counts.get(value) || 0)) return value;
+    }
+    return '';
+  }
+
+  function inspectClaim(target, pending) {
+    const entry = findNewLedgerEntry(target, pending.ledgerBaseline);
+    const creditMatch = entry.match(/变动\s*\+\s*([\d,]+)\s*赠金/) ||
+      entry.match(/\+\s*([\d,]+)\s*赠金/);
+    const credit = creditMatch ? parseAmount(creditMatch[1]) : null;
+    const balanceAfter = readGameBonusBalance();
+    const balanceDelta = Number.isFinite(pending.balanceBefore) && Number.isFinite(balanceAfter)
+      ? balanceAfter - pending.balanceBefore
+      : null;
+    const newSuccessText = hasNewSuccess(target, pending);
+
+    if (entry && credit > 0) {
+      return {
+        confirmed: true,
+        source: 'ledger',
+        entry,
+        credit,
+        balanceBefore: pending.balanceBefore,
+        balanceAfter,
+        balanceDelta,
+        balanceMatched: balanceDelta === credit,
+      };
+    }
+
+    // 余额差额单独作为第二条确认路径，但要求同时出现本次新的成功反馈。
+    if (newSuccessText && Number.isFinite(pending.expectedReward) &&
+        pending.expectedReward > 0 && balanceDelta === pending.expectedReward) {
+      return {
+        confirmed: true,
+        source: 'balance',
+        entry: '',
+        credit: pending.expectedReward,
+        balanceBefore: pending.balanceBefore,
+        balanceAfter,
+        balanceDelta,
+        balanceMatched: true,
+      };
+    }
+
+    return {
+      confirmed: false,
+      source: '',
+      entry,
+      credit,
+      balanceBefore: pending.balanceBefore,
+      balanceAfter,
+      balanceDelta,
+      balanceMatched: false,
+    };
+  }
+
+  function claimAuditMessage(target, result) {
+    const amount = formatAmount(result.credit);
+    const before = formatAmount(result.balanceBefore);
+    const after = formatAmount(result.balanceAfter);
+    const delta = Number.isFinite(result.balanceDelta)
+      ? (result.balanceDelta >= 0 ? '+' : '-') + formatAmount(result.balanceDelta)
+      : '无法读取';
+    if (result.source === 'ledger') {
+      if (result.balanceMatched) {
+        return target.name + '到账已确认：账本新增 +' + amount +
+          ' 赠金；游戏赠金余额 ' + before + ' → ' + after + '（差额 +' + amount + '），核对一致。';
+      }
+      return target.name + '账本已确认到账 +' + amount +
+        ' 赠金；游戏赠金余额 ' + before + ' → ' + after + '（差额 ' + delta +
+        '），与账本金额不一致。可能存在并发下注/赢回或余额界面延迟，请检查账房。';
+    }
+    return target.name + '已确认：游戏赠金余额 ' + before + ' → ' + after +
+      '（增加 +' + amount + '），且页面出现新的成功反馈；尚未找到对应账本行。';
+  }
+
+  function completeClaim(target, pending, result) {
     rememberBucketClaim(target, pending.bucket);
     try {
       sessionStorage.removeItem(failedStorageKey(pending.bucket));
@@ -516,12 +682,12 @@
       // Ignore unavailable session storage.
     }
     clearPending(target);
-    notify(`${target.name}已确认`, message);
-    renderStatus(`${target.name} 已确认成功。`);
-    window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
+    const message = claimAuditMessage(target, result);
+    notify(target.name + '已核验', message);
+    renderStatus(message);
   }
 
-  function startAttempt(target, previous) {
+    function startAttempt(target, previous) {
     if (stopped) return;
     const now = new Date();
     const currentBucket = bucket(target, now);
@@ -541,29 +707,33 @@
     }
 
     if (!navigator.onLine) {
-      const waiting = {
+      const waiting = previous || {
         bucket: currentBucket,
-        attempts: previous?.attempts || 0,
-        phase: 'waiting-online',
-        baseline: previous?.baseline || [],
+        attempts: 0,
+        balanceBefore: null,
+        expectedReward: null,
+        ledgerBaseline: [],
+        successBaseline: [],
       };
-      if (!writePending(target, waiting)) {
-        renderStatus('浏览器无法保存待办状态，未继续重试。');
-        return;
-      }
-      renderStatus(`${target.name} 等待网络恢复。`);
+      waiting.phase = 'waiting-online';
+      writePending(target, waiting);
+      renderStatus(target.name + ' 等待网络恢复。');
       return;
     }
 
     const button = findButton(target);
     if (!isEnabled(button)) {
-      if (previous?.attempts > 0 && button) {
-        completeClaim(target, previous, '刷新后按钮已不可领取。');
-      } else if (previous?.attempts > 0) {
-        recoverPending(target);
+      if (previous?.attempts > 0) {
+        renderStatus(target.name + ' 暂不可重新领取，等待页面状态与账本核验。');
+        if (!previous.reloadAt) {
+          previous.reloadAt = Date.now();
+          previous.phase = 'reload-check';
+          writePending(target, previous);
+        }
+        window.setTimeout(() => recoverPending(target), RELOAD_SETTLE_MS);
       } else {
         clearPending(target);
-        renderStatus(`${target.name} 当前不可领取，稍后复查`);
+        renderStatus(target.name + ' 当前不可领取，稍后复查');
         window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
       }
       return;
@@ -571,16 +741,24 @@
 
     const attempts = (previous?.attempts || 0) + 1;
     if (attempts > MAX_CLAIM_ATTEMPTS) {
-      markExhausted(target, previous);
+      markExhausted(target, previous, target.name + '连续 ' + MAX_CLAIM_ATTEMPTS +
+        ' 次点击后仍没有账本或余额证据，已停止本轮重试；请人工核对，避免重复领取。');
       return;
     }
 
     const pending = {
       bucket: currentBucket,
       attempts,
-      phase: 'clicked',
+      phase: 'awaiting-confirmation',
       clickedAt: Date.now(),
-      baseline: successTexts(target),
+      verifyAt: Date.now() + CLICK_VERIFY_MS,
+      balanceBefore: previous && Number.isFinite(previous.balanceBefore)
+        ? previous.balanceBefore : readGameBonusBalance(),
+      expectedReward: previous && Number.isFinite(previous.expectedReward)
+        ? previous.expectedReward : readExpectedReward(target),
+      ledgerBaseline: previous?.ledgerBaseline || findLedgerEntries(target),
+      successBaseline: previous?.successBaseline || successTexts(target),
+      reloadAt: 0,
     };
     if (!writePending(target, pending)) {
       renderStatus('无法保存领取核对状态，本次未点击。');
@@ -589,15 +767,16 @@
 
     try {
       button.click();
-      notify(`${target.name}已点击`, `正在核对结果（第 ${attempts}/${MAX_CLAIM_ATTEMPTS} 次）。`);
+      notify(target.name + '已点击', '等待页面确认并核对游戏赠金余额（第 ' +
+        attempts + '/' + MAX_CLAIM_ATTEMPTS + ' 次）。');
     } catch (error) {
-      log(`${target.name} 点击异常`, error);
+      log(target.name + ' 点击异常', error);
     }
-    renderStatus(`${target.name} 已点击，等待页面确认。`);
-    window.setTimeout(() => verifyAfterClick(target), CLICK_VERIFY_MS);
+    renderStatus(target.name + ' 已点击，核对中；核对期间不会重复点击。');
+    window.setTimeout(() => verifyAfterClick(target), Math.max(0, pending.verifyAt - Date.now()));
   }
 
-  function verifyAfterClick(target) {
+    function verifyAfterClick(target) {
     if (stopped) return;
     if (hasRiskPrompt()) {
       stop('检测到验证码、登录失效或限流提示。');
@@ -605,25 +784,29 @@
     }
 
     const pending = readPending(target);
-    if (!pending || pending.bucket !== bucket(target, new Date())) return;
-    if (wasClaimed(target, new Date())) {
-      clearPending(target);
-      return;
-    }
-    if (hasNewSuccess(target, pending)) {
-      completeClaim(target, pending, '页面显示了成功反馈。');
-      return;
-    }
-    if (!navigator.onLine) {
-      pending.phase = 'waiting-online';
-      writePending(target, pending);
-      renderStatus(`${target.name} 请求结果待核对，等待网络恢复。`);
+    if (!pending || pending.bucket !== bucket(target, new Date()) ||
+        pending.phase !== 'awaiting-confirmation') return;
+
+    pending.phase = 'checking-result';
+    writePending(target, pending);
+    const result = inspectClaim(target, pending);
+    if (result.confirmed) {
+      completeClaim(target, pending, result);
       return;
     }
 
+    if (!navigator.onLine) {
+      pending.phase = 'waiting-online';
+      writePending(target, pending);
+      renderStatus(target.name + ' 请求结果尚未确认，等待网络恢复。');
+      return;
+    }
+
+    // 先刷新读取服务器状态；没有新流水且余额未增加时，才考虑重新点击。
     pending.phase = 'reload-check';
+    pending.reloadAt = Date.now();
     writePending(target, pending);
-    renderStatus(`${target.name} 尚未确认，正在刷新页面核对。`);
+    renderStatus(target.name + ' 尚无到账证据，刷新账房核对服务器状态。');
     window.location.reload();
   }
 
@@ -640,18 +823,44 @@
       clearPending(target);
       return true;
     }
-    if (activeRecovery.has(target.key)) return true;
+
+    // 点击后的核对窗口尚未结束：任何 DOM 扫描都不得启动第二次点击或提前恢复。
+    if (pending.phase === 'awaiting-confirmation') {
+      const remaining = (pending.verifyAt || 0) - Date.now();
+      if (remaining > 0) return true;
+      verifyAfterClick(target);
+      return true;
+    }
+    if (pending.phase === 'checking-result') {
+      // 该阶段只在同步核验期间存在；若页面恢复时遗留，则转入刷新核验。
+      pending.phase = 'reload-check';
+      pending.reloadAt = pending.reloadAt || Date.now();
+      writePending(target, pending);
+    }
+
     if (!navigator.onLine) {
       pending.phase = 'waiting-online';
       writePending(target, pending);
-      renderStatus(`${target.name} 等待网络恢复。`);
+      renderStatus(target.name + ' 等待网络恢复。');
       return true;
     }
 
-    pending.phase = 'reload-check';
-    writePending(target, pending);
+    if (pending.phase === 'waiting-online') {
+      if (pending.attempts === 0) {
+        clearPending(target);
+        const button = findButton(target);
+        if (isEnabled(button)) startAttempt(target, null);
+        else window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
+        return true;
+      }
+      pending.phase = 'reload-check';
+      pending.reloadAt = Date.now();
+      writePending(target, pending);
+    }
+
+    if (activeRecovery.has(target.key)) return true;
     activeRecovery.add(target.key);
-    const startedAt = Date.now();
+    const startedAt = pending.reloadAt || Date.now();
 
     function checkPage() {
       if (stopped) {
@@ -664,39 +873,36 @@
         if (current) clearPending(target);
         return;
       }
-      if (wasClaimed(target, new Date())) {
-        clearPending(target);
-        return;
-      }
       if (!navigator.onLine) {
         current.phase = 'waiting-online';
         writePending(target, current);
         activeRecovery.delete(target.key);
-        renderStatus(`${target.name} 等待网络恢复。`);
+        renderStatus(target.name + ' 等待网络恢复。');
+        return;
+      }
+
+      const result = inspectClaim(target, current);
+      if (result.confirmed) {
+        activeRecovery.delete(target.key);
+        completeClaim(target, current, result);
         return;
       }
 
       const button = findButton(target);
-      if (hasNewSuccess(target, current) || (current.attempts > 0 && button && !isEnabled(button))) {
-        completeClaim(target, current, '刷新后页面状态确认已领取。');
-        return;
-      }
       if (isEnabled(button)) {
         activeRecovery.delete(target.key);
         startAttempt(target, current);
         return;
       }
-      if (current.attempts === 0 && button) {
-        clearPending(target);
-        window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
-        return;
-      }
-      if (Date.now() - startedAt > 30 * 1000) {
-        markExhausted(target, current);
+
+      if (Date.now() - startedAt >= RECOVERY_TIMEOUT_MS) {
+        activeRecovery.delete(target.key);
+        markExhausted(target, current, target.name +
+          '刷新后仍没有找到新增账本记录或游戏赠金余额增量，按钮也未恢复可领取；已停止自动重试，请人工核对。');
         return;
       }
 
-      renderStatus(`${target.name} 等待页面按钮加载后核对。`);
+      renderStatus(target.name + ' 等待账本、游戏赠金余额或领取按钮状态同步。');
       window.setTimeout(checkPage, RELOAD_SETTLE_MS);
     }
 
@@ -704,7 +910,7 @@
     return true;
   }
 
-  function stop(reason) {
+    function stop(reason) {
     if (stopped) return;
     stopped = true;
     notify('签到脚本已暂停', reason);
@@ -729,7 +935,15 @@
     scan();
   }
 
-  function queueScan() {
+  function queueScan(records = []) {
+    // 状态面板自身的文本、输入框和样式变化不触发业务扫描。
+    const onlyPanelChanges = records.length > 0 && records.every((record) => {
+      const node = record.target;
+      const element = node && node.nodeType === 1 ? node : node?.parentElement;
+      return Boolean(element?.closest?.('#' + STATUS_ID));
+    });
+    if (onlyPanelChanges) return;
+
     if (scanTimer) return;
     scanTimer = window.setTimeout(() => {
       scanTimer = 0;
@@ -737,7 +951,7 @@
     }, 250);
   }
 
-  function start() {
+    function start() {
     if (!document.body) {
       window.setTimeout(start, 500);
       return;
