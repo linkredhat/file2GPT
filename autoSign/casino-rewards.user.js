@@ -250,6 +250,37 @@
     return new Date(bounds.start.getTime() + randomInt(bounds.end.getTime() - bounds.start.getTime()));
   }
 
+  function nextCycleWindowTime(target, value) {
+    const cycleStart = windowStart(target, value);
+    if (target.daily) {
+      cycleStart.setDate(cycleStart.getDate() + 1);
+    } else {
+      cycleStart.setHours(cycleStart.getHours() + 1);
+    }
+
+    const bounds = windowBounds(target, cycleStart);
+    return new Date(bounds.start.getTime() +
+      randomInt(bounds.end.getTime() - bounds.start.getTime()));
+  }
+
+  function scheduleNextCycle(target, value = new Date()) {
+    if (stopped) return null;
+
+    const targetTime = nextCycleWindowTime(target, value);
+    const existing = state.get(target.key);
+    if (existing?.timer) window.clearTimeout(existing.timer);
+
+    const record = {
+      bucket: bucket(target, targetTime),
+      plan: targetTime,
+      timer: window.setTimeout(() => run(target),
+        Math.max(0, targetTime.getTime() - Date.now())),
+    };
+    state.set(target.key, record);
+    log(`${target.name} 下一轮计划在 ${formatTime(targetTime)} 检查`);
+    return targetTime;
+  }
+
   function formatTime(value) {
     return value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
@@ -407,7 +438,10 @@
           ? '等待网络恢复'
           : `核对/重试 ${pending.attempts}/${MAX_CLAIM_ATTEMPTS}`
         : buttonState(button);
-      const plan = !sameCycle && current?.plan ? ` · 计划 ${formatTime(current.plan)}` : '';
+      const planLabel = wasClaimed(target, now) ? '下轮计划' : '计划';
+      const plan = !sameCycle && current?.plan
+        ? ` · ${planLabel} ${formatTime(current.plan)}`
+        : '';
       const line = `${target.name}：${status}${plan}`;
       const statusElement = panel.querySelector(`[data-status="${target.key}"]`);
       if (statusElement.textContent !== line) statusElement.textContent = line;
@@ -435,7 +469,14 @@
     if (stopped) return;
 
     const now = new Date();
-    if (wasClaimed(target, now)) return;
+    if (wasClaimed(target, now)) {
+      const existing = state.get(target.key);
+      if (!existing?.plan || existing.plan <= now) {
+        scheduleNextCycle(target, now);
+        renderStatus();
+      }
+      return;
+    }
     const pending = readPending(target);
     if (pending?.bucket === bucket(target, now)) return;
     if (pending) clearPending(target);
@@ -683,6 +724,7 @@
     }
     clearPending(target);
     const message = claimAuditMessage(target, result);
+    scheduleNextCycle(target, new Date());
     notify(target.name + '已核验', message);
     renderStatus(message);
   }
