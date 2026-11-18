@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.4.1
+// @version      0.4.2
 // @description  自动领取并核验签到赠金、整点补给及游戏赠金余额，失败时安全刷新重试
 // @match        https://casino.soliumbra.com/wallet*
 // @run-at       document-idle
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.4.1';
+  const VERSION = '0.4.2';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
