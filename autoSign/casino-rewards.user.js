@@ -687,7 +687,7 @@
     renderStatus(message);
   }
 
-    function startAttempt(target, previous) {
+  function startAttempt(target, previous) {
     if (stopped) return;
     const now = new Date();
     const currentBucket = bucket(target, now);
@@ -776,7 +776,7 @@
     window.setTimeout(() => verifyAfterClick(target), Math.max(0, pending.verifyAt - Date.now()));
   }
 
-    function verifyAfterClick(target) {
+  function verifyAfterClick(target) {
     if (stopped) return;
     if (hasRiskPrompt()) {
       stop('检测到验证码、登录失效或限流提示。');
@@ -910,7 +910,7 @@
     return true;
   }
 
-    function stop(reason) {
+  function stop(reason) {
     if (stopped) return;
     stopped = true;
     notify('签到脚本已暂停', reason);
@@ -951,7 +951,7 @@
     }, 250);
   }
 
-    function start() {
+  function start() {
     if (!document.body) {
       window.setTimeout(start, 500);
       return;
