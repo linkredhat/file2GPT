@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.4.5
-// @description  后台恢复后自动补执行逾期签到计划，并核验到账与游戏赠金余额
+// @version      0.4.6
+// @description  支持低频音频后台保活，后台恢复后补执行逾期签到计划并核验到账
 // @match        https://casino.soliumbra.com/wallet*
 // @run-at       document-idle
 // @grant        GM_notification
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.4.5';
+  const VERSION = '0.4.6';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -21,7 +21,14 @@
   const MAX_CLAIM_ATTEMPTS = 3;
   const STATUS_ID = 'casino-rewards-status';
   const SETTINGS_KEY = 'casino-rewards:settings';
-  const PLAN_STORAGE_PREFIX = 'casino-rewards:plan:'
+  const PLAN_STORAGE_PREFIX = 'casino-rewards:plan:';
+  const KEEPALIVE_STORAGE_KEY = 'casino-rewards:keepalive';
+  const KEEPALIVE_AUDIO_SAMPLE_RATE = 8000;
+  const KEEPALIVE_AUDIO_DURATION_SECONDS = 8;
+  const KEEPALIVE_AUDIO_FREQUENCY = 16;
+  const KEEPALIVE_AUDIO_AMPLITUDE = 64;
+  const KEEPALIVE_AUDIO_REWIND_LEAD_SECONDS = 2;
+  const KEEPALIVE_AUDIO_REWIND_TARGET_SECONDS = 0.01;
   const DEFAULT_SETTINGS = {
     daily: { start: 0, end: 30 },
     hourly: { start: 0, end: 30 },
@@ -49,6 +56,10 @@
   let scanTimer = 0;
   let observer;
   let settings = loadSettings();
+  let keepAliveEnabled = loadKeepAlivePreference();
+  let keepAliveAudio = null;
+  let keepAliveTransitioning = false;
+  let keepAliveAudioSource = '';
 
   function normalize(value) {
     return String(value || '').replace(/\s+/g, ' ').trim();
@@ -63,6 +74,24 @@
     const start = minuteValue(value?.start, fallback.start);
     const end = minuteValue(value?.end, fallback.end);
     return start <= end ? { start, end } : { ...fallback };
+  }
+
+  function loadKeepAlivePreference() {
+    try {
+      return localStorage.getItem(KEEPALIVE_STORAGE_KEY) === 'audio';
+    } catch {
+      return false;
+    }
+  }
+
+  function saveKeepAlivePreference(enabled) {
+    try {
+      if (enabled) localStorage.setItem(KEEPALIVE_STORAGE_KEY, 'audio');
+      else localStorage.removeItem(KEEPALIVE_STORAGE_KEY);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function loadSettings() {
@@ -355,6 +384,15 @@
         </div>
         <small class="hint">从 00:00 或整点起算，首尾分钟都包含</small>
         <button type="button" class="save" data-action="save">保存时间段</button>
+        <div class="keepalive-row">
+          <span>后台保活</span>
+          <select data-field="keepAlive" aria-label="后台保活模式">
+            <option value="off">关闭</option>
+            <option value="audio">低频音频</option>
+          </select>
+          <button type="button" class="keepalive-start" data-action="keepalive-start" hidden>启动</button>
+        </div>
+        <small class="keepalive-status" data-role="keepalive-status" aria-live="polite"></small>
         <div class="message" data-role="message" role="status" aria-live="polite"></div>
         <div class="status-line" data-status="daily"></div>
         <div class="status-line" data-status="hourly"></div>
@@ -382,6 +420,11 @@
       #${STATUS_ID} .hint { color:#bdc1c6; font-size:10px; }
       #${STATUS_ID} .save { width:100%; padding:4px 6px; border:0; border-radius:5px; background:#4b647d; }
       #${STATUS_ID} .save:hover, #${STATUS_ID} .toggle:hover { background:#617b95; }
+      #${STATUS_ID} .keepalive-row { display:grid; grid-template-columns:72px minmax(0,1fr) auto; align-items:center; gap:6px; }
+      #${STATUS_ID} .keepalive-row select { min-width:0; width:100%; height:25px; padding:2px 5px; border:1px solid #666; border-radius:4px; background:#303134; color:#f1f3f4; font:11px system-ui,sans-serif; }
+      #${STATUS_ID} .keepalive-start { padding:4px 7px; border:0; border-radius:5px; background:#4b647d; }
+      #${STATUS_ID} .keepalive-status { color:#bdc1c6; font-size:10px; }
+      #${STATUS_ID} .keepalive-status.error { color:#ffb4ab; }
       #${STATUS_ID} .message { min-height:1em; color:#b8d7ff; font-size:10px; }
       #${STATUS_ID} .message.error { color:#ffb4ab; }
       #${STATUS_ID} .status-line { color:#e8eaed; font-size:10px; overflow-wrap:anywhere; }
@@ -406,7 +449,21 @@
       applyCollapsedState(panel);
     });
     panel.querySelector('[data-action="save"]').addEventListener('click', () => saveTimeRanges(panel));
+    const keepAliveSelect = panel.querySelector('[data-field="keepAlive"]');
+    const keepAliveStart = panel.querySelector('[data-action="keepalive-start"]');
+    keepAliveSelect.value = keepAliveEnabled ? 'audio' : 'off';
+    keepAliveSelect.addEventListener('change', () => {
+      if (keepAliveSelect.value === 'audio') {
+        void startKeepAliveAudio(true);
+      } else {
+        stopKeepAliveAudio();
+      }
+    });
+    keepAliveStart.addEventListener('click', () => {
+      void startKeepAliveAudio(true);
+    });
     applyCollapsedState(panel);
+    updateKeepAliveControls();
     return panel;
   }
 
@@ -450,6 +507,256 @@
     state.clear();
     if (!stopped) scan();
     renderStatus(stored ? '时间段已保存。' : '时间段已应用，但浏览器未能保存设置。');
+  }
+
+  function setKeepAliveStatus(message, isError = false) {
+    const panel = document.getElementById(STATUS_ID);
+    const status = panel?.querySelector('[data-role="keepalive-status"]');
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+  }
+
+  function createKeepAliveAudioSource() {
+    if (keepAliveAudioSource) return keepAliveAudioSource;
+
+    const sampleCount = KEEPALIVE_AUDIO_SAMPLE_RATE * KEEPALIVE_AUDIO_DURATION_SECONDS;
+    const dataLength = sampleCount * 2;
+    const buffer = new ArrayBuffer(44 + dataLength);
+    const view = new DataView(buffer);
+    const writeText = (offset, value) => {
+      for (let i = 0; i < value.length; i++) {
+        view.setUint8(offset + i, value.charCodeAt(i));
+      }
+    };
+
+    writeText(0, 'RIFF');
+    view.setUint32(4, 36 + dataLength, true);
+    writeText(8, 'WAVE');
+    writeText(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, KEEPALIVE_AUDIO_SAMPLE_RATE, true);
+    view.setUint32(28, KEEPALIVE_AUDIO_SAMPLE_RATE * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeText(36, 'data');
+    view.setUint32(40, dataLength, true);
+
+    for (let i = 0; i < sampleCount; i++) {
+      const phase = 2 * Math.PI * KEEPALIVE_AUDIO_FREQUENCY * i / KEEPALIVE_AUDIO_SAMPLE_RATE;
+      view.setInt16(44 + i * 2,
+        Math.round(KEEPALIVE_AUDIO_AMPLITUDE * Math.sin(phase)), true);
+    }
+
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    keepAliveAudioSource = 'data:audio/wav;base64,' + btoa(binary);
+    return keepAliveAudioSource;
+  }
+
+  function setupKeepAliveMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = 'playing';
+      if (typeof MediaMetadata === 'function') {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: '赌场签到后台保活',
+          artist: '签到助手',
+          album: '低频音频保活',
+        });
+      }
+      navigator.mediaSession.setActionHandler('play', () => {
+        void startKeepAliveAudio(true);
+      });
+      navigator.mediaSession.setActionHandler('pause', () => stopKeepAliveAudio());
+      navigator.mediaSession.setActionHandler('stop', () => stopKeepAliveAudio());
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+      navigator.mediaSession.setActionHandler('seekbackward', null);
+      navigator.mediaSession.setActionHandler('seekforward', null);
+    } catch {
+      // Media Session is optional; audio playback itself is the keep-alive mechanism.
+    }
+  }
+
+  function clearKeepAliveMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = 'none';
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.setActionHandler('play', null);
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('stop', null);
+    } catch {
+      // Ignore unsupported Media Session operations.
+    }
+  }
+
+  function updateKeepAliveControls() {
+    const panel = document.getElementById(STATUS_ID);
+    if (!panel) return;
+    const select = panel.querySelector('[data-field="keepAlive"]');
+    const startButton = panel.querySelector('[data-action="keepalive-start"]');
+    if (!select || !startButton) return;
+
+    const playing = Boolean(keepAliveAudio && !keepAliveAudio.paused && !keepAliveAudio.error);
+    select.value = keepAliveEnabled ? 'audio' : 'off';
+    select.disabled = keepAliveTransitioning;
+    startButton.hidden = !keepAliveEnabled || playing;
+    startButton.disabled = keepAliveTransitioning;
+    startButton.textContent = '点击启动';
+    if (!keepAliveEnabled) {
+      setKeepAliveStatus('关闭：后台标签页仍可能被 Edge 休眠。');
+    } else if (playing) {
+      setKeepAliveStatus('正在播放 16 Hz 低频音频 · 保活已启动。');
+    } else {
+      setKeepAliveStatus('已启用但音频未播放；请点击「点击启动」。', true);
+    }
+  }
+
+  function configureKeepAliveAudioLoop(audio) {
+    let pending = null;
+    audio.loop = false;
+
+    const rewind = () => {
+      if (keepAliveAudio !== audio || !keepAliveEnabled || audio.error) return;
+      const duration = audio.duration;
+      if (!Number.isFinite(duration) ||
+          duration <= KEEPALIVE_AUDIO_REWIND_LEAD_SECONDS + KEEPALIVE_AUDIO_REWIND_TARGET_SECONDS) return;
+
+      const threshold = duration - KEEPALIVE_AUDIO_REWIND_LEAD_SECONDS;
+      if (pending) {
+        if (!audio.paused && !audio.seeking &&
+            audio.currentTime > KEEPALIVE_AUDIO_REWIND_TARGET_SECONDS + 0.05 &&
+            audio.currentTime < threshold) pending = null;
+        return;
+      }
+      if (!audio.ended && (audio.paused || audio.seeking || audio.currentTime < threshold)) return;
+
+      const attempt = {};
+      pending = attempt;
+      const failed = () => {
+        if (keepAliveAudio !== audio || !keepAliveEnabled || pending !== attempt) return;
+        pending = null;
+        audio.pause();
+        setKeepAliveStatus('低频音频保活中断，请点击「点击启动」恢复。', true);
+        updateKeepAliveControls();
+      };
+      try {
+        audio.currentTime = KEEPALIVE_AUDIO_REWIND_TARGET_SECONDS;
+        Promise.resolve(audio.play()).catch(failed);
+      } catch {
+        failed();
+      }
+    };
+
+    audio.addEventListener('timeupdate', rewind);
+    audio.addEventListener('ended', rewind);
+    audio.addEventListener('pause', () => { pending = null; });
+    audio.addEventListener('error', () => { pending = null; });
+  }
+
+  function playKeepAliveMedia(media) {
+    const playback = media.play();
+    let timeout;
+    const deadline = new Promise((_, reject) => {
+      timeout = window.setTimeout(() => {
+        media.pause();
+        const error = new Error('音频在 10 秒内未能启动');
+        error.name = 'TimeoutError';
+        reject(error);
+      }, 10000);
+    });
+    return Promise.race([playback, deadline]).finally(() => window.clearTimeout(timeout));
+  }
+
+  async function startKeepAliveAudio(persist = true) {
+    if (keepAliveTransitioning) return false;
+    keepAliveTransitioning = true;
+    keepAliveEnabled = true;
+    if (persist) saveKeepAlivePreference(true);
+    updateKeepAliveControls();
+
+    let audio = keepAliveAudio;
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.src = createKeepAliveAudioSource();
+      configureKeepAliveAudioLoop(audio);
+      audio.preload = 'auto';
+      audio.playsInline = true;
+      audio.setAttribute('playsinline', 'true');
+      audio.volume = 1;
+      audio.controls = false;
+      audio.className = 'casino-rewards-keepalive-audio';
+      audio.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px;top:-9999px;';
+      for (const eventName of ['pause', 'error']) {
+        audio.addEventListener(eventName, () => {
+          if (keepAliveAudio !== audio) return;
+          if ('mediaSession' in navigator) {
+            try { navigator.mediaSession.playbackState = 'paused'; } catch {}
+          }
+          if (!keepAliveTransitioning && keepAliveEnabled) {
+            setKeepAliveStatus('低频音频保活已中断，请点击「点击启动」恢复。', true);
+            updateKeepAliveControls();
+          }
+        });
+      }
+      document.body.appendChild(audio);
+      keepAliveAudio = audio;
+    }
+
+    try {
+      if (audio.error) audio.load();
+      await playKeepAliveMedia(audio);
+      if (audio.paused) throw new Error('Audio remained paused after play()');
+      setupKeepAliveMediaSession();
+      setKeepAliveStatus('正在播放 16 Hz 低频音频 · 保活已启动。');
+      log('低频音频后台保活已启动。');
+      return true;
+    } catch (error) {
+      const message = error?.name === 'NotAllowedError'
+        ? '浏览器阻止了自动播放；请点击「点击启动」授权音频。'
+        : '音频启动失败：' + String(error?.message || error);
+      setKeepAliveStatus(message, true);
+      log(message);
+      return false;
+    } finally {
+      keepAliveTransitioning = false;
+      updateKeepAliveControls();
+    }
+  }
+
+  function stopKeepAliveAudio() {
+    keepAliveTransitioning = true;
+    keepAliveEnabled = false;
+    saveKeepAlivePreference(false);
+
+    const audio = keepAliveAudio;
+    keepAliveAudio = null;
+    if (audio) {
+      try {
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
+        audio.remove();
+      } catch {
+        // Ignore teardown errors.
+      }
+    }
+    clearKeepAliveMediaSession();
+    keepAliveTransitioning = false;
+    setKeepAliveStatus('后台保活已关闭。');
+    updateKeepAliveControls();
+    log('低频音频后台保活已关闭。');
+  }
+
+  function resumeKeepAliveIfNeeded() {
+    if (!keepAliveEnabled || keepAliveTransitioning) return;
+    if (keepAliveAudio && !keepAliveAudio.paused && !keepAliveAudio.error) return;
+    void startKeepAliveAudio(false);
   }
 
   function renderStatus(extra = '') {
@@ -1088,6 +1395,7 @@
   function wakePage() {
     if (stopped) return;
     log('页面恢复活动，重新核对签到计划。');
+    resumeKeepAliveIfNeeded();
     scan();
   }
 
@@ -1128,7 +1436,13 @@
       log('检测到标签页曾被 Edge 丢弃，正在从本地保存的计划恢复。');
     }
     scan();
-    log('已启动，按配置排程并核对领取结果。');
+    if (keepAliveEnabled) {
+      // Reloads are not user gestures; autoplay may be blocked and then require a click.
+      void startKeepAliveAudio(false);
+    } else {
+      updateKeepAliveControls();
+    }
+    log('已启动，按配置排程、核对领取结果并支持低频音频保活。');
   }
 
   start();
