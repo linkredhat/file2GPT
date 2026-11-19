@@ -1614,7 +1614,8 @@
 
   function skyModelSuccessRate(height) {
     if (!Number.isFinite(height) || height < 100 || height > 5000) return null;
-    return Math.min(0.95, 95 / height);
+    // 导出的安全线是整数；小数高度需要达到向上取整后的那一米安全线。
+    return Math.min(0.95, 95 / Math.ceil(height));
   }
 
   function skyPercentile(values, percentile) {
@@ -1839,7 +1840,7 @@
           ? '已保存班号之间发现缺号 ' + gaps.missingRounds + ' 班。'
           : '已保存班号之间未发现缺号。'),
       '根据全部本地记录拟合的候选安全线模型：S≈min(5000, floor(95/U))，U假设为0到1之间的均匀随机数。' +
-        '它意味着机毁概率约5%，正常安全线的累计概率约为 P(S≥h)=95/h。' +
+        '它意味着机毁概率约5%；整数高度 h 的累计成功概率约为95/h，小数高度按 ceil(h) 对应的整数安全线计算。' +
         alphaText + '，目前与反比例尾部分布相符。',
       '模型核对：全部记录中机毁 ' + model.wreckCount + '/' + model.total +
         ' 班（' + (model.wreckRate * 100).toFixed(2) +
