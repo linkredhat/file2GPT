@@ -1833,6 +1833,52 @@
 
   function renderSkyManualResult(panel = document.getElementById(SKY_STATS_PANEL_ID), records = null) {
     if (!panel) return;
+    const manualInput = panel.querySelector('[data-field="manual-height"]');
+    const manualResult = panel.querySelector('[data-role="manual-result"]');
+    const manualHeight = Number(manualInput?.value);
+
+    if (!manualInput?.value.trim()) {
+      manualResult.textContent = '输入一个高度，即可查看该高度在当前历史记录中的估算结果。';
+      return;
+    }
+    if (!Number.isFinite(manualHeight) || manualHeight < 1 || manualHeight > 5000) {
+      manualResult.textContent = '请输入 1 至 5000 米之间的有效高度。';
+      return;
+    }
+
+    const samples = records || skyRecordsForPeriod().filter(item =>
+      item.wreck || Number.isFinite(Number(item.safetyLine))
+    );
+    if (!samples.length) {
+      manualResult.textContent = '当前时间范围内没有有效记录，暂时无法估算。';
+      return;
+    }
+
+    const estimate = skyEvaluateHeight(samples, manualHeight);
+    manualResult.textContent =
+      '测试高度：' + formatSkyNumber(manualHeight, 2) + ' 米；估算倍率：' +
+      estimate.multiplier.toFixed(3) + '×；历史成功：' + estimate.safe + '/' +
+      estimate.samples + ' 班（' + (estimate.safeRate * 100).toFixed(1) + '%）；' +
+      '不亏所需成功率：' + (estimate.breakEvenRate * 100).toFixed(2) + '%；' +
+      '每下注 1,000 token，历史平均净收益：' +
+      formatSkySigned(estimate.avgNetPerThousand) + ' token；' +
+      '成功率95%估算范围：' +
+      (estimate.wilsonLower * 100).toFixed(1) + '–' +
+      (estimate.wilsonUpper * 100).toFixed(1) + '%。';
+  }
+
+  function renderSkyStats() {
+    const panel = document.getElementById(SKY_STATS_PANEL_ID);
+    if (!panel) return;
+
+    const records = skyValidSamples(skyRecordsForPeriod());
+    const lines = records.filter(item => Number.isFinite(item.safetyLine));
+    const wrecks = records.filter(item => item.wreck);
+    const safetyValues = lines.map(item => item.safetyLine);
+    const medianSafety = skyPercentile(safetyValues, 0.50);
+    const p10 = skyPercentile(safetyValues, 0.10);
+    const p90 = skyPercentile(safetyValues, 0.90);
+
     renderSkyManualResult(panel, records);
 
     const results = skyHeightAnalysis(records);
@@ -1847,9 +1893,6 @@
 
     const bestConfirmed = Boolean(validation.available && validation.confirmed &&
       validation.selectedHeight === (best && best.height));
-    const bestStatus = best
-      ? (bestConfirmed ? '（独立验证通过）' : '（尚未独立确认）')
-      : '';
 
     const summaryLines = [
       '统计样本：' + records.length + ' 班（安全线记录 ' + lines.length +
