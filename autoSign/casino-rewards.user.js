@@ -1853,7 +1853,7 @@
       '安全线：中位数 ' + formatSkyNumber(medianSafety, 0) +
         ' 米 · P10/P90 ' + formatSkyNumber(p10, 0) + '/' +
         formatSkyNumber(p90, 0) + ' 米',
-      '5000 米安全线：累计出现 ' + maxStats.count + ' 次' +
+      '5000 米安全线（本地全部记录）：累计出现 ' + maxStats.count + ' 次' +
         (maxStats.lastRound !== null
           ? ' · 最近第 ' + maxStats.lastRound + ' 班 · 距今 ' +
             (maxStats.roundsSince === null ? '未知' : maxStats.roundsSince + ' 班')
@@ -1893,10 +1893,18 @@
     body.innerHTML = '';
     const displayRows = [];
     const addDisplayRow = (label, result) => {
-      if (!result || displayRows.some(row => row.result.height === result.height)) return;
+      if (!result) return;
+      const existing = displayRows.find(row => row.result.height === result.height);
+      if (existing) {
+        if (label === '5000米上限' && !existing.label.includes('5000米上限')) {
+          existing.label += ' / 5000米上限';
+        }
+        return;
+      }
       displayRows.push({ label, result });
     };
     addDisplayRow('历史最高', best);
+    addDisplayRow('独立验证', validation.available ? validation.validationResult : null);
     addDisplayRow('稳健备选', riskAlternative);
     addDisplayRow('5000米上限', results.find(item => item.height === 5000));
 
@@ -2041,7 +2049,8 @@
       '</tr></thead><tbody data-role="history"></tbody></table></div></details>',
       '<div class="sky-message" data-role="sky-message"></div>',
       '<small data-role="record-count"></small>',
-      '<div class="sky-method">仅观战统计。候选高度按页面所述每秒深度增加13%构造；机毁计为失败。成功率区间使用Wilson方法；只有前70%选出的单一高度，在后30%不少于100班且收益95%下界高于0时，才标记为统计确认。5000米出现次数按本地全部记录统计。赔率仍按页面100米×1.02、200米×2.03两点线性估算，服务器完整公式尚未验证。</div>',
+      '<details class="sky-method-details"><summary>统计口径与限制</summary>',
+      '<div class="sky-method">候选高度按每秒深度增加13%构造；机毁计为失败。成功率区间使用Wilson方法；前70%用于选择一个高度，后30%至少100班且收益95%下界高于0才标记为统计确认。5000米出现次数按本地全部记录统计。赔率仅按页面100米×1.02、200米×2.03两点线性估算，服务器完整公式尚未验证。缺班数只反映已保存记录之间的班号缺口，不能证明没有其他漏采。</div></details>',
       '<div class="sky-keepalive"><span>后台保活</span>',
       '<select data-field="keepAlive" aria-label="后台保活模式">',
       '<option value="off">关闭</option><option value="audio">低频音频</option></select>',
@@ -2061,7 +2070,9 @@
       '#' + SKY_STATS_PANEL_ID + ' .sky-filters, #' + SKY_STATS_PANEL_ID + ' .sky-custom-range {display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0;}',
       '#' + SKY_STATS_PANEL_ID + ' .sky-grid-note {align-self:end;color:#aab4c2;font-size:10px;}',
       '#' + SKY_STATS_PANEL_ID + ' .sky-history-details {margin-top:8px;}',
-      '#' + SKY_STATS_PANEL_ID + ' .sky-history-details summary {cursor:pointer;color:#dbeafe;}',
+      '#' + SKY_STATS_PANEL_ID + ' .sky-history-details summary, #' + SKY_STATS_PANEL_ID + ' .sky-method-details summary {cursor:pointer;color:#dbeafe;}',
+      '#' + SKY_STATS_PANEL_ID + ' .sky-method-details {margin-top:7px;color:#aab4c2;font-size:10px;}',
+      '#' + SKY_STATS_PANEL_ID + ' .sky-method-details .sky-method {margin-top:4px;}',
 
       '#' + SKY_STATS_PANEL_ID + ' label {display:flex;flex-direction:column;gap:3px;color:#d8dee9;}',
       '#' + SKY_STATS_PANEL_ID + ' select, #' + SKY_STATS_PANEL_ID + ' input {min-width:0;width:100%;height:27px;padding:3px 5px;border:1px solid #667085;border-radius:4px;background:#20242b;color:#f1f3f4;font:12px system-ui,sans-serif;}',
@@ -2145,6 +2156,7 @@
         .map(item => [item.roundId, item])).values())
         .sort((a, b) => a.roundId - b.roundId);
       let changed = false;
+      let addedCount = 0;
 
       for (const entry of uniqueEntries) {
         if (findSkyRecord(entry.roundId)) continue;
@@ -2158,15 +2170,15 @@
         };
         skyStats.records.push(record);
         skyStats.baselineRound = Math.max(skyStats.baselineRound || 0, entry.roundId);
+        addedCount += 1;
         changed = true;
       }
 
       if (changed) {
         saveSkyStats();
         const gaps = skyRoundGapSummary(skyStats.records);
-        skySetMessage('新增采集 ' + uniqueEntries.filter(item =>
-          findSkyRecord(item.roundId)).length + ' 条；已识别班次缺口 ' +
-          gaps.missingRounds + ' 班。');
+        skySetMessage('新增采集 ' + addedCount +
+          ' 条；已识别班次缺口 ' + gaps.missingRounds + ' 班。');
       }
       renderSkyStats();
     } finally {
