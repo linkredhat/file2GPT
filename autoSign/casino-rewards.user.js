@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.7.0
+// @version      0.7.1
 // @description  签到助手、低频音频保活及极限跳伞风险统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.7.0';
+  const VERSION = '0.7.1';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -1835,6 +1835,28 @@
     const p10 = skyPercentile(safetyValues, 0.10);
     const p90 = skyPercentile(safetyValues, 0.90);
 
+    const manualInput = panel.querySelector('[data-field="manual-height"]');
+    const manualResult = panel.querySelector('[data-role="manual-result"]');
+    const manualHeight = Number(manualInput?.value);
+    if (!manualInput?.value.trim()) {
+      manualResult.textContent = '输入高度后，按当前统计时间范围估算收益。';
+    } else if (!Number.isFinite(manualHeight) || manualHeight < 1 || manualHeight > 5000) {
+      manualResult.textContent = '请输入 1 至 5000 米之间的有效高度。';
+    } else if (!records.length) {
+      manualResult.textContent = '当前时间范围内没有有效样本，暂时无法估算。';
+    } else {
+      const estimate = skyEvaluateHeight(records, manualHeight);
+      manualResult.textContent =
+        '测试高度：' + formatSkyNumber(manualHeight, 2) + ' 米 · 估算倍率：' +
+        estimate.multiplier.toFixed(3) + '× · 成功：' + estimate.safe + '/' +
+        estimate.samples + '（' + (estimate.safeRate * 100).toFixed(1) + '%） · ' +
+        '保本成功率：' + (estimate.breakEvenRate * 100).toFixed(2) + '% · ' +
+        '平均净收益：' + formatSkySigned(estimate.avgNetPerThousand) +
+        ' token/每千下注 · 95%估算区间：' +
+        formatSkySigned(estimate.lowerExpectedNet) + ' 至 ' +
+        formatSkySigned(estimate.upperExpectedNet) + ' token/每千下注。';
+    }
+
     const results = skyHeightAnalysis(records);
     const best = results[0] || null;
     const riskAlternative = skyFindRiskAlternative(results);
@@ -2041,11 +2063,14 @@
       '<option value="90d">最近 90 天</option>',
       '<option value="all">全部时间</option>',
       '</select></label>',
-      '<small class="sky-grid-note">候选高度按每秒 ×1.13 递增（100米起），另含5000米上限</small></div>',
+      '<small class="sky-grid-note">候选高度按 ×1.13 几何递增（100米起），另含5000米；可手动测试任意高度</small></div>',
       '<div class="sky-custom-range">',
       '<label>开始日期<input type="date" data-field="start-date"></label>',
       '<label>结束日期<input type="date" data-field="end-date"></label></div>',
       '<div class="sky-summary" data-role="summary"></div>',
+      '<div class="sky-manual-calc">',
+      '<label>手动测试开伞高度（米）<input type="number" min="1" max="5000" step="1" data-field="manual-height" placeholder="输入 1–5000 米"></label>',
+      '<div class="sky-manual-result" data-role="manual-result">输入高度后，按当前统计时间范围估算收益。</div></div>',
       '<div class="sky-table-wrap"><table><thead><tr>',
       '<th>类型</th><th>高度</th><th>成功/样本</th><th>成功率（95%区间）</th>',
       '<th>保本率</th><th>净收益/千</th><th>判断</th>',
@@ -2057,7 +2082,7 @@
       '<div class="sky-message" data-role="sky-message"></div>',
       '<small data-role="record-count"></small>',
       '<details class="sky-method-details"><summary>统计口径与限制</summary>',
-      '<div class="sky-method">候选高度按每秒深度增加13%构造；机毁计为失败。成功率区间使用Wilson方法；前70%用于选择一个高度，后30%至少100班且收益95%下界高于0才标记为统计确认。5000米出现次数按本地全部记录统计。赔率仅按页面100米×1.02、200米×2.03两点线性估算，服务器完整公式尚未验证。缺班数只反映已保存记录之间的班号缺口，不能证明没有其他漏采。</div></details>',
+      '<div class="sky-method">候选高度按每秒深度增加13%构造的几何网格（并非游戏只允许这些高度）；手动测试高度可输入任意1–5000米。机毁计为失败。成功率区间使用Wilson方法；前70%用于选择一个高度，后30%至少100班且收益95%下界高于0才标记为统计确认。5000米出现次数按本地全部记录统计。赔率仅按页面100米×1.02、200米×2.03两点线性估算，服务器完整公式尚未验证。缺班数只反映已保存记录之间的班号缺口，不能证明没有其他漏采。</div></details>',
       '<div class="sky-keepalive"><span>后台保活</span>',
       '<select data-field="keepAlive" aria-label="后台保活模式">',
       '<option value="off">关闭</option><option value="audio">低频音频</option></select>',
@@ -2084,6 +2109,8 @@
       '#' + SKY_STATS_PANEL_ID + ' label {display:flex;flex-direction:column;gap:3px;color:#d8dee9;}',
       '#' + SKY_STATS_PANEL_ID + ' select, #' + SKY_STATS_PANEL_ID + ' input {min-width:0;width:100%;height:27px;padding:3px 5px;border:1px solid #667085;border-radius:4px;background:#20242b;color:#f1f3f4;font:12px system-ui,sans-serif;}',
       '#' + SKY_STATS_PANEL_ID + ' .sky-summary {display:grid;gap:4px;margin:8px 0;color:#e6edf3;overflow-wrap:anywhere;}',
+      '#' + SKY_STATS_PANEL_ID + ' .sky-manual-calc {display:grid;grid-template-columns:1fr;gap:5px;margin:8px 0;padding:7px;border:1px solid #586273;border-radius:6px;background:rgba(255,255,255,.035);}',
+      '#' + SKY_STATS_PANEL_ID + ' .sky-manual-result {color:#dbeafe;line-height:1.55;overflow-wrap:anywhere;}',
       '#' + SKY_STATS_PANEL_ID + ' .sky-table-wrap {overflow:auto;max-height:190px;}',
       '#' + SKY_STATS_PANEL_ID + ' table {width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}',
       '#' + SKY_STATS_PANEL_ID + ' th, #' + SKY_STATS_PANEL_ID + ' td {padding:4px 5px;border-bottom:1px solid #454c56;text-align:right;white-space:nowrap;}',
@@ -2118,6 +2145,14 @@
       });
       return element;
     };
+    const manualHeight = panel.querySelector('[data-field="manual-height"]');
+    manualHeight.value = skyStats.filters.manualHeight || '';
+    manualHeight.addEventListener('input', () => {
+      skyStats.filters.manualHeight = manualHeight.value;
+      saveSkyStats();
+      renderSkyStats();
+    });
+
     const period = bindFilter('period');
     const startDate = bindFilter('start-date');
     const endDate = bindFilter('end-date');
