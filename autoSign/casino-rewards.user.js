@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.7.5
+// @version      0.7.6
 // @description  签到助手、低频音频保活及极限跳伞风险统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.7.5';
+  const VERSION = '0.7.6';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -1605,10 +1605,16 @@
     });
   }
 
+  // 页面倍率只精确展示到两位小数；结合“长期回报相同”的规则，
+  // 倍率应近似与高度成正比。两个示例点对应的比例系数交集约为
+  // 0.01015–0.010175，取中点用于展示，不冒充服务器精确公式。
   function skyPayoutMultiplier(height) {
-    // 按页面公开的两个倍率点：100m = 1.02x，200m = 2.03x，线性插值。
-    // 安全概率完全来自观战样本；此倍率只把样本安全率换算成可比较的收益估值。
-    return 0.01 + (height / 100) * 1.01;
+    return height * 0.0101625;
+  }
+
+  function skyModelSuccessRate(height) {
+    if (!Number.isFinite(height) || height < 100 || height > 5000) return null;
+    return Math.min(0.95, 95 / height);
   }
 
   function skyPercentile(values, percentile) {
@@ -1637,26 +1643,19 @@
 
   function skyBuildHeightResult(total, safe, height) {
     const multiplier = skyPayoutMultiplier(height);
-    const winNet = (multiplier - 1) * 1000;
-    const failures = total - safe;
-    const safeRate = safe / total;
+    const safeRate = total ? safe / total : 0;
     const wilson = skyWilsonInterval(safe, total);
-    const lowerExpectedNet = (wilson.lower * multiplier - 1) * 1000;
-    const upperExpectedNet = (wilson.upper * multiplier - 1) * 1000;
-    const tailCount = total * 0.10;
-    const tailLosses = Math.min(failures, tailCount);
-    const tailWins = Math.max(0, tailCount - tailLosses);
-    const cvar10 = tailCount > 0
-      ? ((tailLosses * -1000) + (tailWins * winNet)) / tailCount
-      : null;
     return {
-      height, multiplier, samples: total, safe, failures, safeRate,
-      wilsonLower: wilson.lower, wilsonUpper: wilson.upper,
+      height,
+      multiplier,
+      samples: total,
+      safe,
+      failures: total - safe,
+      safeRate,
+      wilsonLower: wilson.lower,
+      wilsonUpper: wilson.upper,
+      modelSafeRate: skyModelSuccessRate(height),
       breakEvenRate: 1 / multiplier,
-      avgNetPerThousand: (safe * winNet - failures * 1000) / total,
-      lowerExpectedNet, upperExpectedNet,
-      cumulativeNetPerThousand: safe * winNet - failures * 1000,
-      cvar10,
     };
   }
 
