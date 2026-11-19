@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.7.3
+// @version      0.7.4
 // @description  签到助手、低频音频保活及极限跳伞风险统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.7.3';
+  const VERSION = '0.7.4';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -26,7 +26,7 @@
   const KEEPALIVE_STORAGE_KEY = 'casino-rewards:keepalive';
   const SKY_STATS_STORAGE_KEY = 'casino-sky-stats:v2';
   const SKY_STATS_MAX_RECORDS = 10000;
-  const SKY_SYNC_INTERVAL_MS = 15000;
+  const SKY_SYNC_INTERVAL_MS = 5000;
   const KEEPALIVE_AUDIO_SAMPLE_RATE = 8000;
   const KEEPALIVE_AUDIO_DURATION_SECONDS = 8;
   const KEEPALIVE_AUDIO_FREQUENCY = 16;
@@ -1400,7 +1400,7 @@
     resumeKeepAliveIfNeeded();
     if (location.pathname.startsWith('/sky')) {
       log('极限跳伞页面恢复活动，继续核对统计记录。');
-      syncSkyStats(true);
+      scheduleSkySync();
       return;
     }
     if (stopped) return;
@@ -1428,7 +1428,6 @@
 
   // ---------------- 极限跳伞：纯观战统计 ----------------
   const SKY_STATS_PANEL_ID = STATUS_ID;
-  let skyStatsObserver = null;
   let skyStatsTimer = 0;
   let skyStatsLastSync = 0;
   let skyStatsSyncing = false;
@@ -1498,12 +1497,12 @@
   }
 
   function readCurrentSkyRoundId() {
-    const match = (document.body?.innerText || '').match(/第\s*([\d,]+)\s*班/);
+    const match = (document.body?.textContent || '').match(/第\s*([\d,]+)\s*班/);
     return match ? parseSkyNumber(match[1]) : null;
   }
 
   function readSkyHistoryEntries() {
-    const text = skyNormalize(document.body?.innerText || '');
+    const text = skyNormalize(document.body?.textContent || '');
     const pattern = /第\s*([\d,]+)\s*班\s*[·•]\s*(?:安全线\s*([\d,]+(?:\.\d+)?)\s*米|(机毁))/g;
     const entries = [];
     let match;
@@ -1541,7 +1540,7 @@
       skyHistoryDirty = true;
     }
     updateSkyStatsPanel();
-    syncSkyStats(true);
+    scheduleSkySync();
   }
 
   function stopSkyStats() {
@@ -2273,12 +2272,21 @@
   }
 
   function scheduleSkySync() {
+    if (!skyStats.active) return;
     skyHistoryDirty = true;
     if (skyStatsTimer) return;
-    skyStatsTimer = window.setTimeout(() => {
+
+    const runSync = () => {
       skyStatsTimer = 0;
       syncSkyStats(true);
-    }, 250);
+    };
+
+    // 将整页历史记录读取与统计安排在浏览器空闲时运行，避免挤占游戏动画帧。
+    if (typeof window.requestIdleCallback === 'function') {
+      skyStatsTimer = window.requestIdleCallback(runSync, { timeout: 3000 });
+    } else {
+      skyStatsTimer = window.setTimeout(runSync, 1000);
+    }
   }
 
   function startSkyStats() {
@@ -2288,26 +2296,10 @@
     }
     buildSkyStatsPanel();
 
-    skyStatsObserver = new MutationObserver(records => {
-      for (const record of records) {
-        const node = record.target;
-        const element = node && node.nodeType === 1 ? node : node?.parentElement;
-        if (element?.closest?.('#' + SKY_STATS_PANEL_ID)) continue;
-        if (record.type !== 'childList') continue;
-        for (const addedNode of record.addedNodes) {
-          const text = addedNode.nodeType === 3
-            ? (addedNode.nodeValue || '')
-            : (addedNode.textContent || '');
-          if (/安全线|机毁/.test(text)) {
-            scheduleSkySync();
-            return;
-          }
-        }
-      }
-    });
-    // 不监听普通字符变化（如倒计时跳动），只检查新增的安全线/机毁文字。
-    skyStatsObserver.observe(document.body, { childList: true, subtree: true });
-    window.setInterval(() => syncSkyStats(true), SKY_SYNC_INTERVAL_MS);
+    // 不再监听 document.body 的全量 DOM 变化。
+    // 游戏中的高度/倍率数字会持续替换节点，全页面 MutationObserver 会放大这些更新开销。
+    // 改为每5秒低频检查，并把读取/解析放到浏览器空闲回调中。
+    window.setInterval(scheduleSkySync, SKY_SYNC_INTERVAL_MS);
     window.addEventListener('online', wakePage);
     window.addEventListener('pageshow', wakePage);
     window.addEventListener('focus', wakePage);
@@ -2317,10 +2309,7 @@
     });
 
     if (document.wasDiscarded) log('检测到极限跳伞标签页被 Edge 丢弃，已从本地统计数据恢复。');
-    if (skyStats.active) {
-      // A reloaded page continues collecting using the persisted baseline and records.
-      syncSkyStats(true);
-    }
+    if (skyStats.active) scheduleSkySync();
     if (keepAliveEnabled) void startKeepAliveAudio(false);
     else updateKeepAliveControls();
     updateSkyStatsPanel();
