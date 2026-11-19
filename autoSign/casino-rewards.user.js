@@ -1797,11 +1797,18 @@
     const recordedMaxRound = samples.reduce((max, item) =>
       Math.max(max, Number(item.roundId) || 0), 0);
     const currentRound = readCurrentSkyRoundId();
-    const latestRound = Math.max(recordedMaxRound, Number(currentRound) || 0);
+    let latestRound = null;
+    if (last) {
+      if (Number.isFinite(currentRound) && currentRound >= last.roundId) {
+        latestRound = currentRound;
+      } else if (recordedMaxRound > last.roundId) {
+        latestRound = recordedMaxRound;
+      }
+    }
     return {
       count: occurrences.length,
       lastRound: last ? last.roundId : null,
-      roundsSince: last && latestRound >= last.roundId ? latestRound - last.roundId : null,
+      roundsSince: last && latestRound !== null ? latestRound - last.roundId : null,
       latestRound,
     };
   }
