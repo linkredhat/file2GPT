@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.4.4
+// @version      0.4.5
 // @description  后台恢复后自动补执行逾期签到计划，并核验到账与游戏赠金余额
 // @match        https://casino.soliumbra.com/wallet*
 // @run-at       document-idle
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.4.4';
+  const VERSION = '0.4.5';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -994,9 +994,17 @@
         const button = findButton(target);
         if (isEnabled(button)) {
           startAttempt(target, pending);
-        } else {
-          // Keep the overdue task pending. The regular scan and online event will retry.
+        } else if (pending.catchUp && !inWindow(target, now)) {
+          clearPending(target);
+          scheduleNextCycle(target, now);
+          renderStatus(target.name + ' 恢复后按钮仍不可领取，已安排下一轮。');
+        } else if (pending.catchUp) {
+          // The reward window is still open. Keep waiting for the site UI to become claimable.
           renderStatus(target.name + ' 网络已恢复，等待领取按钮变为可用。');
+        } else {
+          clearPending(target);
+          window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
+          renderStatus(target.name + ' 网络恢复后暂不可领取，稍后复查。');
         }
         return true;
       }
@@ -1079,6 +1087,7 @@
 
   function wakePage() {
     if (stopped) return;
+    log('页面恢复活动，重新核对签到计划。');
     scan();
   }
 
@@ -1110,9 +1119,14 @@
     window.setInterval(scan, SCAN_INTERVAL_MS);
     window.addEventListener('online', wakePage);
     window.addEventListener('pageshow', wakePage);
+    window.addEventListener('focus', wakePage);
+    document.addEventListener('resume', wakePage);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') wakePage();
     });
+    if (document.wasDiscarded) {
+      log('检测到标签页曾被 Edge 丢弃，正在从本地保存的计划恢复。');
+    }
     scan();
     log('已启动，按配置排程并核对领取结果。');
   }
