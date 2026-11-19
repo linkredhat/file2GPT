@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.4.3
+// @version      0.4.4
 // @description  后台恢复后自动补执行逾期签到计划，并核验到账与游戏赠金余额
 // @match        https://casino.soliumbra.com/wallet*
 // @run-at       document-idle
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.4.3';
+  const VERSION = '0.4.4';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -507,8 +507,22 @@
     const now = new Date();
     if (wasClaimed(target, now)) {
       const existing = state.get(target.key);
-      if (!existing?.plan || existing.plan <= now) {
+      const saved = readPlanned(target);
+      const hasFuturePlan = (existing?.plan && existing.plan > now) ||
+        (saved?.at && saved.at > now.getTime());
+      if (!hasFuturePlan) {
         scheduleNextCycle(target, now);
+        renderStatus();
+      } else if (!existing?.plan) {
+        // Restore the already-persisted next-cycle time after a page reload.
+        const restoredTime = new Date(saved.at);
+        const record = {
+          bucket: bucket(target, restoredTime),
+          plan: restoredTime,
+          timer: window.setTimeout(() => run(target, { catchUp: true }),
+            Math.max(0, restoredTime.getTime() - Date.now())),
+        };
+        state.set(target.key, record);
         renderStatus();
       }
       return;
@@ -595,10 +609,11 @@
 
     const button = findButton(target);
     if (!isEnabled(button)) {
-      if (catchUp) {
+      if (catchUp && !inWindow(target, now)) {
         scheduleNextCycle(target, now);
         renderStatus(`${target.name} 逾期计划已检查，但页面按钮不可领取；已安排下一轮。`);
       } else {
+        clearPlanned(target);
         renderStatus(`${target.name} 当前不可领取，稍后复查`);
         window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
       }
