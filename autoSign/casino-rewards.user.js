@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.5.1
+// @version      0.5.2
 // @description  签到助手、低频音频保活及极限跳伞安全线统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.5.1';
+  const VERSION = '0.5.2';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -1885,6 +1885,15 @@
     step.value = String(skyStats.filters.step || 10);
     startDate.value = skyStats.filters.startDate || '';
     endDate.value = skyStats.filters.endDate || '';
+    // Selecting a preset period clears custom dates so the selected filter is not overridden.
+    period.addEventListener('change', () => {
+      startDate.value = '';
+      endDate.value = '';
+      skyStats.filters.startDate = '';
+      skyStats.filters.endDate = '';
+      saveSkyStats();
+      renderSkyStats();
+    });
 
     const keepAliveSelect = panel.querySelector('[data-field="keepAlive"]');
     keepAliveSelect.value = keepAliveEnabled ? 'audio' : 'off';
