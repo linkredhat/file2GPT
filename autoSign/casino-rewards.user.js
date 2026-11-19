@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.5.2
-// @description  签到助手、低频音频保活及极限跳伞安全线统计
+// @version      0.6.0
+// @description  签到助手、低频音频保活及极限跳伞风险收益统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
 // @run-at       document-idle
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.5.3';
+  const VERSION = '0.6.0';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -1599,38 +1599,149 @@
     return 0.01 + (height / 100) * 1.01;
   }
 
+  function skyPercentile(values, percentile) {
+    if (!values.length) return null;
+    const sorted = values.slice().sort((a, b) => a - b);
+    const position = (sorted.length - 1) * percentile;
+    const lower = Math.floor(position);
+    const upper = Math.ceil(position);
+    if (lower === upper) return sorted[lower];
+    return sorted[lower] + (sorted[upper] - sorted[lower]) * (position - lower);
+  }
+
+  function skyWilsonInterval(successes, total) {
+    if (!total) return { lower: 0, upper: 1 };
+    const z = 1.96;
+    const p = successes / total;
+    const z2 = z * z;
+    const denominator = 1 + z2 / total;
+    const center = (p + z2 / (2 * total)) / denominator;
+    const margin = z * Math.sqrt((p * (1 - p) / total) + (z2 / (4 * total * total))) / denominator;
+    return {
+      lower: Math.max(0, center - margin),
+      upper: Math.min(1, center + margin),
+    };
+  }
+
+  function skyEvaluateHeight(samples, height) {
+    if (!samples.length) return null;
+    const multiplier = skyPayoutMultiplier(height);
+    const winNet = (multiplier - 1) * 1000;
+    let safe = 0;
+    let cumulative = 0;
+    let peak = 0;
+    let maxDrawdown = 0;
+    let currentLossStreak = 0;
+    let longestLossStreak = 0;
+
+    for (const sample of samples) {
+      const succeeded = !sample.wreck &&
+        Number.isFinite(sample.safetyLine) && height <= sample.safetyLine;
+      const net = succeeded ? winNet : -1000;
+      if (succeeded) {
+        safe += 1;
+        currentLossStreak = 0;
+      } else {
+        currentLossStreak += 1;
+        longestLossStreak = Math.max(longestLossStreak, currentLossStreak);
+      }
+      cumulative += net;
+      peak = Math.max(peak, cumulative);
+      maxDrawdown = Math.max(maxDrawdown, peak - cumulative);
+    }
+
+    const total = samples.length;
+    const failures = total - safe;
+    const safeRate = safe / total;
+    const wilson = skyWilsonInterval(safe, total);
+    const lowerExpectedNet = (wilson.lower * multiplier - 1) * 1000;
+    const upperExpectedNet = (wilson.upper * multiplier - 1) * 1000;
+    const tailCount = total * 0.10;
+    const tailLosses = Math.min(failures, tailCount);
+    const tailWins = Math.max(0, tailCount - tailLosses);
+    const cvar10 = tailCount > 0
+      ? ((tailLosses * -1000) + (tailWins * winNet)) / tailCount
+      : null;
+
+    return {
+      height,
+      multiplier,
+      samples: total,
+      safe,
+      failures,
+      safeRate,
+      wilsonLower: wilson.lower,
+      wilsonUpper: wilson.upper,
+      breakEvenRate: 1 / multiplier,
+      avgNetPerThousand: cumulative / total,
+      lowerExpectedNet,
+      upperExpectedNet,
+      cumulativeNetPerThousand: cumulative,
+      cvar10,
+      maxDrawdownPerThousand: maxDrawdown,
+      longestLossStreak,
+    };
+  }
+
+  function skyValidSamples(records) {
+    return records
+      .filter(item => item.wreck || Number.isFinite(item.safetyLine))
+      .slice()
+      .sort((a, b) => {
+        const timeDiff = Number(a.timestamp || a.observedAt || 0) -
+          Number(b.timestamp || b.observedAt || 0);
+        return timeDiff || Number(a.roundId || 0) - Number(b.roundId || 0);
+      });
+  }
+
   function skyHeightAnalysis(records) {
     const panel = document.getElementById(SKY_STATS_PANEL_ID);
     const step = Math.max(1, parseSkyNumber(
       panel?.querySelector('[data-field="step"]')?.value || skyStats.filters.step || 10
     ));
-    const samples = records.filter(item =>
-      item.wreck || Number.isFinite(item.safetyLine)
-    );
+    const samples = skyValidSamples(records);
     if (!samples.length) return [];
 
     const results = [];
     for (let height = 100; height <= 5000; height += step) {
-      let safe = 0;
-      let netPerThousand = 0;
-      for (const sample of samples) {
-        if (!sample.wreck && Number.isFinite(sample.safetyLine) && height <= sample.safetyLine) {
-          safe += 1;
-          // Multiplier is gross payout including the returned stake; subtract 1x for net profit.
-          netPerThousand += (skyPayoutMultiplier(height) - 1) * 1000;
-        } else {
-          netPerThousand -= 1000;
-        }
-      }
-      results.push({
-        height,
-        samples: samples.length,
-        safe,
-        safeRate: safe / samples.length,
-        avgNetPerThousand: netPerThousand / samples.length,
-      });
+      const result = skyEvaluateHeight(samples, height);
+      if (result) results.push(result);
     }
-    return results.sort((a,b) => b.avgNetPerThousand - a.avgNetPerThousand);
+    return results.sort((a, b) => b.avgNetPerThousand - a.avgNetPerThousand);
+  }
+
+  function skyFindRiskAlternative(results) {
+    if (!results.length) return null;
+    const profitable = results.filter(item => item.avgNetPerThousand > 0);
+    const pool = profitable.length ? profitable : results;
+    return pool.slice().sort((a, b) =>
+      (b.cvar10 - a.cvar10) ||
+      (a.maxDrawdownPerThousand - b.maxDrawdownPerThousand) ||
+      (b.safeRate - a.safeRate) ||
+      (b.avgNetPerThousand - a.avgNetPerThousand)
+    )[0];
+  }
+
+  function skyOutOfSampleValidation(records) {
+    const samples = skyValidSamples(records);
+    if (samples.length < 10) {
+      return { available: false, samples: samples.length };
+    }
+    const splitAt = Math.floor(samples.length * 0.70);
+    const discovery = samples.slice(0, splitAt);
+    const validation = samples.slice(splitAt);
+    const discoveryBest = skyHeightAnalysis(discovery)[0];
+    if (!discoveryBest || !validation.length) {
+      return { available: false, samples: samples.length };
+    }
+    return {
+      available: true,
+      discoverySamples: discovery.length,
+      validationSamples: validation.length,
+      selectedHeight: discoveryBest.height,
+      discoveryResult: discoveryBest,
+      validationResult: skyEvaluateHeight(validation, discoveryBest.height),
+    };
   }
 
   function formatSkyNumber(value, digits = 2) {
@@ -1647,39 +1758,75 @@
     const panel = document.getElementById(SKY_STATS_PANEL_ID);
     if (!panel) return;
 
-    const records = skyRecordsForPeriod().sort((a,b) => b.timestamp - a.timestamp);
-    const valid = records.filter(item => item.wreck || Number.isFinite(item.safetyLine));
+    const records = skyRecordsForPeriod().slice().sort((a, b) =>
+      Number(a.timestamp || a.observedAt || 0) - Number(b.timestamp || b.observedAt || 0)
+    );
+    const valid = skyValidSamples(records);
     const lines = valid.filter(item => Number.isFinite(item.safetyLine));
-    const wrecks = valid.filter(item => item.wreck).length;
-    const averageSafety = lines.length
-      ? lines.reduce((sum,item) => sum + item.safetyLine,0) / lines.length : null;
-    const sortedSafety = lines.map(item => item.safetyLine).sort((a,b) => a-b);
-    const medianSafety = sortedSafety.length
-      ? (sortedSafety.length % 2
-        ? sortedSafety[(sortedSafety.length - 1) / 2]
-        : (sortedSafety[sortedSafety.length / 2 - 1] + sortedSafety[sortedSafety.length / 2]) / 2)
-      : null;
+    const wrecks = valid.filter(item => item.wreck);
+    const safetyValues = lines.map(item => item.safetyLine);
+    const averageSafety = safetyValues.length
+      ? safetyValues.reduce((sum, value) => sum + value, 0) / safetyValues.length : null;
+    const medianSafety = skyPercentile(safetyValues, 0.50);
+    const p10 = skyPercentile(safetyValues, 0.10);
+    const p25 = skyPercentile(safetyValues, 0.25);
+    const p75 = skyPercentile(safetyValues, 0.75);
+    const p90 = skyPercentile(safetyValues, 0.90);
 
-    const results = skyHeightAnalysis(records);
+    const results = skyHeightAnalysis(valid);
     const best = results[0] || null;
+    const riskAlternative = skyFindRiskAlternative(results);
+    const validation = skyOutOfSampleValidation(valid);
+    const wreckRate = valid.length ? wrecks.length / valid.length : null;
     const summary = panel.querySelector('[data-role="summary"]');
     summary.innerHTML = '';
 
     const summaryLines = [
-      '所选时间段：' + records.length + ' 班 · 已公开安全线 ' + lines.length +
-        ' 班 · 机毁 ' + wrecks + ' 班',
-      '安全线平均值：' + formatSkyNumber(averageSafety, 1) +
-        ' 米 · 中位数：' + formatSkyNumber(medianSafety, 1) + ' 米',
+      '【总体样本】所选时间段 ' + valid.length + ' 班 · 有数值安全线 ' +
+        lines.length + ' 班 · 机毁 ' + wrecks.length + ' 班' +
+        (wreckRate !== null ? '（' + (wreckRate * 100).toFixed(1) + '%）' : ''),
+      '【安全线分布】平均 ' + formatSkyNumber(averageSafety, 1) +
+        ' 米 · 中位数 ' + formatSkyNumber(medianSafety, 1) +
+        ' 米 · P10/P25/P75/P90：' + [p10, p25, p75, p90]
+          .map(value => formatSkyNumber(value, 1)).join(' / ') + ' 米',
       best
-        ? '样本收益最高：' + best.height + ' 米 · 安全率 ' +
-          (best.safeRate * 100).toFixed(1) + '% · 平均净收益 ' +
-          formatSkySigned(best.avgNetPerThousand, ' tokens/每千押注')
-        : '最佳高度：暂无样本，等待新班次结算。',
-      best && best.samples < 30
-        ? '样本量提醒：目前只有 ' + best.samples +
-          ' 班，结果波动较大，建议积累更多班次后再比较。'
-        : best ? '样本量：' + best.samples + ' 班；这是该时间段实测回测结果，不代表下一班必然如此。' :
-          '开始统计后会持续保存新公开的班次。',
+        ? '【历史期望收益最高】' + best.height + ' 米 · 成功率 ' +
+          (best.safeRate * 100).toFixed(1) + '%（Wilson 95% CI ' +
+          (best.wilsonLower * 100).toFixed(1) + '–' +
+          (best.wilsonUpper * 100).toFixed(1) + '%） · 盈亏平衡成功率 ' +
+          (best.breakEvenRate * 100).toFixed(1) + '%'
+        : '【收益排名】暂无有效样本，等待新班次结算。',
+      best
+        ? '平均净收益 ' + formatSkySigned(best.avgNetPerThousand) +
+          ' / 每千押注（95% CI ' + formatSkySigned(best.lowerExpectedNet) +
+          ' 至 ' + formatSkySigned(best.upperExpectedNet) + '） · 历史累计净收益 ' +
+          formatSkySigned(best.cumulativeNetPerThousand)
+        : '暂无收益结果。',
+      riskAlternative
+        ? '【风险较低备选】' + riskAlternative.height + ' 米 · 最差 10% 平均净收益（CVaR10） ' +
+          formatSkySigned(riskAlternative.cvar10) + ' / 每千押注 · 最大回撤 ' +
+          formatSkyNumber(riskAlternative.maxDrawdownPerThousand) +
+          ' · 最长连续失败 ' + riskAlternative.longestLossStreak + ' 班' +
+          (results.some(item => item.avgNetPerThousand > 0)
+            ? '（在历史均值为正的候选高度中按尾部收益和回撤筛选）'
+            : '（当前没有历史均值为正的候选高度，仅列风险较低者）')
+        : '【风险分析】暂无足够样本。',
+      validation.available
+        ? '【时间外验证】按时间前 70% 选高度、后 30% 验证：训练 ' +
+          validation.discoverySamples + ' 班选择 ' + validation.selectedHeight +
+          ' 米；验证 ' + validation.validationSamples + ' 班，成功率 ' +
+          (validation.validationResult.safeRate * 100).toFixed(1) + '%，平均净收益 ' +
+          formatSkySigned(validation.validationResult.avgNetPerThousand) +
+          '（95% CI ' + formatSkySigned(validation.validationResult.lowerExpectedNet) +
+          ' 至 ' + formatSkySigned(validation.validationResult.upperExpectedNet) + '）' +
+          (validation.validationResult.lowerExpectedNet > 0
+            ? '；验证样本的 95% 下界仍为正。'
+            : '；验证样本尚未证明期望收益为正。')
+        : '【时间外验证】至少需要 10 班有效记录；当前 ' + validation.samples +
+          ' 班，暂不进行前 70% 探索、后 30% 验证。',
+      valid.length < 30
+        ? '样本提醒：目前样本较少，成功率区间和收益排名都可能大幅波动。'
+        : '统计提醒：期望收益是历史长期平均估计，不保证下一班盈利；置信区间也依赖各班次近似独立、规则和赔率稳定。',
     ];
     for (const line of summaryLines) {
       const div = document.createElement('div');
@@ -1695,7 +1842,13 @@
         result.height + ' 米',
         String(result.samples),
         (result.safeRate * 100).toFixed(1) + '%',
+        (result.wilsonLower * 100).toFixed(1) + '–' + (result.wilsonUpper * 100).toFixed(1) + '%',
+        (result.breakEvenRate * 100).toFixed(1) + '%',
         formatSkySigned(result.avgNetPerThousand),
+        formatSkySigned(result.lowerExpectedNet) + ' 至 ' + formatSkySigned(result.upperExpectedNet),
+        formatSkySigned(result.cumulativeNetPerThousand),
+        formatSkySigned(result.cvar10),
+        formatSkyNumber(result.maxDrawdownPerThousand),
       ];
       for (const value of cells) {
         const cell = document.createElement('td');
@@ -1707,7 +1860,7 @@
     if (!results.length) {
       const row = document.createElement('tr');
       const cell = document.createElement('td');
-      cell.colSpan = 4;
+      cell.colSpan = 10;
       cell.textContent = '还没有观测到新的班次安全线。';
       row.appendChild(cell);
       body.appendChild(row);
@@ -1715,7 +1868,7 @@
 
     const historyBody = panel.querySelector('[data-role="history"]');
     historyBody.innerHTML = '';
-    for (const item of records.slice(0, 30)) {
+    for (const item of valid.slice().reverse().slice(0, 30)) {
       const row = document.createElement('tr');
       const cells = [
         skyDateString(item.timestamp || item.observedAt),
@@ -1732,7 +1885,9 @@
     }
 
     panel.querySelector('[data-role="record-count"]').textContent =
-      '本地自动保存：' + skyStats.records.length + ' 班（当前浏览器）；CSV 仅用于备份。表格显示所选时间段最近 30 班。';
+      '本地自动保存：' + skyStats.records.length +
+      ' 班（当前浏览器）；CSV 仅用于备份。表格显示所选时间段最近 30 班。' +
+      '注意：观测时间是脚本首次看到公开结果的时间，不一定等于服务器结算时间。';
     panel.querySelector('[data-role="stats-state"]').textContent =
       skyStats.active ? '观战采集中' : '已暂停';
   }
@@ -1817,7 +1972,9 @@
       '<label>结束日期<input type="date" data-field="end-date"></label></div>',
       '<div class="sky-summary" data-role="summary"></div>',
       '<div class="sky-table-wrap"><table><thead><tr>',
-      '<th>跳伞高度</th><th>样本</th><th>安全率</th><th>平均净收益/千押注</th>',
+      '<th>高度</th><th>样本</th><th>成功率</th><th>成功率95% CI</th>',
+      '<th>盈亏平衡率</th><th>平均净收益/千</th><th>收益95% CI</th>',
+      '<th>累计净收益</th><th>CVaR10</th><th>最大回撤</th>',
       '</tr></thead><tbody data-role="height-results"></tbody></table></div>',
       '<div class="sky-history-title">安全线采集记录（最近30班）</div>',
       '<div class="sky-table-wrap sky-history-wrap"><table><thead><tr>',
@@ -1825,7 +1982,7 @@
       '</tr></thead><tbody data-role="history"></tbody></table></div>',
       '<div class="sky-message" data-role="sky-message"></div>',
       '<small data-role="record-count"></small>',
-      '<div class="sky-method">仅观战采集新公开的班次。安全样本按「跳伞高度不超过安全线」判定；机毁计为失败。收益估值采用页面公示的100米×1.02、200米×2.03倍率作线性插值，按每千押注计算。</div>',
+      '<div class="sky-method">仅观战采集新公开的班次；机毁计为所有候选高度的失败样本，安全线分位数仅统计有明确数值的班次。按每千押注估算收益。成功率95%区间采用Wilson方法，收益区间由成功率区间映射；CVaR10为最差10%结果的平均净收益。前70%按时间探索高度，后30%作时间外验证（至少10班才启用）。倍率仍依据页面100米×1.02、200米×2.03两个示例线性估算，未验证服务器完整赔率公式。</div>',
       '<div class="sky-keepalive"><span>后台保活</span>',
       '<select data-field="keepAlive" aria-label="后台保活模式">',
       '<option value="off">关闭</option><option value="audio">低频音频</option></select>',
