@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.4.2
-// @description  自动领取并核验签到赠金、整点补给及游戏赠金余额，失败时安全刷新重试
+// @version      0.4.3
+// @description  后台恢复后自动补执行逾期签到计划，并核验到账与游戏赠金余额
 // @match        https://casino.soliumbra.com/wallet*
 // @run-at       document-idle
 // @grant        GM_notification
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.4.2';
+  const VERSION = '0.4.3';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -21,6 +21,7 @@
   const MAX_CLAIM_ATTEMPTS = 3;
   const STATUS_ID = 'casino-rewards-status';
   const SETTINGS_KEY = 'casino-rewards:settings';
+  const PLAN_STORAGE_PREFIX = 'casino-rewards:plan:'
   const DEFAULT_SETTINGS = {
     daily: { start: 0, end: 30 },
     hourly: { start: 0, end: 30 },
@@ -211,6 +212,7 @@
       // The status message still prevents a tight retry loop in this page.
     }
     clearPending(target);
+    clearPlanned(target);
     const message = reason || (target.name + ' 连续 ' + MAX_CLAIM_ATTEMPTS + ' 次仍未确认，已停止本轮自动重试。');
     notify(target.name + '未能确认', message);
     renderStatus(message);
@@ -269,16 +271,50 @@
     const targetTime = nextCycleWindowTime(target, value);
     const existing = state.get(target.key);
     if (existing?.timer) window.clearTimeout(existing.timer);
+    writePlanned(target, targetTime);
 
     const record = {
       bucket: bucket(target, targetTime),
       plan: targetTime,
-      timer: window.setTimeout(() => run(target),
+      timer: window.setTimeout(() => run(target, { catchUp: true }),
         Math.max(0, targetTime.getTime() - Date.now())),
     };
     state.set(target.key, record);
     log(`${target.name} 下一轮计划在 ${formatTime(targetTime)} 检查`);
     return targetTime;
+  }
+
+  function plannedStorageKey(target) {
+    return PLAN_STORAGE_PREFIX + target.key;
+  }
+
+  function readPlanned(target) {
+    try {
+      const value = JSON.parse(localStorage.getItem(plannedStorageKey(target)) || 'null');
+      return value && Number.isFinite(value.at) ? value : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writePlanned(target, targetTime) {
+    try {
+      localStorage.setItem(plannedStorageKey(target), JSON.stringify({
+        at: targetTime.getTime(),
+        bucket: bucket(target, targetTime),
+      }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function clearPlanned(target) {
+    try {
+      localStorage.removeItem(plannedStorageKey(target));
+    } catch {
+      // In-memory scheduling remains available for this page lifetime.
+    }
   }
 
   function formatTime(value) {
@@ -480,39 +516,75 @@
     const pending = readPending(target);
     if (pending?.bucket === bucket(target, now)) return;
     if (pending) clearPending(target);
-    if (wasExhausted(bucket(target, now))) return;
+    if (wasExhausted(bucket(target, now))) {
+      clearPlanned(target);
+      return;
+    }
 
     const existing = state.get(target.key);
-    const targetTime = existing?.plan && existing.plan > now
-      ? existing.plan
-      : nextWindowTime(target, now);
+    const saved = readPlanned(target);
+    let targetTime;
+    let catchUp = false;
 
-    if (existing?.bucket === bucket(target, targetTime) && existing.timer) return;
+    if (existing?.plan && existing.plan > now) {
+      targetTime = existing.plan;
+    } else if (saved?.at > now.getTime()) {
+      targetTime = new Date(saved.at);
+    } else if ((existing?.plan && existing.plan <= now) ||
+               (saved && saved.at <= now.getTime())) {
+      // The browser may have frozen this tab after the planned time.
+      // Keep the missed plan due and run it immediately when execution resumes.
+      targetTime = new Date(now.getTime() + 100);
+      catchUp = true;
+    } else {
+      targetTime = nextWindowTime(target, now);
+    }
+
+    if (existing?.bucket === bucket(target, targetTime) &&
+        existing.timer && existing.plan.getTime() === targetTime.getTime()) return;
 
     const delay = Math.max(0, targetTime.getTime() - now.getTime());
+    writePlanned(target, targetTime);
     const record = {
       bucket: bucket(target, targetTime),
       plan: targetTime,
-      timer: window.setTimeout(() => run(target), delay),
+      timer: window.setTimeout(() => run(target, { catchUp }), delay),
     };
     state.set(target.key, record);
-    log(`${target.name} 计划在 ${formatTime(targetTime)} 检查`);
+    log(catchUp
+      ? `${target.name} 发现逾期计划，页面恢复后立即补执行`
+      : `${target.name} 计划在 ${formatTime(targetTime)} 检查`);
     renderStatus();
   }
 
-  function run(target) {
+
+
+  function run(target, options = {}) {
     state.delete(target.key);
     if (stopped) return;
 
     const now = new Date();
-    if (!inWindow(target, now)) {
+    const saved = readPlanned(target);
+    const catchUp = Boolean(options.catchUp) ||
+      Boolean(saved && saved.at <= now.getTime());
+
+    if (!inWindow(target, now) && !catchUp) {
       schedule(target);
       return;
     }
 
-    if (wasClaimed(target, now)) return;
+    if (wasClaimed(target, now)) {
+      scheduleNextCycle(target, now);
+      renderStatus();
+      return;
+    }
     if (!navigator.onLine) {
-      const pending = { bucket: bucket(target, now), attempts: 0, phase: 'waiting-online', baseline: [] };
+      const pending = {
+        bucket: bucket(target, now),
+        attempts: 0,
+        phase: 'waiting-online',
+        catchUp,
+      };
       if (!writePending(target, pending)) {
         renderStatus('浏览器无法保存待办状态，本次未点击领取。');
         return;
@@ -523,13 +595,28 @@
 
     const button = findButton(target);
     if (!isEnabled(button)) {
-      renderStatus(`${target.name} 当前不可领取，稍后复查`);
-      window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
+      if (catchUp) {
+        scheduleNextCycle(target, now);
+        renderStatus(`${target.name} 逾期计划已检查，但页面按钮不可领取；已安排下一轮。`);
+      } else {
+        renderStatus(`${target.name} 当前不可领取，稍后复查`);
+        window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
+      }
       return;
     }
 
-    startAttempt(target, null);
+    if (catchUp && !inWindow(target, now)) {
+      startAttempt(target, {
+        bucket: bucket(target, now),
+        attempts: 0,
+        catchUp: true,
+      });
+    } else {
+      startAttempt(target, null);
+    }
   }
+
+
 
   function successTexts(target) {
     const targetPattern = target.daily ? /签到/ : /补给/;
@@ -889,10 +976,13 @@
 
     if (pending.phase === 'waiting-online') {
       if (pending.attempts === 0) {
-        clearPending(target);
         const button = findButton(target);
-        if (isEnabled(button)) startAttempt(target, null);
-        else window.setTimeout(() => schedule(target), RETRY_INTERVAL_MS);
+        if (isEnabled(button)) {
+          startAttempt(target, pending);
+        } else {
+          // Keep the overdue task pending. The regular scan and online event will retry.
+          renderStatus(target.name + ' 网络已恢复，等待领取按钮变为可用。');
+        }
         return true;
       }
       pending.phase = 'reload-check';
