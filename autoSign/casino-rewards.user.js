@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.5.2';
+  const VERSION = '0.5.3';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -1732,7 +1732,7 @@
     }
 
     panel.querySelector('[data-role="record-count"]').textContent =
-      '本地累计保存 ' + skyStats.records.length + ' 班；表格显示所选时间段最近 30 班。';
+      '本地自动保存：' + skyStats.records.length + ' 班（当前浏览器）；CSV 仅用于备份。表格显示所选时间段最近 30 班。';
     panel.querySelector('[data-role="stats-state"]').textContent =
       skyStats.active ? '观战采集中' : '已暂停';
   }
@@ -2020,9 +2020,40 @@
     log('已启动，按配置排程、核对领取结果并支持低频音频保活。');
   }
 
+  // The site navigates between /wallet and /sky without a full document load.
+  // Reload on an SPA route change so each route gets exactly one correctly initialized module.
+  function installRouteWatcher() {
+    let lastPath = location.pathname;
+    let reloadPending = false;
+
+    const checkRoute = () => {
+      const nextPath = location.pathname;
+      if (nextPath === lastPath || reloadPending) return;
+      lastPath = nextPath;
+      reloadPending = true;
+      log('检测到页面路由切换，正在重新载入对应功能面板。');
+      window.location.reload();
+    };
+
+    for (const method of ['pushState', 'replaceState']) {
+      const original = history[method];
+      if (typeof original !== 'function') continue;
+      history[method] = function (...args) {
+        const result = original.apply(this, args);
+        checkRoute();
+        return result;
+      };
+    }
+
+    window.addEventListener('popstate', checkRoute);
+    window.setInterval(checkRoute, 750);
+  }
+
+  installRouteWatcher();
+
   if (location.pathname.startsWith('/sky')) {
     startSkyStats();
-  } else {
+  } else if (location.pathname.startsWith('/wallet')) {
     start();
   }
 })();
