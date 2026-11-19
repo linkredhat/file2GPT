@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.7.1
+// @version      0.7.2
 // @description  签到助手、低频音频保活及极限跳伞风险统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.7.1';
+  const VERSION = '0.7.2';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -1706,21 +1706,25 @@
       });
   }
 
-  function skyCandidateHeights() {
-    const heights = new Set();
-    for (let elapsedSeconds = 0; elapsedSeconds < 100; elapsedSeconds += 1) {
-      const height = Math.round(100 * Math.pow(1.13, elapsedSeconds));
-      if (height >= 5000) break;
-      heights.add(height);
+  function skyCandidateHeights(samples) {
+    // Empirical survival probability changes only when the candidate height
+    // crosses an observed safety-line value. Between breakpoints probability
+    // is constant and the current payout model is linear, so the maximum is
+    // attained at a breakpoint (or a domain boundary), not on a fixed grid.
+    const heights = new Set([1, 5000]);
+    for (const sample of samples) {
+      const height = Number(sample.safetyLine);
+      if (!sample.wreck && Number.isFinite(height) && height >= 1 && height <= 5000) {
+        heights.add(height);
+      }
     }
-    heights.add(5000);
     return Array.from(heights).sort((a, b) => a - b);
   }
 
   function skyHeightAnalysis(records) {
     const samples = skyValidSamples(records);
     if (!samples.length) return [];
-    return skyCandidateHeights()
+    return skyCandidateHeights(samples)
       .map(height => skyEvaluateHeight(samples, height))
       .filter(Boolean)
       .sort((a, b) => b.avgNetPerThousand - a.avgNetPerThousand);
@@ -1888,7 +1892,7 @@
             (maxStats.roundsSince === null ? '未知' : maxStats.roundsSince + ' 班')
           : ' · 尚未观测到'),
       best
-        ? '历史收益最高：' + best.height + ' 米 · 成功 ' + best.safe + '/' +
+        ? '收益函数最大值：' + best.height + ' 米 · 成功 ' + best.safe + '/' +
           best.samples + '（' + (best.safeRate * 100).toFixed(1) +
           '%）· 保本率 ' + (best.breakEvenRate * 100).toFixed(2) +
           '% · 估算净收益 ' + formatSkySigned(best.avgNetPerThousand) +
@@ -1932,7 +1936,7 @@
       }
       displayRows.push({ label, result });
     };
-    addDisplayRow('历史最高', best);
+    addDisplayRow('收益函数极值', best);
     addDisplayRow('独立验证', validation.available ? validation.validationResult : null);
     addDisplayRow('稳健备选', riskAlternative);
     addDisplayRow('5000米上限', results.find(item => item.height === 5000));
@@ -2063,7 +2067,7 @@
       '<option value="90d">最近 90 天</option>',
       '<option value="all">全部时间</option>',
       '</select></label>',
-      '<small class="sky-grid-note">候选高度按 ×1.13 几何递增（100米起），另含5000米；可手动测试任意高度</small></div>',
+      '<small class="sky-grid-note">按实际观测安全线的断点求经验收益函数最大值；可手动测试任意高度</small></div>',
       '<div class="sky-custom-range">',
       '<label>开始日期<input type="date" data-field="start-date"></label>',
       '<label>结束日期<input type="date" data-field="end-date"></label></div>',
@@ -2082,7 +2086,7 @@
       '<div class="sky-message" data-role="sky-message"></div>',
       '<small data-role="record-count"></small>',
       '<details class="sky-method-details"><summary>统计口径与限制</summary>',
-      '<div class="sky-method">候选高度按每秒深度增加13%构造的几何网格（并非游戏只允许这些高度）；手动测试高度可输入任意1–5000米。机毁计为失败。成功率区间使用Wilson方法；前70%用于选择一个高度，后30%至少100班且收益95%下界高于0才标记为统计确认。5000米出现次数按本地全部记录统计。赔率仅按页面100米×1.02、200米×2.03两点线性估算，服务器完整公式尚未验证。缺班数只反映已保存记录之间的班号缺口，不能证明没有其他漏采。</div></details>',
+      '<div class="sky-method">不再使用固定步长或每秒×1.13网格。经验成功概率在每条已观测安全线处发生变化；在当前线性赔率估算下，函数在断点之间为线性，因此只需检查实际安全线断点及1/5000米边界即可得到样本内全局最大值。手动测试高度可输入任意1–5000米。机毁计为失败。成功率区间使用Wilson方法；前70%用于选择一个高度，后30%至少100班且收益95%下界高于0才标记为统计确认。5000米出现次数按本地全部记录统计。赔率仅按页面100米×1.02、200米×2.03两点线性估算，服务器完整公式尚未验证。缺班数只反映已保存记录之间的班号缺口，不能证明没有其他漏采。</div></details>',
       '<div class="sky-keepalive"><span>后台保活</span>',
       '<select data-field="keepAlive" aria-label="后台保活模式">',
       '<option value="off">关闭</option><option value="audio">低频音频</option></select>',
