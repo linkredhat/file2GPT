@@ -1900,9 +1900,10 @@
         (gaps.missingRounds
           ? '；已保存班号之间发现缺号 ' + gaps.missingRounds + ' 班'
           : '；已保存班号之间未发现缺号'),
-      '安全线分布：中间值（中位数）' + formatSkyNumber(medianSafety, 0) +
-        ' 米；偏低参考 P10 为 ' + formatSkyNumber(p10, 0) +
-        ' 米；偏高参考 P90 为 ' + formatSkyNumber(p90, 0) + ' 米。',
+      '安全线分布：中位数 ' + formatSkyNumber(medianSafety, 0) +
+        ' 米（约一半记录不高于此值）；较低一成的参考位置约 ' +
+        formatSkyNumber(p10, 0) + ' 米；较高一成的参考位置约 ' +
+        formatSkyNumber(p90, 0) + ' 米。',
       '5000 米安全线：本地全部记录中出现 ' + maxStats.count + ' 次' +
         (maxStats.lastRound !== null
           ? '；最近一次是第 ' + maxStats.lastRound + ' 班；' +
@@ -2114,7 +2115,7 @@
       '<div class="sky-message" data-role="sky-message"></div>',
       '<small data-role="record-count"></small>',
       '<details class="sky-help-details" open><summary>表格和统计数字怎么看？</summary>',
-      '<div class="sky-method"><b>历史收益最高：</b>在当前筛选的历史记录中，估算平均净收益最高的开伞高度；这是历史样本的最佳结果，不保证下一班也最好。<br><b>后续样本复核：</b>先用较早的70%记录挑高度，再用较晚的30%记录检验，避免用同一批记录既挑选又证明；后30%至少100班才显示检验结论。<br><b>较稳妥备选：</b>先比较每个高度最差10%班次的平均净收益，优先选择较好的；并列时选历史成功率较高的高度。它不是稳赚保证。<br><b>成功率：</b>历史上安全线足以支持该高度的班次比例；括号中的95%范围表示估算误差，不是游戏承诺。<br><b>不亏所需成功率：</b>按当前估算赔率，至少要达到这个成功比例，平均下注结果才不会亏。<br><b>每1,000 token平均净收益：</b>假设每班下注1,000 token，把历史每班结果取平均；+100表示平均净赚100 token，-100表示平均净亏100 token。<br><b>最差10%平均净收益：</b>把最差的十分之一班次单独取平均，用来比较极端不利结果。<br><b>重要限制：</b>赔率暂按页面给出的100米×1.02、200米×2.03两个示例点作线性估算，服务器完整赔率公式尚未核实；所以这里是历史估值，不是实际收益保证。机毁按失败计算；缺班数只统计已保存记录之间的编号缺口。</div></details>',
+      '<div class="sky-method"><b>历史收益最高：</b>在当前筛选的历史记录中，估算平均净收益最高的开伞高度；这是历史样本的最佳结果，不保证下一班也最好。<br><b>后续样本复核：</b>先用较早的70%记录挑高度，再用较晚的30%记录检验，避免用同一批记录既挑选又证明；后30%至少100班才显示检验结论。<br><b>较稳妥备选：</b>先比较每个高度最差10%班次的平均净收益，优先选择较好的；并列时选历史成功率较高的高度。它不是稳赚保证。<br><b>安全线分布：</b>中位数表示一半记录在它以下、一半在它以上；较低一成和较高一成参考值用于观察安全线分布范围。<br><b>成功率：</b>历史上安全线足以支持该高度的班次比例；括号中的95%范围表示估算误差，不是游戏承诺。<br><b>不亏所需成功率：</b>按当前估算赔率，至少要达到这个成功比例，平均下注结果才不会亏。<br><b>每1,000 token平均净收益：</b>假设每班下注1,000 token，把历史每班结果取平均；+100表示平均净赚100 token，-100表示平均净亏100 token。<br><b>最差10%平均净收益：</b>把最差的十分之一班次单独取平均，用来比较极端不利结果。<br><b>重要限制：</b>赔率暂按页面给出的100米×1.02、200米×2.03两个示例点作线性估算，服务器完整赔率公式尚未核实；所以这里是历史估值，不是实际收益保证。机毁按失败计算；缺班数只统计已保存记录之间的编号缺口。</div></details>',
       '<div class="sky-keepalive"><span>后台保活</span>',
       '<select data-field="keepAlive" aria-label="后台保活模式">',
       '<option value="off">关闭</option><option value="audio">低频音频</option></select>',
@@ -2227,7 +2228,7 @@
     if (!skyStats.active || skyStatsSyncing || !document.body) return;
     if (!force && !skyHistoryDirty) return;
     const now = Date.now();
-    if (now - skyStatsLastSync < 500) {
+    if (now - skyStatsLastSync < 1500) {
       skyHistoryDirty = true;
       return;
     }
