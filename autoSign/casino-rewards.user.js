@@ -1688,9 +1688,11 @@
       .filter(item => item.wreck || Number.isFinite(item.safetyLine))
       .slice()
       .sort((a, b) => {
-        const timeDiff = Number(a.timestamp || a.observedAt || 0) -
+        // Round ID is the game sequence; observation timestamps can be identical
+        // when a backgrounded tab catches up on several public history entries.
+        const roundDiff = Number(a.roundId || 0) - Number(b.roundId || 0);
+        return roundDiff || Number(a.timestamp || a.observedAt || 0) -
           Number(b.timestamp || b.observedAt || 0);
-        return timeDiff || Number(a.roundId || 0) - Number(b.roundId || 0);
       });
   }
 
