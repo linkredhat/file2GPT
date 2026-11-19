@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.7.4
+// @version      0.7.5
 // @description  签到助手、低频音频保活及极限跳伞风险统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.7.4';
+  const VERSION = '0.7.5';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -2283,7 +2283,7 @@
 
     // 将整页历史记录读取与统计安排在浏览器空闲时运行，避免挤占游戏动画帧。
     if (typeof window.requestIdleCallback === 'function') {
-      skyStatsTimer = window.requestIdleCallback(runSync, { timeout: 3000 });
+      skyStatsTimer = window.requestIdleCallback(runSync);
     } else {
       skyStatsTimer = window.setTimeout(runSync, 1000);
     }
