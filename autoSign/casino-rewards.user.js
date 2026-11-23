@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.7.7
+// @version      0.7.8
 // @description  签到助手、低频音频保活及极限跳伞风险统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.7.7';
+  const VERSION = '0.7.8';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -135,10 +135,50 @@
   }
 
   function findButton(target) {
-    return allButtons().find((element) => {
-      const labels = buttonLabels(element);
-      return target.prefixes.some((prefix) => labels.some((label) => label.includes(prefix)));
-    }) || null;
+    const buttons = allButtons();
+
+    // 新版页面的领取按钮可见文字只有「领取」，完整名称放在 aria-label 中。
+    // 优先使用明确标注了「领取 + 奖励名称」的按钮，避免误选账本中的汇总流水按钮。
+    const explicit = buttons.find((element) =>
+      normalize(element.getAttribute('aria-label')).includes('领取' + target.name)
+    );
+    if (explicit) return explicit;
+
+    // 兼容旧版：冷却时按钮本身显示倒计时，领取时可能只显示「领取」。
+    for (const button of buttons) {
+      const visibleText = normalize(button.innerText || button.textContent);
+      const ariaLabel = normalize(button.getAttribute('aria-label'));
+      const looksLikeClaimAction = visibleText === '领取' ||
+        visibleText.includes('领取') ||
+        /冷却中|还有\s*\d+|倒计时/.test(visibleText + ' ' + ariaLabel);
+      if (!looksLikeClaimAction) continue;
+
+      let ancestor = button.parentElement;
+      for (let depth = 0; ancestor && depth < 8; depth++, ancestor = ancestor.parentElement) {
+        const context = normalize(ancestor.innerText || ancestor.textContent);
+        if (context.length > 700) continue;
+        if (context.includes(target.name) && context.includes('赠金') &&
+            (context.includes('只能下注') || context.includes('冷却中') ||
+             context.includes('领取') || context.includes('可领取'))) {
+          return button;
+        }
+      }
+    }
+    return null;
+  }
+
+  function isCoolingDown(target, button) {
+    if (!button || isEnabled(button)) return false;
+    const labels = buttonLabels(button).join(' ');
+    if (/冷却中|还有\s*\d+|倒计时/.test(labels)) return true;
+
+    let ancestor = button.parentElement;
+    for (let depth = 0; ancestor && depth < 8; depth++, ancestor = ancestor.parentElement) {
+      const context = normalize(ancestor.innerText || ancestor.textContent);
+      if (context.length <= 700 && context.includes(target.name) &&
+          /冷却中|还有\s*\d+|倒计时/.test(context)) return true;
+    }
+    return false;
   }
 
   function buttonState(button) {
@@ -235,6 +275,14 @@
       return sessionStorage.getItem(failedStorageKey(bucketValue)) === '1';
     } catch {
       return false;
+    }
+  }
+
+  function clearExhausted(bucketValue) {
+    try {
+      sessionStorage.removeItem(failedStorageKey(bucketValue));
+    } catch {
+      // Ignore unavailable session storage.
     }
   }
 
@@ -842,8 +890,28 @@
     if (pending?.bucket === bucket(target, now)) return;
     if (pending) clearPending(target);
     if (wasExhausted(bucket(target, now))) {
-      clearPlanned(target);
-      return;
+      const button = findButton(target);
+      if (!isEnabled(button)) {
+        clearPlanned(target);
+        return;
+      }
+
+      // 旧版本可能因新版账本无法解析而停止重试；如果服务器页面仍明确允许领取，
+      // 说明本轮尚未进入冷却状态，可以解除旧停止标记并立即补执行一次。
+      clearExhausted(bucket(target, now));
+      log(target.name + '按钮仍可领取，解除本轮旧停止标记并重新尝试。');
+      if (inWindow(target, now)) {
+        const targetTime = new Date(now.getTime() + 300);
+        const record = {
+          bucket: bucket(target, targetTime),
+          plan: targetTime,
+          timer: window.setTimeout(() => run(target, { catchUp: true }), 300),
+        };
+        writePlanned(target, targetTime);
+        state.set(target.key, record);
+        renderStatus();
+        return;
+      }
     }
 
     const existing = state.get(target.key);
@@ -1026,9 +1094,11 @@
     for (const element of elements) {
       const text = normalize(element.innerText || element.textContent);
       if (text.length < 12 || text.length > 420) continue;
-      if (!text.includes(target.name) || !text.includes('变动') ||
-          !text.includes('赠金') || !/变动\s*\+\s*[\d,]+/.test(text) ||
-          !/余\s*[\d,]+/.test(text)) continue;
+      // 新版账本可能把多笔补给合并显示为「补给×N ... +金额 赠金 余余额」，
+      // 不一定再包含旧版单笔流水的「变动」字段。
+      if (!text.includes(target.name) || !text.includes('赠金') ||
+          !/(?:变动\s*)?\+\s*[\d,]+/.test(text) ||
+          !/(?:余|结余)\s*[\d,]+/.test(text)) continue;
       candidates.push({ element, text });
     }
 
@@ -1067,6 +1137,23 @@
       ? balanceAfter - pending.balanceBefore
       : null;
     const newSuccessText = hasNewSuccess(target, pending);
+    const claimButton = findButton(target);
+
+    // 点击前按钮可领取，点击后同一奖励卡片明确进入冷却，说明服务器已接受领取。
+    // 这条路径不依赖新版账本是否提供独立流水或成功 Toast。
+    if (pending.buttonWasEnabled !== false && isCoolingDown(target, claimButton)) {
+      return {
+        confirmed: true,
+        source: 'cooldown',
+        entry,
+        credit: Number.isFinite(pending.expectedReward) ? pending.expectedReward : null,
+        balanceBefore: pending.balanceBefore,
+        balanceAfter,
+        balanceDelta,
+        balanceMatched: Number.isFinite(pending.expectedReward) &&
+          balanceDelta === pending.expectedReward,
+      };
+    }
 
     if (entry && credit > 0) {
       return {
@@ -1115,6 +1202,15 @@
     const delta = Number.isFinite(result.balanceDelta)
       ? (result.balanceDelta >= 0 ? '+' : '-') + formatAmount(result.balanceDelta)
       : '无法读取';
+    if (result.source === 'cooldown') {
+      const deltaText = Number.isFinite(result.balanceDelta)
+        ? '；游戏赠金余额变化 ' + (result.balanceDelta >= 0 ? '+' : '-') +
+          formatAmount(result.balanceDelta)
+        : '';
+      return target.name + '已确认：领取按钮已进入冷却状态，服务器页面已接受本轮领取' +
+        (Number.isFinite(result.credit) ? '，页面奖励金额 +' + formatAmount(result.credit) + ' 赠金' : '') +
+        deltaText + '。';
+    }
     if (result.source === 'ledger') {
       if (result.balanceMatched) {
         return target.name + '到账已确认：账本新增 +' + amount +
@@ -1211,6 +1307,7 @@
         ? previous.balanceBefore : readGameBonusBalance(),
       expectedReward: previous && Number.isFinite(previous.expectedReward)
         ? previous.expectedReward : readExpectedReward(target),
+      buttonWasEnabled: true,
       ledgerBaseline: previous?.ledgerBaseline || findLedgerEntries(target),
       successBaseline: previous?.successBaseline || successTexts(target),
       reloadAt: 0,
