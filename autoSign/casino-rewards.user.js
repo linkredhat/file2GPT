@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         S喵在线大赌场：签到与整点补给
 // @namespace    local.casino-rewards
-// @version      0.7.8
+// @version      0.7.9
 // @description  签到助手、低频音频保活及极限跳伞风险统计
 // @match        https://casino.soliumbra.com/wallet*
 // @match        https://casino.soliumbra.com/sky*
@@ -12,7 +12,7 @@
 (function () {
   'use strict';
 
-  const VERSION = '0.7.8';
+  const VERSION = '0.7.9';
   const MINUTE_MS = 60 * 1000;
   const SCAN_INTERVAL_MS = 20 * 1000;
   const RETRY_INTERVAL_MS = 20 * 1000;
@@ -183,12 +183,13 @@
 
   function buttonState(button) {
     if (!button) return '未找到';
-    if (button.disabled || button.getAttribute('aria-disabled') === 'true') return '冷却中';
-    return '可领取';
+    return isEnabled(button) ? '可领取' : '冷却中';
   }
 
   function isEnabled(button) {
-    return Boolean(button) && !button.disabled && button.getAttribute('aria-disabled') !== 'true';
+    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return false;
+    const labels = buttonLabels(button).join(' ');
+    return !/冷却中|还有\s*\d+|倒计时/.test(labels);
   }
 
   function randomInt(maxExclusive) {
